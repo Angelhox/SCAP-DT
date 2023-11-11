@@ -1,0 +1,349 @@
+section {
+    padding: 0 0 0 1em;
+    height: 80vh;
+    display: none;
+    transition: opacity 0.5s ease-in-out;
+}
+
+section.active {
+
+    height: 80vh;
+    width: 100%;
+    display: block;
+    opacity: 1;
+}
+
+.encabezado-servicios {
+    font-weight: 600;
+    color: white;
+    position: sticky;
+    top: 0;
+    /* La posición superior en la que el encabezado se fijará */
+    z-index: 1;
+    /* Asegura que esté por encima del contenido de la lista */
+    margin-top: -5rem;
+    padding: 1em 1em 1em 1em;
+    background-color: #85C1E9;
+    /* padding-bottom: .5em !important;*/
+    max-width: 100%;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: solid 2px #85C1E9;
+    border-bottom: none;
+}
+
+.encabezado-form {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin-top: -5rem;
+    padding: 1em 1em 1em 1em;
+    max-width: 100%;
+    height: fit-content;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.encabezado-st {
+    padding: 0 0 1em 0;
+    border: solid 4px #f8c471;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.title-item{
+font-weight: 500;
+}
+
+.card-fondo {
+    height: 18rem;
+    width: 100%;
+    /* background-image: url('../../assets/fonts/servicios.png'); */
+    background-image: url('../../assets/fonts/servicios-disponibles.gif');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: top;
+    background-color: rgba(255, 255, 255, 0.7);
+
+
+}
+
+.card-contenido {
+    margin: 0;
+    padding: 0;
+    border-radius: 5%;
+    backdrop-filter: blur(20px);
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.card-zona-img {
+
+    height: 10rem;
+    background-color: rgba(255, 255, 255, 0.2);
+
+}
+
+.card-zona-img-ct {
+
+    height: 5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+
+}
+
+.card-zona-desc {
+    height: 4rem;
+    overflow-y: auto;
+}
+
+.card-zona-desc-ct {
+    height: 2rem;
+    overflow-y: auto;
+}
+
+.card-espacios {
+    margin: 2px;
+}
+
+.contenedor-servicios-contratados {
+    height: 55vh;
+    overflow-y: auto;
+}
+
+.carousel-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.carousel {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.card {
+    flex: 0 0 220px;
+    /* Ajusta este valor según el ancho de tus tarjetas */
+    margin: 0 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.btn-prev,
+.btn-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #ccc;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.btn-prev {
+    left: 10px;
+}
+
+.btn-next {
+    right: 10px;
+}
+
+.cardmd {
+    width: 100%;
+    background-color: aqua;
+}
+
+.sticky-thead {
+
+    position: sticky;
+    top: 0;
+
+
+}
+
+.sticky-thead tr {
+    position: sticky;
+    top: 0;
+    margin-top: 0;
+    padding-top: 0;
+
+}
+
+.fila-md {
+    padding: 10px;
+    border: 7px solid #ccc;
+
+}
+
+.btn-custom {
+    background-color: #85C1E9;
+    color: white;
+    padding: 0 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-custom:hover {
+    background-color: #D6EAF8;
+    color: #34495E;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+/* Estilos base del botón */
+.btn-custom-guardar {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #21618C;
+    /* Color de fondo predeterminado */
+    color: #fff;
+    /* Color del texto */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    /* Transición de cambio de color */
+}
+
+/* Estilo al pasar el cursor (hover) */
+.btn-custom-guardar:hover {
+    background-color: #85C1E9;
+    color: black;
+    /* Nuevo color de fondo al pasar el cursor */
+}
+
+/* Estilos base del botón */
+.btn-custom-cancelar {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #CD6155;
+    /* Color de fondo predeterminado */
+    color: #fff;
+    /* Color del texto */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    /* Transición de cambio de color */
+}
+
+/* Estilo al pasar el cursor (hover) */
+.btn-custom-cancelar:hover {
+    background-color: #D98880;
+    color: black;
+    /* Nuevo color de fondo al pasar el cursor */
+}
+
+.btn-buscar {
+    padding: .4em;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-buscar:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.rno-rd {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.lno-rd {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.btn-check-custom {
+ width: 100rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border: 1px solid #85C1E9;
+    border-radius: 0.25rem;
+    color: #85C1E9;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Estilo para ocultar el input nativo del checkbox */
+.custom-checkbox {
+    display: none;
+
+}
+
+/* Estilo para el checkbox personalizado cuando está marcado */
+.custom-checkbox:checked+.btn-check-custom {
+    background-color: #85C1E9;
+    border: 1px solid #85C1E9;
+    color: #fff;
+}
+
+/*Cards de los contratos*/
+.trans {
+    color: #00000000;
+    background-color: #00000000;
+}
+
+.bg-custom-card {
+    background-color: yellow;
+}
+
+.mp-0 {
+    margin: 0;
+    padding: 0;
+}
+
+.active-list {
+
+    height: 64vh;
+    overflow-y: auto;
+    overflow-x: auto;
+    /* padding: 10px; */
+    display: block;
+
+}
+
+.innactive-list {
+    height: 63vh;
+    overflow-y: auto;
+    overflow-x: auto;
+    /* padding: 10px; */
+    display: none;
+
+}
+::-webkit-scrollbar {
+    width: 10px;
+    /* Ancho de la barra de desplazamiento*/
+}
+
+::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    /* Color de fondo de la pista de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #f8c471;;
+    /* Color del "pulgar" de la barra de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+    /* Cambia el color del "pulgar" al pasar el ratón por encima */
+}
+.value-disponibles{
+    font-size: 1.2em;
+    font-weight: 500;
+    
+}

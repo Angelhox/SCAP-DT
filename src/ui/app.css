@@ -1,0 +1,20 @@
+/* body{
+    background-color: red !important;
+} */
+#products{
+    height: 100vh;
+    overflow-y: auto;
+    padding: 2px;
+}
+.csize{
+width: 100vw;
+height: 100vh;
+
+}
+.side-principal{
+    background-color: #3498DB;  
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    align-content: center;
+}

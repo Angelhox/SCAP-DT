@@ -1,0 +1,162 @@
+.encabezado-socios {
+    font-weight: 600;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin-top: -5rem;
+    padding: 1em 1em 1em 1em;
+    background-color: #85C1E9;
+    /* padding-bottom: .5em !important;*/
+    max-width: 100%;
+    height: fit-content;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: solid 2px #85C1E9;
+    border-bottom: none;
+}
+
+
+.encabezado-form {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin-top: -5rem !important;
+    padding: 1em 1em 1em 1em;
+    max-width: 100%;
+    height: fit-content;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+
+td,
+th {
+    padding: 8px;
+
+    text-align: left;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    /* Mantendrá el encabezado en la parte superior de la tabla */
+    z-index: 1;
+    /* Asegura que el encabezado esté por encima de las celdas */
+}
+.seleccionada td {
+
+    background-color: #85C1E9; /* Puedes ajustar el color según tus preferencias */
+  }
+::-webkit-scrollbar {
+    width: 10px;
+    /* Ancho de la barra de desplazamiento*/
+}
+
+::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    /* Color de fondo de la pista de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #888;
+    /* Color del "pulgar" de la barra de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #f8c471;
+    /* Cambia el color del "pulgar" al pasar el ratón por encima */
+}
+
+.btn-buscar {
+    padding: .4em;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-buscar:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.btn-rd {
+    border-radius: 5px;
+}
+
+.rno-rd {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.lno-rd {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.mp-0 {
+    margin: 0;
+    padding: 0;
+}
+
+.form-control {
+    border-radius: 5px;
+}
+
+@media print {
+
+    /* Establece la escala de impresión al 50% */
+    /* body {
+        transform: scale(0.5);
+        transform-origin: top left;
+    }
+
+    .col-12 {
+        width: 100% !important;
+    }
+
+    .col-md-8 {
+        width: 100% !important;
+    }
+    .col-sm-8 {
+        width: 100% !important;
+    }
+
+    .col-6 {
+        width: 100% !important;
+    }
+
+    .col-4 {
+        width: 100% !important;
+    }
+
+    .col-3 {
+        width: 100% !important;
+    }
+
+    .col-2 {
+        width: 100% !important;
+    }
+
+    .row {
+        width: 100% !important;
+    }
+
+
+    #socioForm {
+        display: none;
+    } */
+}

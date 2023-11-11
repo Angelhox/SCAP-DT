@@ -1,0 +1,14 @@
+node_modules/
+release-builds/
+documentos/
+dist/
+    src/ui/dist/cobros.dev.js
+      src/ui/dist/consolidado.dev.js
+   src/ui/dist/cuotas.dev.js
+        src/ui/dist/factura-1.dev.js
+          src/ui/dist/planillas.dev.js
+           src/ui/dist/servicios.dev.js
+             src/dist/database.dev.js
+         src/dist/main.dev.js
+             dist/win-unpacked/SCAPST DOM.exe
+         dist/win-unpacked/resources/app.asar

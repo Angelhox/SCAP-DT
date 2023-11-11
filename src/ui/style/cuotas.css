@@ -1,0 +1,406 @@
+.container-servicios-list {
+
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.card-servicios {
+    background-color: red;
+}
+
+.container-servicios {
+    width: 100%;
+    height: 50%;
+    max-height: 50%;
+}
+
+.container-img {
+    margin: 0;
+    padding: 0;
+}
+
+.img-servicios {
+    margin: 0;
+    padding: 0;
+    height: 60%;
+    max-height: 60%;
+}
+
+.container-title h6 {
+    color: #f8c471;
+    padding: 0;
+    margin: .1em 0 .3em 0;
+}
+
+.container-socios {
+    height: 3.5em;
+    max-height: 3.5em;
+    overflow-y: auto;
+    padding: 0;
+    margin: 0;
+}
+
+.container-socios p {
+    padding: 0;
+    margin: .2em 0 .2em 0;
+}
+
+.container-detalles {
+    padding: 0;
+    margin: 0;
+}
+
+.container-detalles div {
+    padding: 0;
+    margin: .1em 0 0 0;
+}
+
+.container-detalles div h6 {
+    padding: 0;
+    margin: 0;
+}
+
+.container-detalles div p {
+    padding: 0;
+    margin: 0;
+}
+
+.container-usuarios {
+    /* background-color: black; */
+}
+
+.container-checked {}
+
+
+.img-usuario {
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    background-color: black;
+}
+
+
+/* Estilo personalizado para el checkbox circular */
+.custom-checkbox {
+    /* position: relative; */
+    width: 50%;
+    /* Define el tamaño del checkbox (ajusta según tus necesidades) */
+    height: 35%;
+    /* Define el tamaño del checkbox (ajusta según tus necesidades) */
+}
+
+.custom-checkbox input[type="checkbox"] {
+    position: absolute;
+
+    opacity: 0;
+}
+
+.custom-checkbox label {
+    /* position: absolute; */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: solid 2px #ccc;
+    border-radius: 50%;
+    /* Hace que el checkbox sea circular */
+    background-color: #fff;
+    /* Color de fondo cuando no está marcado */
+}
+
+.custom-checkbox input[type="checkbox"]:checked+label {
+    background-color: #f8c471;
+    /* Color de fondo cuando está marcado */
+}
+
+.btn-custom {
+    padding: 0 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-custom:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+
+.btn-servicios-custom {
+    margin: .1em;
+    height: 30%;
+    padding: 0 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-servicios-custom:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+
+.encabezado-servicios {
+    font-weight: 600;
+    color: white;
+    position: sticky;
+    top: 0;
+    /* La posición superior en la que el encabezado se fijará */
+    z-index: 1;
+    /* Asegura que esté por encima del contenido de la lista */
+    margin-top: -5rem;
+    padding: 1em 1em 1em 1em;
+    background-color: #85C1E9;
+    /* padding-bottom: .5em !important;*/
+    max-width: 100%;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: solid 2px #85C1E9;
+    border-bottom: none;
+}
+
+.encabezado-bt {
+    color: white;
+    font-size: 1.1em;
+    font-weight: 700;
+    background-color: #f8c471;
+    ;
+    border: solid 3px #85C1E9;
+    border-top: none;
+    padding: .5em 1.1em .1em 1.1em;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 5px;
+
+}
+
+.encabezado-bt p {
+    margin: 0 0 0 0;
+    padding: 0;
+
+}
+
+.encabezado-form {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin-top: -5rem;
+    padding: 1em 1em 1em 1em;
+    max-width: 100%;
+    height: fit-content;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+
+}
+
+.encabezado-st {
+    padding: 0 0 0 0;
+    border: solid 4px #f8c471;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.btn-buscar {
+    padding: .4em;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-gtc {
+    background-color: #85C1E9;
+    padding: .4em;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-buscar:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.btn-gtc:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.table-st-container {
+    width: 100%;
+    padding: 0 .5em 0 .5em;
+    /* margin: 0 .5em 0 .5em; */
+    height: 50vh;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.btn-rd {
+    border-radius: 5px;
+}
+
+.mp-0 {
+    margin: 0;
+    padding: 0;
+}
+
+.form-control {
+    border-radius: 5px;
+}
+
+/* Estilos para el botón */
+.boton-info {
+    background-color: #85C1E9;
+    border: none;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-size: 24px;
+    padding: 0 .5em;
+}
+
+/* Estilos para el cuadro de información */
+.informacion {
+    padding: 10px;
+    border-radius: 5px;
+    font-size: .8em;
+
+    z-index: 1;
+    display: none;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+
+}
+
+/* Estilos para el icono dentro del cuadro de información */
+.informacion i {
+    font-size: 18px;
+    margin-right: 5px;
+}
+
+/* Estilos para el cuadro de información al pasar el cursor sobre el botón */
+.boton-info:hover .informacion {
+    display: block;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    /* Ancho de la barra de desplazamiento*/
+}
+
+::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    /* Color de fondo de la pista de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb {
+    /* background-color: #888;*/
+    background-color: #f8c471;
+    /* Color del "pulgar" de la barra de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+    /* Cambia el color del "pulgar" al pasar el ratón por encima */
+}
+
+section {
+    padding: 0 0 0 1em;
+    height: 80vh;
+    display: none;
+    transition: opacity 0.5s ease-in-out;
+}
+
+section.active {
+
+    height: 80vh;
+    width: 100%;
+    display: block;
+    opacity: 1;
+}
+
+.rno-rd {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.lno-rd {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.trans {
+    color: #00000000;
+    background-color: #00000000;
+}
+
+.dialog-servicios {
+    padding: 0;
+    border: none;
+    background-color: #00000000;
+    overflow: none;
+
+}
+
+.section-dialog {
+    background-color: white;
+    padding: 0;
+    overflow: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.item-custom label {
+    font-weight: 500;
+}
+
+
+
+.err-container {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+
+
+}
+
+.err-container p {
+    margin: 0 12px;
+    color: red;
+}
+
+.swal-popup {
+    z-index: 99999;
+    /* Ajusta el valor según tus necesidades para que sea mayor que el z-index del dialog */
+}
+
+.question-contratar {
+    z-index: 99999;
+}

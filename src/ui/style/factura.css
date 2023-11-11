@@ -1,0 +1,223 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.invoice {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.invoice-header {
+    display: flex;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.invoice-header h1 {
+    align-self: center;
+    margin: 0 auto;
+    color: #333;
+    font-size: 24px;
+}
+
+.invoice-header h4 {
+    align-self: center;
+    margin: 0 auto;
+    color: #333;
+    font-size: 24px;
+}
+
+.invoice-items-header {
+    align-self: center;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.invoice-details {
+    display: flex;
+    margin-top: 0;
+    padding: 0;
+    justify-content: space-evenly;
+}
+
+.invoice-details p {
+    display: flex;
+    margin-top: 0;
+    padding: 0;
+    justify-content: space-evenly;
+}
+
+.invoice-details .label {
+    font-weight: bold;
+    font-size: 20rem;
+}
+
+.invoice-items {
+    width: 100%;
+}
+
+.invoice-items th,
+.invoice-items td {
+    text-align: center;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+    font-size: 15px;
+}
+
+.invoice-items .titles {
+    text-align: left;
+}
+
+.logo {
+    align-self: start;
+    width: 15%;
+    filter: grayscale(100%);
+}
+
+table {
+    margin-bottom: 10px;
+}
+
+.signatures {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.signature {
+    border-top: 1px dotted #000;
+    width: 250px;
+    text-align: center;
+}
+
+.btn-print-custom {
+    margin: .5em;
+    height: 2.5em;
+    padding: 0 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-cancel-custom {
+    margin: .5em;
+    height: 2.5em;
+    padding: 0 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-print-custom:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.btn-cancel-custom:hover {
+    background-color: #D98880;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.ico-btn {
+    margin: 0 .5em;
+}
+
+@media print {
+    body {
+        transform: scaleY(0.5);
+        transform-origin: top left;
+
+        margin: 0;
+    }
+
+    button {
+        display: none;
+    }
+
+    /*.invoice {*/
+    /* Oculta el botón de impresión en la vista previa de impresión */
+    /*display: none;
+    /*}*/
+}
+
+.img-sv {
+    width: 200px;
+    height: 200px;
+    background-image: url(../../assets/fonts/logo.png);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+/* Estilos del formulario de cancelacion */
+.dialog-servicios {
+    padding: 0;
+    border: none;
+    background-color: #00000000;
+    overflow: none;
+
+}
+.section-dialog {
+    background-color: white;
+    padding: 0;
+    overflow: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.encabezado-servicios {
+    font-weight: 600;
+    color: white;
+    position: sticky;
+    top: 0;
+    /* La posición superior en la que el encabezado se fijará */
+    z-index: 1;
+    /* Asegura que esté por encima del contenido de la lista */
+    margin-top: -5rem;
+    padding: 1em 1em 1em 1em;
+    background-color: #85C1E9;
+    /* padding-bottom: .5em !important;*/
+    max-width: 100%;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: solid 2px #85C1E9;
+    border-bottom: none;
+}
+.encabezado-bt {
+    color: white;
+    font-size: 1.1em;
+    font-weight: 700;
+    background-color: #f8c471;
+    ;
+    border: solid 3px #85C1E9;
+    border-top: none;
+    padding: 5em 1.1em .1em 1.1em;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+
+}
+section.active {
+    height: 80vh;
+    width: 100%;
+    display: block;
+    opacity: 1;
+}
+.trans {
+    color: #00000000;
+    background-color: #00000000;
+}
+

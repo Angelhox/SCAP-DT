@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./principal.css" />
+    <link rel="stylesheet" href="../ui/style/planillas.css" />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/@fortawesome/fontawesome-free/css/solid.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/select2/dist/css/select2.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/select2/dist/css/select2.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+
+    <title>Planilla-w</title>
+  </head>
+  <body class="vh-100 overflow-hidden body">
+    <!-- Navbar -->
+
+    <header class="header">
+      <nav class="navbar navbar-expand-lg navbar-dark fixed-top header">
+        <div class="container-fluid">
+          <!-- Logo -->
+          <a class="navbar-brand fs-1" href="#">SCAP </a>
+
+          <!-- <img src="../assets/fonts/logo.png" alt="logo not-found">
+        <a class="navbar-brand fs-4" href="#">SCAP STDO </a> -->
+          <!-- Toggle button -->
+          <button
+            class="navbar-toggler shadow-none border-0"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasNavbar"
+            aria-controls="offcanvasNavbar"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <!-- SideBar -->
+          <div
+            class="sidebar offcanvas offcanvas-start"
+            tabindex="-1"
+            id="offcanvasNavbar"
+            aria-labelledby="offcanvasNavbarLabel"
+          >
+            <!-- Sidebar Header -->
+            <div class="offcanvas-header text-white border-bottom">
+              <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menú</h5>
+              <button
+                type="button"
+                class="btn-close btn-close-white shadow-none"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+              ></button>
+            </div>
+            <!-- Sidebar Body -->
+            <div class="offcanvas-body d-flex flex-column p-4 flex-lg-row">
+              <ul
+                class="navbar-nav justify-content-center fs-5 flex-grow-1 pe-3 align-items-center"
+              >
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    aria-current="page"
+                    onclick="abrirInicio()"
+                    >Inicio</a
+                  >
+                </li>
+
+                <li class="nav-item mx-2">
+                  <!--Registros Dropdown-->
+                  <div class="dropdown">
+                    <button
+                      class="nav-link btn btn-outline dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      Registros
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirSocios()"
+                          >Socios</a
+                        >
+                      </li>
+                      <li><hr class="dropdown-divider" /></li>
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirUsuarios()"
+                          >Usuarios</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="nav-item mx-2">
+                  <!-- Servicios Dropdown -->
+                  <div class="dropdown">
+                    <button
+                      class="nav-link btn btn-outline dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      Servicios
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirServicios()"
+                          >Servicios Fijos</a
+                        >
+                      </li>
+
+                      <li><hr class="dropdown-divider" /></li>
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirCuotas()"
+                          >Servicios Ocacionales</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirContratos()">Contratos</a>
+                </li>
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirPlanillas()">Planillas</a>
+                </li>
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirPagos()">Pagos</a>
+                </li>
+              </ul>
+              <!-- Login/Sign up -->
+              <div
+                class="d-flex justify-content-center align-items-center gap-3 flex-column flex-lg-row"
+              >
+                <button
+                  hidden
+                  onclick="mostrarLogin()"
+                  class="text-white px-3 py-1 rounded-1 btn bg-primary"
+                >
+                  Iniciar sesion
+                </button>
+                <button
+                  type="button"
+                  class="text-black px-3 py-1 rounded-1 btn bg-white"
+                  onclick="cerrarSesion()"
+                >
+                  Salir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <section class="active" id="seccion1">
+      <div class="row container-fluid" style="padding-top: 7em">
+        <div
+          class="col-xl-6 col-lg-12 col-md-12 col-sm-12"
+          style="height: 68vh; padding: 0 0 0 1em; margin-top: -6em"
+        >
+          <div class="row mt-3 mb-1 encabezado-servicios">
+            <div
+              class="col-12 mp-0 d-flex align-items-center justify-content-between"
+            >
+              <p class="fs-1 mp-0">
+                Planillas
+                <i class="fs-1 fa-solid fa-file-invoice mx-2 my-2"></i>
+              </p>
+              <button class="btn btn-outline-light" onclick="generarPlanilla()">
+                Actualizar
+                <i class="me-2 ms-1 fs-5 fa-solid fa-arrows-rotate"></i>
+              </button>
+            </div>
+            <div class="col-12">
+              <div class="row">
+                <div class="col-3">
+                  <label for="criterio">Buscar por...</label>
+                  <select
+                    id="criterio"
+                    class="form-select"
+                    aria-label="Default select example"
+                  >
+                    <option value="all" selected>Todas</option>
+                    <option value="cedulaPasaporte">Cédula del socio</option>
+                    <option value="nombre">Nombres/Apellidos</option>
+                    <option value="codigo">Código</option>
+                  </select>
+                </div>
+                <div class="col-5">
+                  <label class="trans">na</label>
+                  <div class="input-group">
+                    <input
+                      readonly
+                      type="text"
+                      class="form-control"
+                      placeholder="Buscar..."
+                      id="criterioContent"
+                    />
+                  </div>
+                </div>
+
+                <div class="col-4">
+                  <label for="cedula">Fecha de Emisión</label>
+                  <div class="col-row d-flex">
+                    <div class="col-6 text-center mp-0">
+                      <select
+                        id="anioBusqueda"
+                        class="form-select"
+                        aria-label="Default select example"
+                        style="
+                          border-top-right-radius: 0;
+                          border-bottom-right-radius: 0;
+                        "
+                      >
+                        <option value="all">Todos los años</option>
+                      </select>
+                    </div>
+                    <div class="col-6 text-center mp-0">
+                      <select
+                        style="
+                          border-top-left-radius: 0;
+                          border-bottom-left-radius: 0;
+                        "
+                        id="mesBusqueda"
+                        class="form-select"
+                      >
+                        <option value="all" selected>Todos los meses</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-3">
+                  <label for="estado">Estado</label>
+                  <select
+                    id="estado"
+                    class="form-select"
+                    aria-label="Default select example"
+                  >
+                    <option value="Por cobrar" selected>Sin cancelar</option>
+                    <option value="Cancelado">Cancelado</option>
+                    <option value="all">Todos</option>
+                  </select>
+                </div>
+                <div class="col-3">
+                  <label for="criterio">Tipo</label>
+                  <select
+                    id="tipo"
+                    class="form-select"
+                    aria-label="Default select example"
+                  >
+                    <option value="Por cobrar" selected>Planilla</option>
+                    <option value="Cancelado" disabled>Comprobante</option>
+                  </select>
+                </div>
+                <div class="col-4"></div>
+                <div class="col-2">
+                  <label class="text-white" for="criterio"></label>
+                  <button
+                    id="btnBuscar"
+                    type="button"
+                    class="btn-buscar"
+                    style="width: 100%"
+                  >
+                    <i class="fa fa-search mx-1"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="row justify-content-between align-items-center container-servicios-list mp-0"
+            id="planillas"
+            style="
+              overflow-y: auto;
+              overflow-x: hidden;
+              height: 61vh;
+              max-height: 61vh;
+              padding: 0 1.5em 0 0.1em;
+            "
+          >
+            <div class="col-6 mx-1 card mb-3 border-primary card-planilla">
+              <div
+                class="card-header row d-flex"
+                style="background-color: #85c1e9"
+              >
+                <div class="d-flex col-6 titulo-detalles header-planilla">
+                  <p>Contrato:</p>
+                  CN203
+                </div>
+                <div
+                  class="d-flex col-6 titulo-detalles header-planilla positive justify-content-end"
+                >
+                  <p>Cancelado:</p>
+                  Si
+                </div>
+              </div>
+              <div class="card-body cuerpo">
+                <div class="card-title d-flex titulo-socio">
+                  <h5>Socio:</h5>
+                  <p>Juan Jose Lopez</p>
+                </div>
+                <div class="d-flex">
+                  <p>Fecha emisión:</p>
+                  06-09-2023
+                </div>
+                <div class="row">
+                  <p class="text-center titulo-servicios-positive">
+                    Agua Potable
+                  </p>
+                  <div class="col-4 d-flex titulo-detalles">
+                    <p>Consumo:</p>
+                    23m
+                  </div>
+                  <div class="col-4 d-flex titulo-detalles">
+                    <p>Tarifa:</p>
+                    0.35
+                  </div>
+                  <div class="col-4 d-flex titulo-detalles">
+                    <p>Valor:</p>
+                    $8.50
+                  </div>
+                </div>
+
+                <p class="text-center titulo-servicios-positive">Servicios</p>
+                <div class="lista-servicios">
+                  <ul class="list-group list-group-flush">
+                    <li class="titulo-detalles d-flex detalles">
+                      <p>Alcantarillado:</p>
+                      2.00
+                    </li>
+                    <li class="titulo-detalles d-flex detalles">
+                      <p>Recoleccion de desechos:</p>
+                      1.50
+                    </li>
+                    <li class="titulo-detalles d-flex detalles">
+                      <p>Riego Agrícola:</p>
+                      1.25
+                    </li>
+                    <li class="titulo-detalles d-flex detalles">
+                      <p>Bomberos:</p>
+                      0.75
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="card-footer row d-flex">
+                <div class="col-6 titulo-detalles d-flex">
+                  <p>Total:</p>
+                  18.50
+                </div>
+
+                <button class="btn-planilla-positive col-6">
+                  <i class="fa-solid fa-file-pen"></i>
+                </button>
+                <!-- <button>Editar</button> -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="col-xl-6 col-lg-12 col-md-12 col-sm-12"
+          style="height: 68vh; padding: 0 0 0 1.5em; margin-top: -5em"
+        >
+          <div class="col-12 d-flex justify-content-center">
+            <div class="row encabezado-planillas">
+              <div class="col-12 d-flex mb-1">
+                <div class="col-4 d-flex mp-0">
+                  <label for="cedula" class="fs-6 mp-0">Contrato:</label>
+                  <p class="trans mp-0">-</p>
+                  <p class="mp-0" id="contratoCodigo">
+                    <small class="px-1">waiting...</small>
+                  </p>
+                </div>
+                <div class="col-4 d-flex mp-0">
+                  <label for="cedula" class="fs-6 mp-0">Emisión:</label>
+                  <p class="trans mp-0">-</p>
+                  <p class="mp-0" id="planillaEmision">
+                    <small class="px-1">waiting...</small>
+                  </p>
+                </div>
+                <div class="col-4 d-flex mp-0">
+                  <label for="cedula" class="fs-6 mp-0">Código:</label>
+                  <p class="trans mp-0">-</p>
+                  <p class="mp-0" id="planillaCodigo">
+                    <small class="px-1">waiting...</small>
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-12 d-flex mb-1">
+                <div class="col-8 d-flex mp-0">
+                  <label for="cedula" class="fs-6 mp-0">Socio:</label>
+                  <p class="trans mp-0">-</p>
+                  <p class="mp-0" id="socioNombres"></p>
+                </div>
+                <div class="col-8 d-flex mp-0">
+                  <label for="cedula" class="fs-6 mp-0">CI:</label>
+                  <p class="trans mp-0">-</p>
+                  <p class="mp-0" id="socioCedula"></p>
+                </div>
+              </div>
+              <div class="col-12 d-flex mb-1">
+                <label for="cedula" class="fs-6 mp-0">Ubicación:</label>
+                <p class="trans mp-0">-</p>
+                <p class="mp-0" id="socioUbicacion"></p>
+              </div>
+              <div class="col-12 d-flex mb-1">
+                <div class="col-3 d-flex mp-0">
+                  <label for="cedula" class="fs-6 mp-0">Estado:</label>
+                  <p class="trans mp-0">-</p>
+                  <p class="mp-0" id="planillaEstado"></p>
+                </div>
+                <div class="col-3 d-flex mp-0">
+                  <label for="cedula" class="fs-6 mp-0">Recargo:</label>
+                  <p class="trans mp-0">-</p>
+                  <p class="text-white mp-0" id="planillaRecargo"></p>
+                </div>
+                <div class="col-6 d-flex mp-0">
+                  <label for="cedula" class="fs-6 mp-0">Comprobante:</label>
+                  <p class="trans mp-0">-</p>
+                  <p class="text-white mp-0" id="codigoComprobante"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <form id="planillaForm">
+              <div class="col-12 d-flex">
+                <!-- <p class="text-center">Servicio de agua potable</p> -->
+
+                <button
+                  id="mostrar-lecturas"
+                  type="button"
+                  class="lecturas-title px-1 d-flex justify-content-between align-items-center"
+                  style="
+                    width: 100%;
+                    padding: 0 0 0 0;
+                    border: none;
+                    background-color: #f8c471;
+                  "
+                >
+                  No aplica servicio de agua potable<i
+                    id="collapse"
+                    class="fs-3 fa-solid fa-caret-down"
+                  ></i>
+                </button>
+              </div>
+              <div
+                class="row px-1 mt-2"
+                id="contenedor-lecturas"
+                style="display: none"
+              >
+                <div class="col-3">
+                  <label for="cedula">Lectura Anterior</label>
+                  <input
+                    readonly
+                    type="text"
+                    class="form-control"
+                    placeholder="Lectura Anterior"
+                    id="lecturaAnterior"
+                  />
+                </div>
+                <div class="col-3">
+                  <label for="lecturaActual">Lectura Actual</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Lectura Actual"
+                    id="lecturaActual"
+                  />
+                </div>
+                <div class="col-3">
+                  <label for="lecturaActual">Tarifa de consumo</label>
+                  <input
+                    readonly
+                    type="text"
+                    class="form-control"
+                    placeholder="Tarifa de consumo"
+                    id="tarifaConsumo"
+                  />
+                </div>
+                <div class="col-3">
+                  <label for="lecturaActual">Valor consumo</label>
+                  <input
+                    readonly
+                    type="text"
+                    class="form-control"
+                    placeholder="$0.0"
+                    id="valorConsumo"
+                  />
+                </div>
+                <div class="col-12 d-flex justify-content-center mt-2">
+                  <button
+                    type="button"
+                    class="btn-cancelar"
+                    id="calcular-consumo"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+              <div class="rows col-12" style="margin-top: 0.5em">
+                <div class="col-12">
+                  <div style="height: 15vh; max-height: 15vh; overflow-y: auto">
+                    <table class="table table-hover">
+                      <thead class="table-dark">
+                        <tr>
+                          <th>Servicios Fijos</th>
+                          <th>Subtotal</th>
+                          <th>Descuento</th>
+                          <th>Total</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody id="serviciosFijos">
+                        <!-- <tr>
+                          <td>Agua potable</td>
+                          <td>$10.25</td>
+                          <td>$5.12</td>
+                          <td>$5.12</td>
+                          <td>
+                            <button
+                              type="button"
+                              onclick="mostrarFormServicios()"
+                              class="btn"
+                            >
+                              <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                          </td>
+                        </tr> -->
+                        <tr>
+                          <td class="text-center" colspan="5">
+                            Sin servicios fijos para mostrar
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="height: 15vh; max-height: 15vh; overflow-y: auto">
+                    <table class="table table-hover">
+                      <thead class="table-dark">
+                        <tr>
+                          <th class="mp-0">Servicios Ocacionales</th>
+
+                          <th>Subtotal</th>
+                          <th>Descuento</th>
+                          <th>Total</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody id="otrosServicios">
+                        <tr>
+                          <td class="text-center" colspan="4">
+                            Sin servicios ocacionales para mostrar
+                          </td>
+                          <!-- <td class="mp-0">Agua potable</td>
+
+                          <td>$132.75</td>
+                          <td>$13.27</td>
+                          <td>119.48</td>
+                          <td>
+                            <button
+                              type="button"
+                              onclick="mostrarFormServicios()"
+                              class="btn"
+                            >
+                              <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                          </td> -->
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="height: 15vh; max-height: 15vh; overflow-y: auto">
+                    <table class="table table-hover">
+                      <thead class="table-dark">
+                        <tr>
+                          <th>
+                            Servicios Ocacionales
+                            <small>(Aplazables)</small>
+                          </th>
+                          <th>Saldo <small>(Con descuento)</small></th>
+                      
+                          <th>Subtotal</th>
+                          <th>Descuento</th>
+                          <th>Total</th>
+                          <th>Abono</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody id="otrosAplazables">
+                        <tr>
+                          <td class="text-center" colspan="7">
+                            Sin servicios aplazables para mostrar
+                          </td>
+
+                          <!-- <td>Agua potable</td>
+
+                          <td>$132.75</td>
+                          <td>$13.27</td>
+                          <td>119.48</td>
+                          <td>119.48</td>
+                          <td>46.25</td>
+                          <td>
+                            <button
+                              type="button"
+                              onclick="mostrarFormServicios()"
+                              class="btn"
+                            >
+                              <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                          </td> -->
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="row d-flex justify-content-end">
+                  <div class="col-3">
+                    <label for="lecturaActual">Subtotal</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="$0.0"
+                      id="valorSubtotal"
+                    />
+                  </div>
+                  <div class="col-3">
+                    <label for="lecturaActual">Total descuento</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="$0.0"
+                      id="valorTotalDescuento"
+                    />
+                  </div>
+                  <div class="col-3">
+                    <label for="lecturaActual">Total a pagar</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="$0.0"
+                      id="valorTotalPagar"
+                    />
+                  </div>
+                  <div class="col-12 d-flex justify-content-end mt-2">
+                    <button
+                      class="btn btn-danger"
+                      type="button"
+                      id="cancelarForm"
+                    >
+                      Cancelar
+                    </button>
+                    <button class="btn bg-secondary" type="submit">
+                      Guardar
+                    </button>
+                    <button class="btn bg-secondary" type="button" id="btnGenerar">
+                      Generar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="container-fluid" id="seccion2">
+      <div class="col-12 d-flex justify-content-end">
+        <button class="btn btn-success" id="btnSeccion2">
+          Lista de Planillas
+        </button>
+      </div>
+    </section>
+    <dialog id="formServicios" class="dialog-servicios">
+      <section
+        style="width: 90vh; height: fit-content"
+        class="active section-dialog"
+      >
+        <div class="row container-fluid" style="margin: 0; padding: 0">
+          <div class="col-12 encabezado-servicios">
+            <div
+              class="col-12 mp-0 d-flex flex-column align-items-center justify-content-end"
+            >
+              <p class="fs-1 mp-0" id="title-dg">
+                Fiestas de San Pedro
+                <i class="fs-1 fa-solid fa-gears mx-2 my-2"></i>
+              </p>
+            </div>
+          </div>
+          <div
+            class="col-12 d-flex justify-content-between align-items-center encabezado-bt"
+          >
+            <div class="d-flex align-items-baseline mp-0">
+              <!-- <p class="servicio-title mp-0" id="servicio-tit">Agua Potable</p>
+            <p class="trans">-</p> -->
+
+              <p class="mp-0" id="descripcion-dg">
+                Servicio de agua potable para la comuniad
+              </p>
+            </div>
+
+            <p class="" id="detalles-dg">Servicio fijo | No aplazable</p>
+            <!-- <p id="servicio-val">Valor: $2.50</p> -->
+          </div>
+          <div class="col-12" style="overflow: none">
+            <div class="row justify-content-between text-center">
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Subtotal:</label>
+                <p id="subtotal-dg">10.25</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Descuento:</label>
+                <p id="descuento-dg">1.50</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Total:</label>
+                <p id="total-dg">8.75</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Numero de Pagos:</label>
+                <p id="numPagos-dg">3</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Cancelados:</label>
+                <p id="cancelados-dg">1</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Pendientes:</label>
+                <p id="pendientes-dg">2</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Saldo:</label>
+                <p id="saldo-dg">2.75</p>
+              </div>
+
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Abonado:</label>
+                <p id="abonado-dg">6.00</p>
+              </div>
+              <div class="col-4 my-1 item-custom">
+                <label for="subtotal" class="fs-5">Abonar:</label>
+                <input
+                  id="abonar-dg"
+                  readonly
+                  type="number"
+                  step="any"
+                  class="form-control text-center"
+                  placeholder="$0.0"
+                />
+              </div>
+              <div class="col-12 err-container" id="err-container">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p id="errorTextAbono">Error</p>
+              </div>
+              <div
+                class="col-12 d-flex align-items-center justify-content-center my-4"
+              >
+                <button class="btn btn-success mx-1" id="btnGuardar-dg">
+                  Guardar
+                </button>
+                <button class="btn btn-success mx-1" id="btnAdministrar-dg">
+                  Administrar
+                </button>
+                <button
+                  class="btn btn-danger mx-1"
+                  onclick="CerrarFormServicios()"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </dialog>
+  </body>
+  <script src="../../node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="../../node_modules/select2/dist/js/select2.min.js"></script>
+  <script src="../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="../../node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
+  <script src="./bootstrap/js/bootstrap.min.js"></script>
+
+  <script src="./planillas.js" defer></script>
+</html>

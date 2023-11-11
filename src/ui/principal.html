@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./principal.css" />
+    <title>Bienvenido</title>
+  </head>
+  <body class="vh-100 overflow-hidden body">
+    <!-- Navbar -->
+    <header class="header">
+      <nav class="navbar navbar-expand-lg navbar-dark fixed-top header">
+        <div class="container-fluid">
+          <!-- Logo -->
+          <a class="navbar-brand fs-1" href="#">SCAP </a>
+
+          <!-- <img src="../assets/fonts/logo.png" alt="logo not-found">
+        <a class="navbar-brand fs-4" href="#">SCAP STDO </a> -->
+          <!-- Toggle button -->
+          <button
+            class="navbar-toggler shadow-none border-0"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasNavbar"
+            aria-controls="offcanvasNavbar"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <!-- SideBar -->
+          <div
+            class="sidebar offcanvas offcanvas-start"
+            tabindex="-1"
+            id="offcanvasNavbar"
+            aria-labelledby="offcanvasNavbarLabel"
+          >
+            <!-- Sidebar Header -->
+            <div class="offcanvas-header text-white border-bottom">
+              <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menú</h5>
+              <button
+                type="button"
+                class="btn-close btn-close-white shadow-none"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+              ></button>
+            </div>
+            <!-- Sidebar Body -->
+            <div class="offcanvas-body d-flex flex-column p-4 flex-lg-row">
+              <ul
+                class="navbar-nav justify-content-center fs-5 flex-grow-1 pe-3 align-items-center"
+              >
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    aria-current="page"
+                    onclick="abrirInicio()"
+                    >Inicio</a
+                  >
+                </li>
+
+                <li class="nav-item mx-2">
+                  <!--Registros Dropdown-->
+                  <div class="dropdown">
+                    <button
+                      class="nav-link btn btn-outline dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      Registros
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirSocios()"
+                          >Socios</a
+                        >
+                      </li>
+                      <li><hr class="dropdown-divider" /></li>
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirUsuarios()"
+                          >Usuarios</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="nav-item mx-2">
+                  <!-- Servicios Dropdown -->
+                  <div class="dropdown">
+                    <button
+                      class="nav-link btn btn-outline dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      Servicios
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirServicios()"
+                          >Servicios Fijos</a
+                        >
+                      </li>
+
+                      <li><hr class="dropdown-divider" /></li>
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirCuotas()"
+                          >Servicios Ocacionales</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirContratos()">Contratos</a>
+                </li>
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirPlanillas()">Planillas</a>
+                </li>
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirPagos()">Pagos</a>
+                </li>
+              </ul>
+              <!-- Login/Sign up -->
+              <div
+                class="d-flex justify-content-center align-items-center gap-3 flex-column flex-lg-row"
+              >
+                <button
+                  hidden
+                  onclick="mostrarLogin()"
+                  class="text-white px-3 py-1 rounded-1 btn bg-primary"
+                >
+                  Iniciar sesion
+                </button>
+                <button
+                  type="button"
+                  class="text-black px-3 py-1 rounded-1 btn bg-white"
+                  onclick="cerrarSesion()"
+                >
+                  Salir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <section
+        class="w-100 vh-100 d-flex flex-column justify-content-center align-items-center text-white fs-1"
+      >
+        <img
+          src="../assets/fonts/logo.png"
+          alt="logo not-found"
+          width="200px"
+          height="200px"
+          style="width: 100%; height: 50%"
+        />
+
+        <h1 style="font-size: 1em">Comuna Santo Domingo I</h1>
+      </section>
+    </main>
+    <dialog
+      id="loginDialog"
+      style="background-color: #00000000; border: #00000000"
+      class="w-100 vh-100"
+    >
+      <section
+        style="width: 100%; height: 100%"
+        class="d-flex flex-column justify-content-evenly align-items-center text-white container"
+      >
+        <div class="col-xl-6 col-lg-8 col-md-10 col-sm-12">
+          <form
+            id="loginForm"
+            class="rounded-4"
+            style="
+              background-color: rgba(255, 255, 255, 0.15);
+              backdrop-filter: blur(10px);
+            "
+          >
+            <div style="padding: 100px 15px">
+              <div class="row mb-3">
+                <label for="inputEmail3" class="col-sm-2 col-form-label"
+                  >Usuario</label
+                >
+                <div class="col-sm-10">
+                  <input type=text" class="form-control" id="usuario" />
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="inputPassword3" class="col-sm-2 col-form-label"
+                  >Contraseña</label
+                >
+                <div class="col-sm-10">
+                  <input type="password" class="form-control" id="clave" />
+                </div>
+              </div>
+
+              <button class="btn btn-primary align-self-end">Ingresar</button>
+              <button class="btn btn-primary align-self-end">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </dialog>
+  </body>
+  <script src="./inicio.js" defer></script>
+  <script src="../../node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
+  <script src="./bootstrap/js/bootstrap.min.js"></script>
+</html>

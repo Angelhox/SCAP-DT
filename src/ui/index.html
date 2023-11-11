@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electron & Mysql</title>
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./app.css"/>
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+  />
+    <script defer
+  src="./app.js"></script>
+  </head>
+  <body>
+    <main class="container-fluid">
+      <div class="row">
+        <div class="col-md-6 p-4 my-auto">
+          <form class="card card-body" id="productForm">
+            <div class="form-group p-1">
+              <input
+                type="text"
+                id="name"
+                placeholder="Product's Name"
+                class="form-control"
+                autofocus
+              />
+            </div>
+            <div class="form-group p-1">
+              <input
+                type="number"
+                step="any"
+                id="price"
+                placeholder="Product's Price"
+                class="form-control"       
+              />
+            </div>
+            <div class="form-group">
+                <textarea
+                id="description"
+                rows="3"
+                placeholder="Product's Description"
+                class="form-control">
+                </textarea>
+            </div>
+            <button class="btn btn-primary">Save</button>
+          </form>
+        </div>
+        <div class="col-6">
+          <div id="products">
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+<script src="./bootstrap/js/bootstrap.min.js"></script>
+</html>

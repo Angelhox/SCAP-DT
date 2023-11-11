@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      .invoice {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+      }
+
+      .invoice-header {
+        display: flex;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .invoice-header h1 {
+        align-self: center;
+        margin: 0 auto;
+        color: #333;
+        font-size: 24px;
+      }
+
+      .invoice-header h4 {
+        align-self: center;
+        margin: 0 auto;
+        color: #333;
+        font-size: 24px;
+      }
+
+      .invoice-items-header {
+        align-self: center;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-evenly;
+      }
+
+      .invoice-details {
+        display: flex;
+        margin-top: 0;
+        padding: 0;
+        justify-content: space-evenly;
+      }
+
+      .invoice-details p {
+        display: flex;
+        margin-top: 0;
+        padding: 0;
+        justify-content: space-evenly;
+      }
+
+      .invoice-details .label {
+        font-weight: bold;
+        font-size: 20rem;
+      }
+
+      .invoice-items {
+        width: 100%;
+      }
+
+      .invoice-items th,
+      .invoice-items td {
+        text-align: center;
+        padding: 5px;
+        border-bottom: 1px solid #ccc;
+        font-size: 15px;
+      }
+
+      .invoice-items .titles {
+        text-align: left;
+      }
+
+      .logo {
+        align-self: start;
+        width: 15%;
+        filter: grayscale(100%);
+      }
+
+      table {
+        margin-bottom: 10px;
+      }
+
+      .signatures {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+      }
+
+      .signature {
+        border-top: 1px dotted #000;
+        width: 250px;
+        text-align: center;
+      }
+
+      @media print {
+        body {
+          transform: scaleY(0.5);
+          transform-origin: top left;
+
+          margin: 0;
+        }
+
+        /*.invoice {*/
+        /* Oculta el botón de impresión en la vista previa de impresión */
+        /*display: none;
+      /*}*/
+      }
+    </style>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../ui/style/factura.css" />
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script> -->
+    <script src="../../node_modules/html2pdf.js/dist/html2pdf.bundle.min.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="invoice">
+      <div class="invoice-header">
+        <img class="logo" src="./../assets/fonts/logo.png" alt="Not found" />
+
+        <div style="align-self: center; margin: 0 auto">
+          <h1 style="background-color: red">
+            RECAUDACION DE CONSUMO DE AGUA POTABLE Y SERVICIOS
+          </h1>
+          <p>Santo domingo N°1</p>
+          <div class="invoice-items-header">
+            <p><strong>N° Comprobante:</strong>100200300</p>
+            <p id="fechaEmision"><strong>Fecha:</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="invoice-details">
+        <p id="socioNombres"><strong>Socio:</strong></p>
+        <p id="socioCedula"><strong>CI:</strong></p>
+        <p id="socioTelefono"><strong>Telf:</strong>0984760554</p>
+        <p id="socioDireccion"><strong>Dir</strong>Cayambe</p>
+      </div>
+      <hr class="separator" />
+      <div class="invoice-details">
+        <p id="planilla"><strong>Planilla:</strong></p>
+        <p id="contrato"><strong>Contrato:</strong></p>
+        <p id="ubicacion">
+          <strong>Ubicacion:</strong>Barrio Central, Floresta y Buenavista
+        </p>
+      </div>
+      <hr class="separator" />
+      <table id="data-agua" class="invoice-items">
+        <thead>
+          <tr>
+            <th colspan="5" class="titles">Agua potable</th>
+          </tr>
+          <tr>
+            <th>Anterior</th>
+            <th>Actual</th>
+            <th>Consumo</th>
+            <th>Tarifa</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="lecturaAnterior">000000075</td>
+            <td id="lecturaActual">000000175</td>
+            <td id="consumo">100</td>
+            <td id="tarifa">Industrial</td>
+            <td id="total">$20</td>
+          </tr>
+        </tbody>
+      </table>
+      <table id="data-servicios" class="invoice-items">
+        <thead>
+          <tr>
+            <th colspan="3" class="titles">Servicios</th>
+          </tr>
+          <tr>
+            <th>Servicios</th>
+            <th>Descripcion</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="servicios-details">
+          <!-- <tr>
+            <td>Desechos</td>
+            <td>Recoleccion semanal de desechos</td>
+            <td>$1.00</td>
+          </tr>
+          <tr>
+            <td>Fiestas</td>
+            <td>Fiesta de San Pedro</td>
+            <td>$10</td>
+          </tr> -->
+        </tbody>
+      </table>
+      <table class="invoice-items">
+        <thead>
+          <tr>
+            <th colspan="5" class="titles">Total</th>
+          </tr>
+          <tr>
+            <th></th>
+            <th></th>
+            <th>Subtotal</th>
+            <th>Descuento</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="data-totales">
+          <tr>
+            <td></td>
+            <td></td>
+            <td id="subtotal">$0.0</td>
+            <td id="descuento">$0.0</td>
+            <td id="total-pagar">$0.0</td>
+          </tr>
+          <!-- <tr>
+            <td>Multa</td>
+            <td>Multa por falta a mingas</td>
+            <td>$20</td>
+            <td>$10</td>
+            <td>$10</td>
+          </tr>
+          <tr>
+            <td>Fiestas</td>
+            <td>Fiesta de San Pedro</td>
+            <td>$10</td>
+            <td>$10</td>
+            <td>$0</td>
+          </tr> -->
+        </tbody>
+      </table>
+    </div>
+    <div class="signatures">
+      <div class="signature">Entregado</div>
+      <div>
+        <button type="button" onclick="imprimirYGuardarPDFfinal()">
+          Imprimirs
+        </button>
+        <button id="boton" type="button" onclick="imprimirYGuardarPDF()">
+          Imprimir
+        </button>
+        <button type=" button" onclick="abrirPagos()">Cancelar</button>
+        <!-- <p>Here:</p>
+        <p id="mensaje"></p> -->
+      </div>
+      <div class="signature">Recibido</div>
+    </div>
+    <script src="./factura.js" defer></script>
+    <script>
+      const canvas = document.getElementById("myCanvas");
+      const context = canvas.getContext("2d");
+
+      // Dibuja un píxel rojo en las coordenadas (50, 50)
+      context.fillStyle = "red";
+      context.fillRect(500, 500, 5, 1);
+    </script>
+  </body>
+</html>

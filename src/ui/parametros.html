@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./principal.css" />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/@fortawesome/fontawesome-free/css/solid.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <title>Socios</title>
+  </head>
+  <body class="vh-100 overflow-hidden body">
+    <!-- Navbar -->
+    <header class="header">
+      <nav class="navbar navbar-expand-lg navbar-dark fixed-top header">
+        <div class="container-fluid">
+          <!-- Logo -->
+          <a class="navbar-brand fs-1" href="#">SCAP </a>
+
+          <!-- <img src="../assets/fonts/logo.png" alt="logo not-found">
+        <a class="navbar-brand fs-4" href="#">SCAP STDO </a> -->
+          <!-- Toggle button -->
+          <button
+            class="navbar-toggler shadow-none border-0"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasNavbar"
+            aria-controls="offcanvasNavbar"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <!-- SideBar -->
+          <div
+            class="sidebar offcanvas offcanvas-start"
+            tabindex="-1"
+            id="offcanvasNavbar"
+            aria-labelledby="offcanvasNavbarLabel"
+          >
+            <!-- Sidebar Header -->
+            <div class="offcanvas-header text-white border-bottom">
+              <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Menú</h5>
+              <button
+                type="button"
+                class="btn-close btn-close-white shadow-none"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+              ></button>
+            </div>
+            <!-- Sidebar Body -->
+            <div class="offcanvas-body d-flex flex-column p-4 flex-lg-row">
+              <ul
+                class="navbar-nav justify-content-center fs-5 flex-grow-1 pe-3 align-items-center"
+              >
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    aria-current="page"
+                    onclick="abrirInicio()"
+                    >Inicio</a
+                  >
+                </li>
+
+                <li class="nav-item mx-2">
+                  <div class="dropdown">
+                    <button
+                      class="nav-link btn btn-outline dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      Registros
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirSocios()"
+                          >Socios</a
+                        >
+                      </li>
+                      <li><hr class="dropdown-divider" /></li>
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirUsuarios()"
+                          >Usuarios</a
+                        >
+                      </li>
+                      <li><hr class="dropdown-divider" /></li>
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirImplementos()"
+                          >Inventario</a
+                        >
+                      </li>
+                      <li><hr class="dropdown-divider" /></li>
+                      <li class="nav-item mx-2">
+                        <a class="dropdown-item" onclick="abrirParametros()"
+                          >Configuraciones</a
+                        >
+                      </li>
+                      <!-- <li>
+                        <a class="dropdown-item" href="#"
+                          >Something else here</a
+                        >
+                      </li> -->
+                    </ul>
+                  </div>
+                </li>
+
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirPagos()">Pagos</a>
+                </li>
+
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirPlanillas()">Planillas</a>
+                </li>
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirContratos()">Contratos</a>
+                </li>
+              </ul>
+              <!-- Login/Sign up -->
+              <div
+                class="d-flex justify-content-center align-items-center gap-3 flex-column flex-lg-row"
+              >
+                <button
+                  onclick="mostrarLogin()"
+                  class="text-white px-3 py-1 rounded-1 btn bg-primary"
+                >
+                  Iniciar sesion
+                </button>
+                <button class="text-black px-3 py-1 rounded-1 btn bg-white">
+                  Salir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div class="row container-fluid" style="padding-top: 150px">
+      <div class="col-12">
+        <p class="text-white fs-5">Inicio/Registros/Parametros</p>
+      </div>
+      <div
+        class="col-lg-8 col-md-8 col-sm-12"
+        style="height: 60vh; overflow-y: auto; overflow-x: auto; padding: 10px"
+      >
+        <!-- Tabla de listado de usuarios -->
+        <div style="width: 100%; height: 100%">
+          <table class="table">
+            <thead class="table-dark">
+              <tr>
+                <th colspan="9" class="text-center fs-4">
+                  Parametros para el cobro de servicios
+                  <i class="fa-solid fa-user-tie"></i>
+                </th>
+              </tr>
+              <tr>
+                <th>Parametro</th>
+                <th>Descripcion</th>
+                <th>Estado</th>
+                <th>Valor</th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="parametros">
+              <tr>
+                <td>Base consumo familiar</td>
+                <td>Consideramos consumo familiar -2m</td>
+                <td>Activo</td>
+                <td>2.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-4 col-sm-12" style="padding-top: 10px">
+        <form class="form-horizontal" id="parametroForm">
+          <div class="col-12 text-white text-center fs-4">
+            Datos del Parámetro
+          </div>
+          <input type="text" class="form-control my-2" placeholder="Id" />
+          <input
+            type="text"
+            class="form-control my-2"
+            placeholder="Nombre del parámetro"
+            id="parametro"
+          />
+          <input
+            type="text"
+            class="form-control my-2"
+            placeholder="Descripcion del parametro"
+            id="descripcion"
+          />
+          <div class="col-3">
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="estado"
+              />
+              <label class="form-check-label" for="flexSwitchCheckDefault"
+                >Activo</label
+              >
+            </div>
+          </div>
+
+          <input
+            type="number"
+            step="any"
+            class="form-control my-2"
+            placeholder="Valor"
+            id="valor"
+          />
+
+          <div class="col-12 d-flex justify-content-end">
+            <button class="btn btn-primary mx-2 rounded-2">Guardar</button>
+            <button class="btn btn-danger rounded-2">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <dialog
+      id="loginDialog"
+      style="background-color: #00000000; border: #00000000"
+      class="w-100 vh-100"
+    >
+      <section
+        style="width: 100%; height: 100%"
+        class="d-flex flex-column justify-content-evenly align-items-center text-white container"
+      >
+        <div class="col-xl-6 col-lg-8 col-md-10 col-sm-12">
+          <form
+            id="loginForm"
+            class="rounded-4"
+            style="
+              background-color: rgba(255, 255, 255, 0.15);
+              backdrop-filter: blur(10px);
+            "
+          >
+            <div style="padding: 100px 15px">
+              <div class="row mb-3">
+                <label for="inputEmail3" class="col-sm-2 col-form-label"
+                  >Email</label
+                >
+                <div class="col-sm-10">
+                  <input type="email" class="form-control" id="inputEmail3" />
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="inputPassword3" class="col-sm-2 col-form-label"
+                  >Password</label
+                >
+                <div class="col-sm-10">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="inputPassword3"
+                  />
+                </div>
+              </div>
+
+              <button
+                class="btn btn-primary align-self-end"
+                onclick="abrirInterface()"
+              >
+                Ingresar
+              </button>
+              <button class="btn btn-primary align-self-end">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </dialog>
+  </body>
+  <script src="../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="../../node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
+  <script src="./bootstrap/js/bootstrap.min.js"></script>
+  <script src="./parametros.js" defer></script>
+  <script>
+    function mostrarLogin() {
+      const dialog = document.getElementById("loginDialog");
+      dialog.showModal();
+    }
+  </script>
+</html>
