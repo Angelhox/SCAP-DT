@@ -1871,32 +1871,61 @@ ipcMain.handle(
     }
   }
 );
-ipcMain.handle("getContratosConMedidor", async () => {
-  var contratosConMedidor;
-  try {
-    const conn = await getConnection();
-    contratosConMedidor = conn.query(
-      "SELECT * from viewContratos where medidorSn='Si' order by contratosId desc;"
-    );
-  } catch (e) {
-    Console.log(e);
+ipcMain.handle(
+  "getContratosConMedidor",
+  async (event, criterio, criterioContent) => {
+    var contratosConMedidor;
+
+    try {
+      const conn = await getConnection();
+      if (criterio == "all" || criterio == undefined) {
+        contratosConMedidor = await conn.query(
+          "SELECT * from viewContratos where medidorSn='Si' order by contratosId desc;"
+        );
+      } else {
+        contratosConMedidor = await conn.query(
+          "SELECT * from viewContratos where medidorSn='Si' AND " +
+            criterio +
+            " like '%" +
+            criterioContent +
+            "%'" +
+            " order by contratosId desc;"
+        );
+      }
+      console.log(contratosConMedidor);
+      return contratosConMedidor;
+    } catch (e) {
+      Console.log(e);
+    }
   }
-  console.log(contratosConMedidor);
-  return contratosConMedidor;
-});
-ipcMain.handle("getContratosSinMedidor", async () => {
-  var contratosSinMedidor;
-  try {
-    const conn = await getConnection();
-    contratosSinMedidor = conn.query(
-      "SELECT * from viewContratos where medidorSn='No' order by contratosId desc;"
-    );
-  } catch (e) {
-    console.log(e);
+);
+ipcMain.handle(
+  "getContratosSinMedidor",
+  async (event, criterio, criterioContent) => {
+    var contratosSinMedidor;
+    try {
+      const conn = await getConnection();
+      if (criterio == "all" || criterio == undefined) {
+        contratosSinMedidor = await conn.query(
+          "SELECT * from viewContratos where medidorSn='No' order by contratosId desc;"
+        );
+      } else {
+        contratosSinMedidor = await conn.query(
+          "SELECT * from viewContratos where medidorSn='No' AND " +
+            criterio +
+            " like '%" +
+            criterioContent +
+            "%'" +
+            " order by contratosId desc;"
+        );
+      }
+      console.log(contratosSinMedidor);
+      return contratosSinMedidor;
+    } catch (e) {
+      console.log(e);
+    }
   }
-  console.log(contratosSinMedidor);
-  return contratosSinMedidor;
-});
+);
 ipcMain.handle("createContrato", async (event, contrato, numero, sectorId) => {
   try {
     console.log("Recibido:", event, contrato, numero, sectorId);

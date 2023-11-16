@@ -5,8 +5,8 @@ const connection = mysql.createConnection({
   password: "",
   database: "bdscap_sd_v3",
   // database: "bdscaprevis",
-  // port: 3308,
-  port: 3306,
+  port: 3308,
+  // port: 3306,
 });
 function getConnection() {
   return connection;

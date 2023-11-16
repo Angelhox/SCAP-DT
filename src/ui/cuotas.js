@@ -93,7 +93,7 @@ let editingStatus = false;
 let editServicioId = "";
 let creacionEdit="";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2023-11-01 00:00:00";
+let fechaCreacion = "2023-10-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {

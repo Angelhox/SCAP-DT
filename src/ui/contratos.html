@@ -593,7 +593,7 @@
                 <div class="col-3">
                   <div class="input-group">
                     <input
-                      readonly
+                      
                       type="text"
                       class="form-control btn-rd"
                       placeholder="Buscar..."
@@ -617,7 +617,7 @@
                     type="button"
                     class="btn-buscar"
                     style="width: 100%"
-                    id="buscarSocios"
+                    id="buscarContratos"
                   >
                     Buscar<i class="fa fa-search mx-1"></i>
                   </button>
@@ -783,39 +783,39 @@
 
             <div class="col-4 mt-2 text-center">
               <p class="title-item mp-0">Código</p>
-              <p class="mp-0 text-center">2C001</p>
+              <p class="mp-0 text-center" id="codigoDt"><small>waiting...</small></p>
             </div>
             <div class="col-4 mt-2 text-center">
               <p class="title-item mp-0">Estado</p>
-              <p class="mp-0 text-center">Activo</p>
+              <p class="mp-0 text-center" id="estadoDt"><small>waiting...</small></p>
             </div>
             <div class="col-4 mt-2 text-center">
               <p class="title-item mp-0">Medidor</p>
-              <p class="mp-0 text-center">Si</p>
+              <p class="mp-0 text-center" id="medidorSnDt"><small>waiting...</small></p>
             </div>
             <div class="mx-2 col-12 mt-4 d-flex">
               <p class="title-item mp-0">Fecha de contrato:</p>
               <p class="trans">-</p>
-              <p class="mp-0 text-center">2023-12-11</p>
+              <p class="mp-0 text-center" id="fechaDt"></p>
             </div>
             <div class="mx-2 col-12 d-flex mp-0">
               <p class="title-item">Socio:</p>
               <p class="trans">-</p>
-              <p class="mp-0 text-center">
-                Solavino Juansino Pereira Sifuentes
+              <p class="mp-0 text-center" id="socioDt">
+        
               </p>
             </div>
             <div class="mx-2 col-12 d-flex mp-0">
-              <p class="title-item">Ubicacion:</p>
+              <p class="title-item">Sector:</p>
               <p class="trans">-</p>
-              <p class="mp-0 text-center">
-                Barrio Central, Bella vista y La troncal, 205.
+              <p class="mp-0 text-center" id="ubicacionDt">
+          
               </p>
             </div>
 
             <div class="title-item col-12 mx-2">Servicios contratados</div>
             <div
-              class="row contenedor-servicios-contratados justify-content-between"
+              class="row mt-2 contenedor-servicios-contratados justify-content-between"
               id="servicios-contratados"
             >
               <div class="col-12 text-center">

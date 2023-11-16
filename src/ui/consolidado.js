@@ -47,6 +47,7 @@ let serviciosCancelar = [];
 let carpetaRuta = "";
 let cuotaRuta = "";
 let codigoGenerado = "";
+let nombreCuotaRuta = "";
 document.addEventListener("DOMContentLoaded", () => {
   // async function imprimirYGuardarPDF() {
   const boton = document.getElementById("boton");
@@ -70,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
       scale: scale,
       margin: {
         top: "10mm",
-        bottom: "10mm",
+        bottom: "5mm",
         left: "0mm",
         right: "10mm",
       },
@@ -134,7 +135,16 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
         }
         try {
           // Crea una instancia de navegador
-          const browser = await puppeteer.launch();
+
+          const chromePath =
+            "C:/Program Files/Google/Chrome/Application/chrome.exe";
+
+          const browser = await puppeteer.launch({
+            executablePath: chromePath,
+            // Otras opciones de configuración si es necesario
+          });
+
+          // const browser = await puppeteer.launch();
           const page = await browser.newPage();
           // Agrega un manejador para los mensajes de la consola
           page.on("console", (msg) => {
@@ -198,7 +208,7 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
 const generarCodigoComprobante = async () => {
   const timestamp = Date.now();
   const codigoUnico = `${timestamp}`;
-  codigoGenerado = codigoUnico;
+  codigoGenerado =  nombreCuotaRuta+codigoUnico ;
   console.log("Codigo generado: ", codigoGenerado);
   return codigoGenerado;
 };
@@ -213,6 +223,7 @@ ipcRenderer.on(
       carpetaRuta = encabezado.tipo;
     }
     cuotaRuta = encabezado.creacion + encabezado.servicio;
+    nombreCuotaRuta = encabezado.servicio;
     await generarCodigoComprobante();
     const fe = document.createTextNode(formatearFecha(new Date()));
     const fi = document.createTextNode(formatearFecha(new Date()));
@@ -252,25 +263,26 @@ ipcRenderer.on(
       <td style="
       text-align: left;
       padding: 5px;
-      
       font-size: 15px;
     ">${recaudacion.detalleEstado}</td>
+
+    <td style="
+    text-align: center;
+    padding: 5px;
+    
+    font-size: 15px;
+  ">${parseFloat(recaudacion.total).toFixed(2)}</td>
+
+
       <td style="
       text-align: center;
       padding: 5px;
-      
       font-size: 15px;
     ">${parseFloat(abonoRp).toFixed(2)}</td>
+
       <td style="
       text-align: center;
       padding: 5px;
-      
-      font-size: 15px;
-    ">${parseFloat(recaudacion.total).toFixed(2)}</td>
-      <td style="
-      text-align: center;
-      padding: 5px;
-      
       font-size: 15px;
     ">${parseFloat(recaudacion.total - abonoRp).toFixed(2)}</td>        
   </tr>

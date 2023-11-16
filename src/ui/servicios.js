@@ -586,13 +586,14 @@ const getRecaudaciones = async () => {
   recaudacionesList.innerHTML = "";
   recaudaciones.forEach((recaudacion) => {
     let abonoRp = 0;
-    if (
-      parseFloat(recaudacion.abono) == 0 &&
-      recaudacion.detalleEstado == "Cancelado"
-    ) {
-      abonoRp = recaudacion.total;
-    } else if (recaudacion.detalleEstado == "Cancelado") {
-      abonoRp = recaudacion.abono;
+    // if (
+    //   parseFloat(recaudacion.abono) == 0 &&
+    //   recaudacion.detalleEstado == "Cancelado"
+    // ) {
+    //   abonoRp = recaudacion.total;
+    // } else 
+    if (recaudacion.detalleEstado == "Cancelado") {
+      abonoRp = recaudacion.sumAbono;
     } else {
       abonoRp = 0;
     }
@@ -1017,8 +1018,8 @@ async function vistaFactura(tipo) {
   };
 
   const datosTotales = {
-    pendiente: valorRecaudado.textContent,
-    recaudado: valorPendiente.textContent,
+    recaudado: valorRecaudado.textContent,
+    pendiente: valorPendiente.textContent,
     totalFinal: valorTotal.textContent,
   };
   if (tipo == "cancelados") {

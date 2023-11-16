@@ -87,9 +87,21 @@ let editSocioId = "";
 // ----------------------------------------------------------------
 const cancelarContrato = document.getElementById("cancelar-contrato");
 const generarCodigoBt = document.getElementById("generar-codigo");
-
 var listaSugerencias = document.getElementById("lista-sugerencias");
 var sugerencias = [];
+// ----------------------------------------------------------------
+// Variables componentes del los detalles.
+// ----------------------------------------------------------------
+const codigoDt = document.getElementById("codigoDt");
+const estadoDt = document.getElementById("estadoDt");
+const medidorSnDt = document.getElementById("medidorSnDt");
+const fechaDt = document.getElementById("fechaDt");
+const socioDt = document.getElementById("socioDt");
+const ubicacionDt = document.getElementById("ubicacionDt");
+// Variables de busqueda
+const criterio = document.getElementById("criterio");
+const criterioContent = document.getElementById("criterio-content");
+const buscarContratosBtn = document.getElementById("buscarContratos");
 // ----------------------------------------------------------------
 // Esta funcion obtiene los id de los servicios disponibles
 // los manipula como elementos del DOM asignandoles el evento de marcado y desmarcado
@@ -369,7 +381,7 @@ contratoForm.addEventListener("submit", async (e) => {
         // editContratoId = "";
       }
 
-      // getContratos();
+      // ;
       // contratoId = "";
       // editContratoId = "";
       // contratoConMedidor = false;
@@ -458,433 +470,326 @@ function contratarServicios(serviciosAContratar, contratoId) {
 // ----------------------------------------------------------------
 function renderContratosConMedidor(datosContratos) {
   contratosList.innerHTML = "";
-  // datosContratos.forEach((contrato) => {
-  //   contratosList.innerHTML += `
-  //   <tr class="fila-md ">
-  //   <td>${contrato.codigo}</td>
-  //      <td>${formatearFecha(contrato.fecha)}</td>
-  //     <td>${
-  //       contrato.primerNombre +
-  //       " " +
-  //       contrato.segundoNombre +
-  //       " " +
-  //       contrato.primerApellido +
-  //       " " +
-  //       contrato.segundoApellido
-  //     }</td>
-  //     <td>${contrato.cedulaPasaporte}</td>
-  //     <td>${contrato.estado}</td>
-  //     <td>
-  //     <button onclick="detallesContratos('${
-  //       contrato.contratosId
-  //     }')" class="btn ">
-  //     <i class="fa-solid fa-circle-info" style="color: #511f1f;"></i>
-  //     </button>
-  //     </td>
-  //     <td>
-  //     <button onclick="editContrato('${contrato.contratosId}')" class="btn ">
-  //     <i class="fa-solid fa-user-pen"></i>
-  //     </button>
-  //     </td>
-  //  </tr>
-  //     `;
-  // });
-  datosContratos.forEach((datosContrato) => {
-    // Crea un nuevo div con la clase "col-xl-6 col-lg-6 col-md-6 col-sm-12"
-    const divCol = document.createElement("div");
-    // divCol.style.backgroundColor = "black";
-    divCol.className = " col-xl-6 col-lg-6 col-md-6 col-sm-12 px-1";
-    // Crea el div con la clase "card" y estilos
-    const divCard = document.createElement("div");
-    divCard.className = "clase col-lg-12 col-md-12 col-sm-12 my-1 mx-1 card";
-    divCard.style.padding = "0.3em";
-    divCard.style.width = "100%";
-    divCard.style.backgroundColor = "#d6eaf8";
+  if (datosContratos !== undefined) {
+    datosContratos.forEach((datosContrato) => {
+      // Crea un nuevo div con la clase "col-xl-6 col-lg-6 col-md-6 col-sm-12"
+      const divCol = document.createElement("div");
+      // divCol.style.backgroundColor = "black";
+      divCol.className = " col-xl-6 col-lg-6 col-md-6 col-sm-12 px-1";
+      // Crea el div con la clase "card" y estilos
+      const divCard = document.createElement("div");
+      divCard.className = "clase col-lg-12 col-md-12 col-sm-12 my-1 mx-1 card";
+      divCard.style.padding = "0.3em";
+      divCard.style.width = "100%";
+      divCard.style.backgroundColor = "#d6eaf8";
 
-    // Crea el div del encabezado con la clase "card-header" y estilos
-    const divCardHeader = document.createElement("div");
-    divCardHeader.className =
-      "card-header d-flex justify-content-between align-items-center mp-0";
-    divCardHeader.style.backgroundColor = "#85c1e9";
+      // Crea el div del encabezado con la clase "card-header" y estilos
+      const divCardHeader = document.createElement("div");
+      divCardHeader.className =
+        "card-header d-flex justify-content-between align-items-center mp-0";
+      divCardHeader.style.backgroundColor = "#85c1e9";
 
-    // Crea el primer conjunto de elementos de texto
-    const divText1 = document.createElement("div");
-    divText1.className = "d-flex mp-0";
-    const pText1 = document.createElement("p");
-    pText1.className = "mp-0 fs-5";
-    pText1.textContent = "Contrato:";
-    const pTrans1 = document.createElement("p");
-    pTrans1.className = "trans mp-0";
-    pTrans1.textContent = "-";
-    const pText2 = document.createElement("p");
-    pText2.className = "mp-0 text-white fs-5";
-    pText2.textContent = datosContrato.codigo;
-    divText1.appendChild(pText1);
-    divText1.appendChild(pTrans1);
-    divText1.appendChild(pText2);
+      // Crea el primer conjunto de elementos de texto
+      const divText1 = document.createElement("div");
+      divText1.className = "d-flex mp-0";
+      const pText1 = document.createElement("p");
+      pText1.className = "mp-0 fs-5";
+      pText1.textContent = "Contrato:";
+      const pTrans1 = document.createElement("p");
+      pTrans1.className = "trans mp-0";
+      pTrans1.textContent = "-";
+      const pText2 = document.createElement("p");
+      pText2.className = "mp-0 text-white fs-5";
+      pText2.textContent = datosContrato.codigo;
+      divText1.appendChild(pText1);
+      divText1.appendChild(pTrans1);
+      divText1.appendChild(pText2);
 
-    // Crea el segundo conjunto de elementos de texto
-    const divText2 = document.createElement("div");
-    divText2.className = "d-flex mp-0";
-    const pText3 = document.createElement("p");
-    pText3.className = "mp-0 fs-5";
-    pText3.textContent = "Socio:";
-    const pTrans2 = document.createElement("p");
-    pTrans2.textContent = "-";
-    pTrans2.className = "trans mp-0";
-    const pText4 = document.createElement("p");
-    pText4.className = "mp-0 mt-1";
-    pText4.style.fontSize = "1em";
-    pText4.textContent = datosContrato.socio;
-    divText2.appendChild(pText3);
-    divText2.appendChild(pTrans2);
-    divText2.appendChild(pText4);
+      // Crea el segundo conjunto de elementos de texto
+      const divText2 = document.createElement("div");
+      divText2.className = "d-flex mp-0";
+      const pText3 = document.createElement("p");
+      pText3.className = "mp-0 fs-5";
+      pText3.textContent = "Socio:";
+      const pTrans2 = document.createElement("p");
+      pTrans2.textContent = "-";
+      pTrans2.className = "trans mp-0";
+      const pText4 = document.createElement("p");
+      pText4.className = "mp-0 mt-1";
+      pText4.style.fontSize = "1em";
+      pText4.textContent = datosContrato.socio;
+      divText2.appendChild(pText3);
+      divText2.appendChild(pTrans2);
+      divText2.appendChild(pText4);
 
-    // Agrega los conjuntos de elementos de texto al div del encabezado
-    divCardHeader.appendChild(divText1);
-    divCardHeader.appendChild(divText2);
+      // Agrega los conjuntos de elementos de texto al div del encabezado
+      divCardHeader.appendChild(divText1);
+      divCardHeader.appendChild(divText2);
 
-    // Crea el div del cuerpo con la clase "card-body" y estilos
-    const divCardBody = document.createElement("div");
-    divCardBody.className = "card-body";
-    divCardBody.style.backgroundColor = "white";
-    const divDateSt = document.createElement("div");
-    divDateSt.className = "d-flex justify-content-between";
-    // Crea un div para la fecha de contrato y agrega contenido
-    const divFechaContrato = document.createElement("div");
-    divFechaContrato.className = "col-9 d-flex";
-    const h6FechaContrato = document.createElement("h6");
-    h6FechaContrato.innerHTML =
-      '<i style="color: #85c1e9" class="fa-regular fa-calendar-days mx-2"></i>Fecha de contrato:';
-    const pFechaContrato = document.createElement("p");
-    const spaceFechaContrato = document.createElement("p");
-    spaceFechaContrato.className = "trans";
-    spaceFechaContrato.textContent = "-";
-    pFechaContrato.textContent = formatearFecha(datosContrato.fecha);
-    divFechaContrato.appendChild(h6FechaContrato);
-    divFechaContrato.appendChild(spaceFechaContrato);
-    divFechaContrato.appendChild(pFechaContrato);
+      // Crea el div del cuerpo con la clase "card-body" y estilos
+      const divCardBody = document.createElement("div");
+      divCardBody.className = "card-body";
+      divCardBody.style.backgroundColor = "white";
+      const divDateSt = document.createElement("div");
+      divDateSt.className = "d-flex justify-content-between";
+      // Crea un div para la fecha de contrato y agrega contenido
+      const divFechaContrato = document.createElement("div");
+      divFechaContrato.className = "col-9 d-flex";
+      const h6FechaContrato = document.createElement("h6");
+      h6FechaContrato.innerHTML =
+        '<i style="color: #85c1e9" class="fa-regular fa-calendar-days mx-2"></i>Fecha de contrato:';
+      const pFechaContrato = document.createElement("p");
+      const spaceFechaContrato = document.createElement("p");
+      spaceFechaContrato.className = "trans";
+      spaceFechaContrato.textContent = "-";
+      pFechaContrato.textContent = formatearFecha(datosContrato.fecha);
+      divFechaContrato.appendChild(h6FechaContrato);
+      divFechaContrato.appendChild(spaceFechaContrato);
+      divFechaContrato.appendChild(pFechaContrato);
 
-    // Crea un div para el estado "Activo" y agrega contenido
-    const divEstadoActivo = document.createElement("div");
-    divEstadoActivo.className =
-      "col-3 d-flex justify-content-end align-items-baseline";
-    const pEstadoActivo = document.createElement("p");
-    // pEstadoActivo.classList.add("trans");
-    // pEstadoActivo.textContent = "-";
-    pEstadoActivo.textContent = datosContrato.estado;
-    const iconActivo = document.createElement("i");
-    iconActivo.classList.add("mx-2", "fa-solid", "fa-toggle-on");
-    iconActivo.style.color = "#85c1e9";
-    divEstadoActivo.appendChild(pEstadoActivo);
-    divEstadoActivo.appendChild(iconActivo);
-    divDateSt.appendChild(divFechaContrato);
-    divDateSt.appendChild(divEstadoActivo);
-    // Crea un div para la ubicación y agrega contenido
-    const divUbicacion = document.createElement("div");
-    divUbicacion.className = "col-12 text-center";
-    const h6Ubicacion = document.createElement("h6");
-    h6Ubicacion.textContent = "Ubicacion";
-    const pUbicacion = document.createElement("p");
-    const icoLocation = document.createElement("i");
-    icoLocation.style.color = "#85c1e9";
-    icoLocation.className = "mx-2 fa-solid fa-location-dot";
-    pUbicacion.appendChild(icoLocation);
-    const locationText = document.createTextNode(
-      "Barrio " +
-        datosContrato.barrio +
-        ", " +
-        datosContrato.callePrincipal +
-        " y " +
-        datosContrato.calleSecundaria +
-        ", " +
-        datosContrato.numeroCasa +
-        "."
-    );
-    pUbicacion.appendChild(locationText);
-    // pUbicacion.innerHTML =
-    //   '<i style="color: #85c1e9" class="mx-2 fa-solid fa-location-dot"></i>
-    //   Barrio Los Laureles, Buenavista y La troncal, N-201';
-    divUbicacion.appendChild(h6Ubicacion);
-    divUbicacion.appendChild(pUbicacion);
+      // Crea un div para el estado "Activo" y agrega contenido
+      const divEstadoActivo = document.createElement("div");
+      divEstadoActivo.className =
+        "col-3 d-flex justify-content-end align-items-baseline";
+      const pEstadoActivo = document.createElement("p");
+      // pEstadoActivo.classList.add("trans");
+      // pEstadoActivo.textContent = "-";
+      pEstadoActivo.textContent = datosContrato.estado;
+      const iconActivo = document.createElement("i");
+      iconActivo.classList.add("mx-2", "fa-solid", "fa-toggle-on");
+      iconActivo.style.color = "#85c1e9";
+      divEstadoActivo.appendChild(pEstadoActivo);
+      divEstadoActivo.appendChild(iconActivo);
+      divDateSt.appendChild(divFechaContrato);
+      divDateSt.appendChild(divEstadoActivo);
+      // Crea un div para la ubicación y agrega contenido
+      const divUbicacion = document.createElement("div");
+      divUbicacion.className = "col-12 text-center";
+      const h6Ubicacion = document.createElement("h6");
+      h6Ubicacion.textContent = "Ubicacion";
+      const pUbicacion = document.createElement("p");
+      const icoLocation = document.createElement("i");
+      icoLocation.style.color = "#85c1e9";
+      icoLocation.className = "mx-2 fa-solid fa-location-dot";
+      pUbicacion.appendChild(icoLocation);
+      const locationText = document.createTextNode(
+        "Barrio " +
+          datosContrato.barrio +
+          ", " +
+          datosContrato.callePrincipal +
+          " y " +
+          datosContrato.calleSecundaria +
+          ", " +
+          datosContrato.numeroCasa +
+          "."
+      );
+      pUbicacion.appendChild(locationText);
+      // pUbicacion.innerHTML =
+      //   '<i style="color: #85c1e9" class="mx-2 fa-solid fa-location-dot"></i>
+      //   Barrio Los Laureles, Buenavista y La troncal, N-201';
+      divUbicacion.appendChild(h6Ubicacion);
+      divUbicacion.appendChild(pUbicacion);
 
-    // Crea un div para el botón
-    const divBoton = document.createElement("div");
-    divBoton.classList.add("col-12", "d-flex", "justify-content-end");
-    const boton = document.createElement("button");
-    boton.classList.add("btn-custom");
-    boton.innerHTML = 'Actualizar <i class="mx-1 fa-solid fa-file-pen"></i>';
-    boton.onclick = () => {
-      editContrato(datosContrato.contratosId);
-    };
-    divBoton.appendChild(boton);
+      // Crea un div para el botón
+      const divBoton = document.createElement("div");
+      divBoton.classList.add("col-12", "d-flex", "justify-content-end");
+      const boton = document.createElement("button");
+      boton.classList.add("btn-custom");
+      boton.innerHTML = 'Actualizar <i class="mx-1 fa-solid fa-file-pen"></i>';
+      boton.onclick = () => {
+        editContrato(datosContrato.contratosId);
+      };
+      divBoton.appendChild(boton);
 
-    // Agrega los elementos al cuerpo
-    divCardBody.appendChild(divDateSt);
+      // Agrega los elementos al cuerpo
+      divCardBody.appendChild(divDateSt);
 
-    divCardBody.appendChild(divUbicacion);
-    divCardBody.appendChild(divBoton);
+      divCardBody.appendChild(divUbicacion);
+      divCardBody.appendChild(divBoton);
 
-    // Agrega el encabezado y el cuerpo al div de la tarjeta
-    divCard.appendChild(divCardHeader);
-    divCard.appendChild(divCardBody);
+      // Agrega el encabezado y el cuerpo al div de la tarjeta
+      divCard.appendChild(divCardHeader);
+      divCard.appendChild(divCardBody);
 
-    // Agrega el div de la tarjeta al div de columna
-    divCol.appendChild(divCard);
-    divCol.onclick = () => {
-      // Elimina la clase "selected" de todos los elementos
-      const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
-      elementos.forEach((elemento) => {
-        elemento.classList.remove("bg-secondary");
-      });
+      // Agrega el div de la tarjeta al div de columna
+      divCol.appendChild(divCard);
+      divCol.onclick = () => {
+        // Elimina la clase "selected" de todos los elementos
+        const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
+        elementos.forEach((elemento) => {
+          elemento.classList.remove("bg-secondary");
+        });
 
-      // Agrega la clase "selected" al elemento que se hizo clic
-      divCard.classList.add("bg-secondary");
-      detallesContratos(datosContrato.contratosId);
-    };
-    // Agrega el div de columna al documento
-    contratosList.appendChild(divCol);
-  });
+        // Agrega la clase "selected" al elemento que se hizo clic
+        divCard.classList.add("bg-secondary");
+        detallesContratos(datosContrato);
+      };
+      // Agrega el div de columna al documento
+      contratosList.appendChild(divCol);
+    });
+  }
 }
-// function renderContratosSinMedidor(datosContratosSinMedidor) {
-//   contratosSinMedidorList.innerHTML = "";
 
-//   const cardContainer = document.createElement("div");
-//   // cardContainer.classList.add("card-container-horizontal");
-
-//   datosContratosSinMedidor.forEach((contratosinmedidor) => {
-//     const card = document.createElement("div");
-//     card.classList.add("card");
-//     card.classList.add("cardmd");
-
-//     card.innerHTML = `
-//       <div class="card-content">
-//         <div class="card-header">${contratosinmedidor.codigo}</div>
-//         <div class="card-body">
-//           <p>${formatearFecha(contratosinmedidor.fecha)}</p>
-//           <p>${
-//             contratosinmedidor.primerNombre +
-//             " " +
-//             contratosinmedidor.segundoNombre +
-//             " " +
-//             contratosinmedidor.primerApellido +
-//             " " +
-//             contratosinmedidor.segundoApellido
-//           }</p>
-//           <p>${contratosinmedidor.cedulaPasaporte}</p>
-//           <p>${contratosinmedidor.estado}</p>
-//         </div>
-//         <div class="card-footer">
-//           <button onclick="detallesContratos('${
-//             contratosinmedidor.id
-//           }')" class="btn ">
-//             <i class="fa-solid fa-circle-info" style="color: #511f1f;"></i>
-//           </button>
-//           <button onclick="editMedidor('${
-//             contratosinmedidor.id
-//           }')" class="btn ">
-//             <i class="fa-solid fa-user-pen"></i>
-//           </button>
-//         </div>
-//       </div>
-//     `;
-
-//     cardContainer.appendChild(card);
-//   });
-
-//   contratosSinMedidorList.appendChild(cardContainer);
-// }
 function renderContratosSinMedidor(datosContratosSinMedidor) {
   contratosSinMedidorList.innerHTML = "";
-  // datosContratosSinMedidor.forEach((contratosinmedidor) => {
-  //   contratosSinMedidorList.innerHTML += `
-  //     <tr class="fila-md">
-  //     <td>${contratosinmedidor.codigo}</td>
-  //     <td>${formatearFecha(contratosinmedidor.fecha)}</td>
-  //     <td>${
-  //       contratosinmedidor.primerNombre +
-  //       " " +
-  //       contratosinmedidor.segundoNombre +
-  //       " " +
-  //       contratosinmedidor.primerApellido +
-  //       " " +
-  //       contratosinmedidor.segundoApellido
-  //     }</td>
-  //     <td>${contratosinmedidor.cedulaPasaporte}</td>
-  //     <td>${contratosinmedidor.estado}</td>
-  //     <td>
-  //     <button onclick="detallesContratos('${
-  //       contratosinmedidor.contratosId
-  //     }')" class="btn ">
-  //     <i class="fa-solid fa-circle-info" style="color: #511f1f;"></i>
-  //     </button>
-  //     </td>
-  //     <td>
-  //     <button onclick="editContrato('${
-  //       contratosinmedidor.contratosId
-  //     }')" class="btn ">
-  //     <i class="fa-solid fa-user-pen"></i>
-  //     </button>
-  //     </td>
-  // </tr>
-  //     `;
-  // });
-  datosContratosSinMedidor.forEach((datosContrato) => {
-    // Crea un nuevo div con la clase "col-xl-6 col-lg-6 col-md-6 col-sm-12"
-    const divCol = document.createElement("div");
-    // divCol.style.backgroundColor = "black";
-    divCol.className = " col-xl-6 col-lg-6 col-md-6 col-sm-12 px-1";
-    // Crea el div con la clase "card" y estilos
-    const divCard = document.createElement("div");
-    divCard.className = "clase col-lg-12 col-md-12 col-sm-12 my-1 mx-1 card";
-    divCard.style.padding = "0.3em";
-    divCard.style.width = "100%";
-    divCard.style.backgroundColor = "#d6eaf8";
+  if (datosContratosSinMedidor !== undefined) {
+    datosContratosSinMedidor.forEach((datosContrato) => {
+      // Crea un nuevo div con la clase "col-xl-6 col-lg-6 col-md-6 col-sm-12"
+      const divCol = document.createElement("div");
+      // divCol.style.backgroundColor = "black";
+      divCol.className = " col-xl-6 col-lg-6 col-md-6 col-sm-12 px-1";
+      // Crea el div con la clase "card" y estilos
+      const divCard = document.createElement("div");
+      divCard.className = "clase col-lg-12 col-md-12 col-sm-12 my-1 mx-1 card";
+      divCard.style.padding = "0.3em";
+      divCard.style.width = "100%";
+      divCard.style.backgroundColor = "#d6eaf8";
 
-    // Crea el div del encabezado con la clase "card-header" y estilos
-    const divCardHeader = document.createElement("div");
-    divCardHeader.className =
-      "card-header d-flex justify-content-between align-items-center mp-0";
-    divCardHeader.style.backgroundColor = "#85c1e9";
+      // Crea el div del encabezado con la clase "card-header" y estilos
+      const divCardHeader = document.createElement("div");
+      divCardHeader.className =
+        "card-header d-flex justify-content-between align-items-center mp-0";
+      divCardHeader.style.backgroundColor = "#85c1e9";
 
-    // Crea el primer conjunto de elementos de texto
-    const divText1 = document.createElement("div");
-    divText1.className = "d-flex mp-0";
-    const pText1 = document.createElement("p");
-    pText1.className = "mp-0 fs-5";
-    pText1.textContent = "Contrato:";
-    const pTrans1 = document.createElement("p");
-    pTrans1.className = "trans mp-0";
-    pTrans1.textContent = "-";
-    const pText2 = document.createElement("p");
-    pText2.className = "mp-0 text-white fs-5";
-    pText2.textContent = datosContrato.codigo;
-    divText1.appendChild(pText1);
-    divText1.appendChild(pTrans1);
-    divText1.appendChild(pText2);
+      // Crea el primer conjunto de elementos de texto
+      const divText1 = document.createElement("div");
+      divText1.className = "d-flex mp-0";
+      const pText1 = document.createElement("p");
+      pText1.className = "mp-0 fs-5";
+      pText1.textContent = "Contrato:";
+      const pTrans1 = document.createElement("p");
+      pTrans1.className = "trans mp-0";
+      pTrans1.textContent = "-";
+      const pText2 = document.createElement("p");
+      pText2.className = "mp-0 text-white fs-5";
+      pText2.textContent = datosContrato.codigo;
+      divText1.appendChild(pText1);
+      divText1.appendChild(pTrans1);
+      divText1.appendChild(pText2);
 
-    // Crea el segundo conjunto de elementos de texto
-    const divText2 = document.createElement("div");
-    divText2.className = "d-flex mp-0";
-    const pText3 = document.createElement("p");
-    pText3.className = "mp-0 fs-5";
-    pText3.textContent = "Socio:";
-    const pTrans2 = document.createElement("p");
-    pTrans2.classList.Name = "trans mp-0";
-    pTrans2.textContent = "-";
-    const pText4 = document.createElement("p");
-    pText4.className = "mp-0 mt-1";
-    pText4.style.fontSize = "1em";
-    pText4.textContent = datosContrato.socio;
-    divText2.appendChild(pText3);
-    divText2.appendChild(pTrans2);
-    divText2.appendChild(pText4);
+      // Crea el segundo conjunto de elementos de texto
+      const divText2 = document.createElement("div");
+      divText2.className = "d-flex mp-0";
+      const pText3 = document.createElement("p");
+      pText3.className = "mp-0 fs-5";
+      pText3.textContent = "Socio:";
+      const pTrans2 = document.createElement("p");
+      pTrans2.classList.Name = "trans mp-0";
+      pTrans2.textContent = "-";
+      const pText4 = document.createElement("p");
+      pText4.className = "mp-0 mt-1";
+      pText4.style.fontSize = "1em";
+      pText4.textContent = datosContrato.socio;
+      divText2.appendChild(pText3);
+      divText2.appendChild(pTrans2);
+      divText2.appendChild(pText4);
 
-    // Agrega los conjuntos de elementos de texto al div del encabezado
-    divCardHeader.appendChild(divText1);
-    divCardHeader.appendChild(divText2);
+      // Agrega los conjuntos de elementos de texto al div del encabezado
+      divCardHeader.appendChild(divText1);
+      divCardHeader.appendChild(divText2);
 
-    // Crea el div del cuerpo con la clase "card-body" y estilos
-    const divCardBody = document.createElement("div");
-    divCardBody.className = "card-body";
-    divCardBody.style.backgroundColor = "white";
-    const divDateSt = document.createElement("div");
-    divDateSt.className = "d-flex justify-content-between";
-    // Crea un div para la fecha de contrato y agrega contenido
-    const divFechaContrato = document.createElement("div");
-    divFechaContrato.className = "col-9 d-flex";
-    const h6FechaContrato = document.createElement("h6");
-    h6FechaContrato.innerHTML =
-      '<i style="color: #85c1e9" class="fa-regular fa-calendar-days mx-2"></i>Fecha de contrato:';
-    const pFechaContrato = document.createElement("p");
-    const spaceFechaContrato = document.createElement("p");
-    spaceFechaContrato.className = "trans";
-    spaceFechaContrato.textContent = "-";
-    pFechaContrato.textContent = formatearFecha(datosContrato.fecha);
-    divFechaContrato.appendChild(h6FechaContrato);
-    divFechaContrato.appendChild(spaceFechaContrato);
-    divFechaContrato.appendChild(pFechaContrato);
+      // Crea el div del cuerpo con la clase "card-body" y estilos
+      const divCardBody = document.createElement("div");
+      divCardBody.className = "card-body";
+      divCardBody.style.backgroundColor = "white";
+      const divDateSt = document.createElement("div");
+      divDateSt.className = "d-flex justify-content-between";
+      // Crea un div para la fecha de contrato y agrega contenido
+      const divFechaContrato = document.createElement("div");
+      divFechaContrato.className = "col-9 d-flex";
+      const h6FechaContrato = document.createElement("h6");
+      h6FechaContrato.innerHTML =
+        '<i style="color: #85c1e9" class="fa-regular fa-calendar-days mx-2"></i>Fecha de contrato:';
+      const pFechaContrato = document.createElement("p");
+      const spaceFechaContrato = document.createElement("p");
+      spaceFechaContrato.className = "trans";
+      spaceFechaContrato.textContent = "-";
+      pFechaContrato.textContent = formatearFecha(datosContrato.fecha);
+      divFechaContrato.appendChild(h6FechaContrato);
+      divFechaContrato.appendChild(spaceFechaContrato);
+      divFechaContrato.appendChild(pFechaContrato);
 
-    // Crea un div para el estado "Activo" y agrega contenido
-    const divEstadoActivo = document.createElement("div");
-    divEstadoActivo.className =
-      "col-3 d-flex justify-content-end align-items-baseline";
-    const pEstadoActivo = document.createElement("p");
-    // pEstadoActivo.classList.add("trans");
-    // pEstadoActivo.textContent = "-";
-    pEstadoActivo.textContent = datosContrato.estado;
-    const iconActivo = document.createElement("i");
-    iconActivo.classList.add("mx-2", "fa-solid", "fa-toggle-on");
-    iconActivo.style.color = "#85c1e9";
-    divEstadoActivo.appendChild(pEstadoActivo);
-    divEstadoActivo.appendChild(iconActivo);
-    divDateSt.appendChild(divFechaContrato);
-    divDateSt.appendChild(divEstadoActivo);
-    // Crea un div para la ubicación y agrega contenido
-    const divUbicacion = document.createElement("div");
-    divUbicacion.className = "col-12 text-center";
-    const h6Ubicacion = document.createElement("h6");
-    h6Ubicacion.textContent = "Ubicacion";
-    const pUbicacion = document.createElement("p");
-    const icoLocation = document.createElement("i");
-    icoLocation.style.color = "#85c1e9";
-    icoLocation.className = "mx-2 fa-solid fa-location-dot";
-    pUbicacion.appendChild(icoLocation);
-    const locationText = document.createTextNode(
-      "Barrio " +
-        datosContrato.barrio +
-        ", " +
-        datosContrato.callePrincipal +
-        " y " +
-        datosContrato.calleSecundaria +
-        ", " +
-        datosContrato.numeroCasa +
-        "."
-    );
-    pUbicacion.appendChild(locationText);
-    // pUbicacion.innerHTML =
-    //   '<i style="color: #85c1e9" class="mx-2 fa-solid fa-location-dot"></i>
-    //   Barrio Los Laureles, Buenavista y La troncal, N-201';
-    divUbicacion.appendChild(h6Ubicacion);
-    divUbicacion.appendChild(pUbicacion);
+      // Crea un div para el estado "Activo" y agrega contenido
+      const divEstadoActivo = document.createElement("div");
+      divEstadoActivo.className =
+        "col-3 d-flex justify-content-end align-items-baseline";
+      const pEstadoActivo = document.createElement("p");
+      // pEstadoActivo.classList.add("trans");
+      // pEstadoActivo.textContent = "-";
+      pEstadoActivo.textContent = datosContrato.estado;
+      const iconActivo = document.createElement("i");
+      iconActivo.classList.add("mx-2", "fa-solid", "fa-toggle-on");
+      iconActivo.style.color = "#85c1e9";
+      divEstadoActivo.appendChild(pEstadoActivo);
+      divEstadoActivo.appendChild(iconActivo);
+      divDateSt.appendChild(divFechaContrato);
+      divDateSt.appendChild(divEstadoActivo);
+      // Crea un div para la ubicación y agrega contenido
+      const divUbicacion = document.createElement("div");
+      divUbicacion.className = "col-12 text-center";
+      const h6Ubicacion = document.createElement("h6");
+      h6Ubicacion.textContent = "Ubicacion";
+      const pUbicacion = document.createElement("p");
+      const icoLocation = document.createElement("i");
+      icoLocation.style.color = "#85c1e9";
+      icoLocation.className = "mx-2 fa-solid fa-location-dot";
+      pUbicacion.appendChild(icoLocation);
+      const locationText = document.createTextNode(
+        "Barrio " +
+          datosContrato.barrio +
+          ", " +
+          datosContrato.callePrincipal +
+          " y " +
+          datosContrato.calleSecundaria +
+          ", " +
+          datosContrato.numeroCasa +
+          "."
+      );
+      pUbicacion.appendChild(locationText);
+      // pUbicacion.innerHTML =
+      //   '<i style="color: #85c1e9" class="mx-2 fa-solid fa-location-dot"></i>
+      //   Barrio Los Laureles, Buenavista y La troncal, N-201';
+      divUbicacion.appendChild(h6Ubicacion);
+      divUbicacion.appendChild(pUbicacion);
 
-    // Crea un div para el botón
-    const divBoton = document.createElement("div");
-    divBoton.classList.add("col-12", "d-flex", "justify-content-end");
-    const boton = document.createElement("button");
-    boton.classList.add("btn-custom");
-    boton.innerHTML = 'Actualizar <i class="mx-1 fa-solid fa-file-pen"></i>';
-    boton.onclick = () => {
-      editContrato(datosContrato.contratosId);
-    };
-    divBoton.appendChild(boton);
+      // Crea un div para el botón
+      const divBoton = document.createElement("div");
+      divBoton.classList.add("col-12", "d-flex", "justify-content-end");
+      const boton = document.createElement("button");
+      boton.classList.add("btn-custom");
+      boton.innerHTML = 'Actualizar <i class="mx-1 fa-solid fa-file-pen"></i>';
+      boton.onclick = () => {
+        editContrato(datosContrato.contratosId);
+      };
+      divBoton.appendChild(boton);
 
-    // Agrega los elementos al cuerpo
-    divCardBody.appendChild(divDateSt);
+      // Agrega los elementos al cuerpo
+      divCardBody.appendChild(divDateSt);
 
-    divCardBody.appendChild(divUbicacion);
-    divCardBody.appendChild(divBoton);
+      divCardBody.appendChild(divUbicacion);
+      divCardBody.appendChild(divBoton);
 
-    // Agrega el encabezado y el cuerpo al div de la tarjeta
-    divCard.appendChild(divCardHeader);
-    divCard.appendChild(divCardBody);
+      // Agrega el encabezado y el cuerpo al div de la tarjeta
+      divCard.appendChild(divCardHeader);
+      divCard.appendChild(divCardBody);
 
-    // Agrega el div de la tarjeta al div de columna
-    divCol.appendChild(divCard);
-    divCol.onclick = () => {
-      // Elimina la clase "selected" de todos los elementos
-      const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
-      elementos.forEach((elemento) => {
-        elemento.classList.remove("bg-secondary");
-      });
+      // Agrega el div de la tarjeta al div de columna
+      divCol.appendChild(divCard);
+      divCol.onclick = () => {
+        // Elimina la clase "selected" de todos los elementos
+        const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
+        elementos.forEach((elemento) => {
+          elemento.classList.remove("bg-secondary");
+        });
 
-      // Agrega la clase "selected" al elemento que se hizo clic
-      divCard.classList.add("bg-secondary");
-      detallesContratos(datosContrato.contratosId);
-    };
-    // Agrega el div de columna al documento
-    contratosSinMedidorList.appendChild(divCol);
-  });
+        // Agrega la clase "selected" al elemento que se hizo clic
+        divCard.classList.add("bg-secondary");
+        detallesContratos(datosContrato);
+      };
+      // Agrega el div de columna al documento
+      contratosSinMedidorList.appendChild(divCol);
+    });
+  }
 }
 
 // ----------------------------------------------------------------
@@ -1264,13 +1169,29 @@ async function marcarServiciosContratados() {
 // Funcion que muestra los detalles de los contratos registrados
 // segun se los seleccione
 // ----------------------------------------------------------------
-const detallesContratos = async (id) => {
-  console.log("Detallles de : " + id);
+const detallesContratos = async (contrato) => {
+  console.log("Detallles de : " + contrato.contratosId);
+  codigoDt.textContent = contrato.codigo;
+  estadoDt.textContent = contrato.estado;
+  medidorSnDt.textContent = contrato.medidorSn;
+  fechaDt.textContent = formatearFecha(contrato.fecha);
+  socioDt.textContent = contrato.socio;
+  const locationText = document.createTextNode(
+    "Barrio " + contrato.barrio + "."
+    // ", " +
+    // contrato.callePrincipal +
+    // " y " +
+    // contrato.calleSecundaria +
+    // ", " +
+    // contrato.numeroCasa +
+    // "."
+  );
+  ubicacionDt.appendChild(locationText);
   contratoForm.reset();
   // resetForm();
   const serviciosContratos = await ipcRenderer.invoke(
     "getServiciosContratadosById",
-    id
+    contrato.contratosId
   );
   renderServiciosContratados(serviciosContratos);
   console.log(serviciosContratos);
@@ -1586,17 +1507,35 @@ async function renderContratosSimilares(contratosSimilares, contratoId) {
 // ----------------------------------------------------------------
 // Funcion que consulta los contratos con medidor
 // ----------------------------------------------------------------
+buscarContratosBtn.addEventListener("click", async function () {
+  await getContratos();
+  await getContratosSinMedidor();
+});
 const getContratos = async () => {
-  datosContratos = await ipcRenderer.invoke("getContratosConMedidor");
+  let criterioBuscar = criterio.value;
+  let criterioContentBuscar = criterioContent.value;
+  datosContratos = await ipcRenderer.invoke(
+    "getContratosConMedidor",
+    criterioBuscar,
+    criterioContentBuscar
+  );
   console.log(datosContratos);
+
   renderContratosConMedidor(datosContratos);
 };
 // ----------------------------------------------------------------
 // Funcion que consulta los contratos sin medidor
 // ----------------------------------------------------------------
 const getContratosSinMedidor = async () => {
-  datosContratosSinMedidor = await ipcRenderer.invoke("getContratosSinMedidor");
-  console.log("Here: ", datosContratosSinMedidor);
+  let criterioBuscar = criterio.value;
+  let criterioContentBuscar = criterioContent.value;
+  datosContratosSinMedidor = await ipcRenderer.invoke(
+    "getContratosSinMedidor",
+    criterioBuscar,
+    criterioContentBuscar
+  );
+  // console.log("Here: ", datosContratosSinMedidor);
+
   renderContratosSinMedidor(datosContratosSinMedidor);
 };
 // ----------------------------------------------------------------
@@ -1604,7 +1543,7 @@ const getContratosSinMedidor = async () => {
 // ----------------------------------------------------------------
 const getServiciosDisponibles = async () => {
   serviciosDisponibles = await ipcRenderer.invoke("getServiciosDisponibles");
-  console.log("srv dsp", serviciosDisponibles);
+  // console.log("srv dsp", serviciosDisponibles);
   await renderServiciosDisponibles(serviciosDisponibles);
   await eventoServiciosId(serviciosDisponibles);
 };

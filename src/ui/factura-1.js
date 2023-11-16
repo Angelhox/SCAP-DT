@@ -4,6 +4,7 @@ const Swal = require("sweetalert2");
 // const pdf = require("html-pdf");
 const printer = require("pdf-to-printer");
 // const html2pdf = require("html2pdf.js");
+
 const path = require("path");
 const { ipcRenderer } = require("electron");
 const socioNombres = document.getElementById("socioNombres");
@@ -63,6 +64,11 @@ let saldosFavor = {};
 // Función para guardar el archivo PDF en la carpeta seleccionada
 async function guardarEnDirectorioSeleccionado(pdfOptions) {
   const content = document.querySelector(".invoice");
+
+
+
+
+
   try {
     const directorioSeleccionado = await ipcRenderer.invoke("selectDirectory");
     const nombreRuta = codigoGenerado;
@@ -88,8 +94,18 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
           fs.mkdirSync(folderPath, { recursive: true });
         }
         try {
+
+
+          const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+
+          const browser = await puppeteer.launch({
+            executablePath: chromePath,
+            // Otras opciones de configuración si es necesario
+          });
+
+
           // Crea una instancia de navegador
-          const browser = await puppeteer.launch();
+          // const browser = await puppeteer.launch();
           const page = await browser.newPage();
           // Agrega un manejador para los mensajes de la consola
           page.on("console", (msg) => {

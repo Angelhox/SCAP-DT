@@ -12,3 +12,5 @@ dist/
          src/dist/main.dev.js
              dist/win-unpacked/SCAPST DOM.exe
          dist/win-unpacked/resources/app.asar
+         dist.zip
+         dist.zip/
