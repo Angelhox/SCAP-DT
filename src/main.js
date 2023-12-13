@@ -2,10 +2,15 @@ const { BrowserWindow, Notification, dialog, session } = require("electron");
 const { app, ipcMain } = require("electron");
 const { getConnection, cerrarConnection } = require("./database");
 const SecureElectronStore = require("secure-electron-store").default;
+const fs = require("fs").promises;
+const { PDFDocument, degrees, rgb } = require("pdf-lib");
+const pdfToPrinter = require("pdf-to-printer");
+
 // const Store = require("electron-store");
 const path = require("path");
 const url = require("url");
 const { error } = require("console");
+const { page } = require("pdfkit");
 let window;
 let servicioEnviar = [];
 
@@ -21,20 +26,119 @@ ipcMain.handle("getDocumentsPath", async (event, documentsPath) => {
 });
 
 // ----------------------------------------------------------------
-ipcMain.on("printPDF", (event, filePath) => {
-  const printWindow = new BrowserWindow({ show: true });
-  printWindow.loadURL(`file://${filePath}`);
-  printWindow.webContents.on("did-finish-load", () => {
-    printWindow.webContents.print({ silent: true });
-    //printWindow.close();
+ipcMain.on("printPDFNot valid", async (event, filePath) => {
+  const printWindow = new BrowserWindow({ show: false });
+  console.log("PAth: ", filePath);
+  // try {
+  const file = fs.readFileSync(filePath);
+  printWindow.loadURL(filePath);
+  // printWindow.webContents.on("did-finish-load", () => {
+  console.log("Cargo impresion");
+  printWindow.webContents.print({ silent: true, pagesPerSheet: 2 });
+  //printWindow.close();
 
-    // Enviar confirmación al proceso de renderizado
-    event.sender.send(
-      "printPDFComplete",
-      "El PDF se ha impreso correctamente."
-    );
-  });
+  // Enviar confirmación al proceso de renderizado
+  event.sender.send("printPDFComplete", "El PDF se ha impreso correctamente.");
+  // });
+  // } catch (error) {
+  //     console.log('error en la impresion: ' + error);
+  // }
 });
+// ----------------------------------------------------------------
+
+// ipcMain.on('printPDF', async (event, pdfPath) => {
+//   console.log(pdfPath);
+//   try {
+//     const existingPdfBytes = await fs.readFile(pdfPath);
+//     const pdfDoc = await PDFDocument.load(existingPdfBytes);
+
+//     // Asegurarse de que el documento tenga al menos una página
+//     if (pdfDoc.getPageCount() === 0) {
+//       console.error('El documento PDF no contiene ninguna página.');
+//       return;
+//     }
+
+//     // Obtener la primera página del documento
+//     const firstPage = pdfDoc.getPage(0);
+
+//     // Crear un nuevo documento y agregar una página
+//     const newPdfDoc = await PDFDocument.create();
+//     const newPage = newPdfDoc.addPage([firstPage.getWidth(), firstPage.getHeight()]);
+
+//     // Dibujar la primera página dos veces en la nueva página
+//     newPage.drawPage(firstPage);
+//     newPage.drawPage(firstPage, { x: firstPage.getWidth() / 2 });
+
+//     // Imprimir el documento modificado
+//     const modifiedPdfBytes = await newPdfDoc.save();
+//     const pdfBlob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+//     const pdfDataUri = URL.createObjectURL(pdfBlob);
+
+//     const printWindow = new BrowserWindow({ show: false });
+//     printWindow.loadURL(pdfDataUri);
+
+//     printWindow.webContents.on('did-finish-load', () => {
+//       printWindow.webContents.print({}, () => {
+//         printWindow.close();
+//       });
+//     });
+//   } catch (error) {
+//     console.error('Error:', error);
+//   }
+// });
+
+// --------------------------------
+ipcMain.on(
+  "Dos",
+  async (event, pdfPaths, outputPath, scaleWidth, scaleHeight) => {
+    try {
+      // Cargar ambos archivos PDF
+      const pdfBytes1 = await fs.readFile(pdfPaths[0]);
+      const pdfBytes2 = await fs.readFile(pdfPaths[1]);
+
+      // Crear documentos PDF a partir de los bytes
+
+      const pdfDoc1 = await PDFDocument.load(pdfBytes1);
+
+      const pdfDoc2 = await PDFDocument.load(pdfBytes2);
+      // Crear un nuevo documento y agregar páginas de los dos documentos existentes
+      const mergedPdfDoc = await PDFDocument.create();
+
+      const [page1] = await mergedPdfDoc.copyPages(pdfDoc1, [0]);
+      const [page2] = await mergedPdfDoc.copyPages(pdfDoc2, [0]);
+
+      // Añadir las páginas al nuevo documento
+
+      // const { width, height } = page1.getSize();
+      // const newScaleWidth = parseFloat(scaleWidth.toString());
+      // const newScaleHeight = parseFloat(scaleHeight.toString());
+      // console.log('Size anterior: ' + width + '|' + height)
+      // const newWidth = width * newScaleWidth;
+      // const newHeight = height * newScaleHeight;
+      // console.log('Size: ' + newWidth + '|' + newHeight)
+      // page1.setSize(newWidth, newHeight);
+      // page2.setSize(newWidth, newHeight);
+      // page1.setRotation(degrees(180));
+      // page2.setRotation(degrees(90));
+      mergedPdfDoc.addPage(page1);
+      mergedPdfDoc.addPage(page2);
+
+      const mergedPdfBytes = await mergedPdfDoc.save();
+      await fs.writeFile(outputPath, mergedPdfBytes);
+      const options = {
+        // orientation: "landscape",
+        // scale: "fit",
+      };
+      await pdfToPrinter.print(outputPath, options);
+      // await fs.unlink(outputPath);
+      console.log("PDFs unidos e impresos con éxito.");
+    } catch (error) {
+      console.error("Error al unir e imprimir PDFs:", error);
+    }
+  }
+);
+
+// try {
 
 // ----------------------------------------------------------------
 // Funciones para el cierre de sesion
@@ -272,6 +376,20 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
         break;
       case "Digitador":
         url = "src/ui/cobros.html";
+        break;
+      default:
+    }
+  } else if (interfaceName == "PagosII") {
+    switch (acceso) {
+      case "Auditor":
+        console.log("Auditor");
+        url = "src/ui/pagos.html";
+        break;
+      case "Cajero":
+        url = "src/ui/pagos.html";
+        break;
+      case "Digitador":
+        url = "src/ui/pagos.html";
         break;
       default:
     }
@@ -1218,6 +1336,25 @@ ipcMain.handle("getServicioAgua", async (event, contratoId, fechaEmision) => {
     console.log("Error al buscar servicioAgua: " + error);
   }
 });
+// Insertar servicioGuia
+ipcMain.handle("createServicioGuia", async (event, servicioGuia) => {
+  try {
+    const conn = await getConnection();
+    const guia = await conn.query(
+      "SELECT * FROM servicios WHERE nombre='Socio comuna';"
+    );
+    if (guia.length > 0) {
+      servicioGuia.serviciosId = guia[0].id;
+      const result = conn.query(
+        "INSERT INTO serviciosContratados set ? ;",
+        servicioGuia
+      );
+      return result;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
 // ----------------------------------------------------------------
 // Funciones de las cuotas
 // ----------------------------------------------------------------
@@ -1515,6 +1652,134 @@ ipcMain.handle("deleteContratadoDetalle", async (event, descontratar) => {
         success: true,
         title: "Borrado!",
         message: "Se ha eliminado este servicio para este contrato.",
+      });
+      return resultContratado;
+    }
+
+    //   }
+    // }
+    // // const detalleExiste = await conn.query(
+    // //   "SELECT count(id) as existe,estado FROM detallesServicio WHERE " +
+    // //     "id= " +
+    // //     descontratar.id +
+    // //     ";"
+    // // );
+    // // if (!contratadoExiste[0].existe > 0) {
+    // //   if (
+    // //     contratadoExiste[0].estado !== null &&
+    // //     contratadoExiste[0].estado == "Por cancelar"
+    // //   ) {
+    // //     canceladoSn = true;
+    // //     const resultDetalle = await conn.query(
+    // //       "DELETE FROM detallesServicio WHERE id= ",
+    // //       descontratar.id
+    // //     );
+    // //     const resultContratado = await conn.query(
+    // //       "DELETE FROM serviciosContratados WHERE id= ",
+    // //       descontratar.serviciosContratadosId
+    // //     );
+    //     console.log(resultServicio);
+    // event.sender.send("Notificar", {
+    //   success: true,
+    //   title: "Borrado!",
+    //   message: "Se ha eliminado este servicio para este contrato.",
+    // });
+    //     return resultContratado;
+    // } else {
+    //   event.sender.send("Notificar", {
+    //     success: false,
+    //     title: "Error!",
+    //     message:
+    //       "Este servicio ya ha sido cancelado por lo que no puedes eliminarlo.",
+    //   });
+    // }
+    // } else {
+    //   event.sender.send("Notificar", {
+    //     success: false,
+    //     title: "Error!",
+    //     message:
+    //       "El servicio ya ha sido eliminado o no esta registrado en este contrato.",
+    //   });
+    // }
+  } catch (error) {
+    event.sender.send("Notificar", {
+      success: false,
+      title: "Error!",
+      message: "Ha ocurrido un error al descontratar el servicio.",
+    });
+    console.log(error);
+  }
+});
+ipcMain.handle("updateContratadoDetalle", async (event, detallesActualizar) => {
+  let canceladoSn = false;
+  let cancelados = 0;
+  const newContratado = {
+    estado: detallesActualizar.estado,
+    valorIndividual: detallesActualizar.valorIndividual,
+    numeroPagosIndividual: detallesActualizar.numeroPagosIndividual,
+    valorPagosIndividual: detallesActualizar.valorPagosIndividual,
+    descuentoValor: detallesActualizar.descuentoValor,
+    descuentosId: detallesActualizar.descuentosId,
+  };
+  try {
+    const conn = await getConnection();
+    console.log("Recibido: ", detallesActualizar);
+    const detallesServicio = await conn.query(
+      "SELECT * FROM detallesServicio WHERE serviciosContratadosId =" +
+        detallesActualizar.id +
+        ";"
+    );
+
+    if (detallesServicio.length > 0) {
+      console.log("Array con datos.");
+      const canceladoExiste = detallesServicio.find(
+        (cancelado) => cancelado.estado === "Cancelado"
+      );
+
+      if (canceladoExiste) {
+        console.log("Se encontró un detalle cancelado:", canceladoExiste);
+
+        event.sender.send("Notificar", {
+          success: false,
+          title: "Error!",
+          message:
+            "Este servicio ya ha sido cancelado por lo que no puedes actualizarlo.",
+        });
+      } else {
+        console.log("Ningún detalle cancelado fue encontrado.");
+        detallesServicio.forEach(async (detalleServicio) => {
+          const resultDetalle = await conn.query(
+            "DELETE FROM detallesServicio WHERE id=" + detalleServicio.id + ";"
+          );
+
+          console.log(resultDetalle);
+        });
+        const resultContratado = await conn.query(
+          "UPDATE serviciosContratados set ? WHERE id=" +
+            detallesActualizar.id +
+            " ;",
+          newContratado
+        );
+        event.sender.send("Notificar", {
+          success: true,
+          title: "Actualizado!",
+          message: "Se ha actualizado este servicio para este contrato.",
+        });
+        return resultContratado;
+      }
+    } else {
+      console.log("Array sin datos");
+      const resultContratado = await conn.query(
+        "UPDATE serviciosContratados set ?   WHERE id=" +
+          detallesActualizar.id +
+          " ;",
+        newContratado
+      );
+      console.log(resultContratado);
+      event.sender.send("Notificar", {
+        success: true,
+        title: "Actualizado!",
+        message: "Se ha actualizado este servicio para este contrato.",
       });
       return resultContratado;
     }
@@ -2758,6 +3023,173 @@ ipcMain.handle(
             "SELECT * FROM viewPlanillas WHERE " +
               "estado like'%" +
               estado +
+              "%' order by primerApellido "
+          );
+          console.log(results);
+          return results;
+        } else if (anio == "all" && mes !== "all") {
+          console.log("anio all mes df", mes);
+          const results = await conn.query(
+            "SELECT * FROM viewPlanillas WHERE " +
+              "estado like'%" +
+              estado +
+              "%' and month(fechaEmision) = '" +
+              mes +
+              "' order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio !== "all" && mes == "all") {
+          console.log("mes all anio df", anio);
+          const results = await conn.query(
+            "SELECT * FROM viewPlanillas WHERE " +
+              "estado like '%" +
+              estado +
+              "%' and " +
+              " year(fechaEmision) = '" +
+              anio +
+              "' order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio !== "all" && mes !== "all") {
+          console.log("mes df anio df ", mes, anio);
+          const results = await conn.query(
+            "SELECT * FROM viewPlanillas WHERE " +
+              "estado like'%" +
+              estado +
+              "%' and " +
+              " year(fechaEmision) = '" +
+              anio +
+              "' and month(fechaEmision) = '" +
+              mes +
+              "' order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        }
+      } else {
+        if (anio == "all" && mes == "all") {
+          console.log("C mes all anio all");
+          const results = await conn.query(
+            "SELECT * FROM viewPlanillas WHERE " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%' and estado like'%" +
+              estado +
+              "%' order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio == "all" && mes !== "all") {
+          console.log("C anio all mes df ", mes);
+          const results = await conn.query(
+            "SELECT * FROM viewPlanillas WHERE " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%' and estado like'%" +
+              estado +
+              "%' and month(fechaEmision) = '" +
+              mes +
+              "' order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio !== "all" && mes == "all") {
+          console.log("C anio df mes all ", anio);
+          const results = await conn.query(
+            "SELECT * FROM viewPlanillas WHERE " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%' and estado like'%" +
+              estado +
+              "%' and " +
+              " year(fechaEmision) = '" +
+              anio +
+              "' order by primerApellido;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio !== "all" && mes !== "all") {
+          console.log("anio df mes df", anio, mes);
+          const results = await conn.query(
+            "SELECT * FROM viewPlanillas WHERE " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%' and estado like'%" +
+              estado +
+              "%' and " +
+              " year(fechaEmision) = '" +
+              anio +
+              "' and month(fechaEmision) = '" +
+              mes +
+              "' order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else {
+          Console.log("?");
+        }
+
+        // const results = await conn.query(
+        //   "SELECT * FROM viewPlanillas WHERE " +
+        //     criterio +
+        //     " = " +
+        //     criterioContent +
+        //     " and estado='" +
+        //     estado +
+        //     "' and " +
+        //     " year(fechaEmision) = '" +
+        //     anio +
+        //     "' and month(fechaEmision) = '" +
+        //     mes +
+        //     "' order by fechaEmision desc"
+        // );
+        // results = await conn.query("SELECT * FROM viewPlanillas");
+        console.log("Con parametros", results);
+        return results;
+      }
+    } catch (error) {
+      console.log("Error en la busqueda de planillas: " + error);
+    }
+  }
+);
+// Obtener las planillas acumuladas
+ipcMain.handle(
+  "getDatosPlanillasAcumuladas",
+  async (event, criterio, criterioContent, estado, anio, mes) => {
+    console.log(
+      "Recibo parametros planillas: " + criterio,
+      criterioContent,
+      estado,
+      anio,
+      mes
+    );
+    try {
+      const conn = await getConnection();
+      if (estado == undefined || estado == "all") {
+        estado = "";
+      }
+      if (criterio == undefined) {
+        criterio = "all";
+      }
+      if (anio == undefined) {
+        anio = "all";
+      }
+      if (mes == undefined) {
+        mes = "all";
+      }
+      if (criterio == "all") {
+        if (anio == "all" && mes == "all") {
+          console.log("anio all mes all");
+          const results = await conn.query(
+            "SELECT * FROM viewPlanillas WHERE " +
+              "estado like'%" +
+              estado +
               "%' order by fechaEmision desc"
           );
           console.log(results);
@@ -2893,6 +3325,7 @@ ipcMain.handle(
     }
   }
 );
+
 // Funcion que carga los datos de la planilla para editarlos
 ipcMain.handle("getPlanillaById", async (event, planillaId) => {
   const conn = await getConnection();
@@ -2973,6 +3406,52 @@ ipcMain.handle("getPlanillaById", async (event, planillaId) => {
 // Funciones de las lecturas(Planillas)
 // ----------------------------------------------------------------
 ipcMain.handle(
+  "getAnterioresCancelar",
+  async (event, contratoId, fechaPlanilla) => {
+    try {
+      const conn = await getConnection();
+      const anterioresCancelar = await conn.query(
+        "SELECT * FROM viewplanillas where fechaEmision < '" +
+          fechaPlanilla +
+          "' and estado='Por cobrar' and contratosId=" +
+          contratoId +
+          ";"
+      );
+      return anterioresCancelar;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+);
+ipcMain.handle(
+  "getServiciosAgrupados",
+  async (event, fechaDesde, fechaHasta, contratosId) => {
+    const conn = await getConnection();
+    try {
+      const results = await conn.query(
+        "SELECT * FROM viewDetallesServicio WHERE month(fechaEmision) between month('" +
+          fechaDesde +
+          "') and month('" +
+          fechaHasta +
+          "') and year(fechaEmision) between year('" +
+          fechaDesde +
+          "') and year('" +
+          fechaHasta +
+          "')" +
+          " and contratosId=" +
+          contratosId +
+          ";"
+      );
+
+      console.log(results);
+      return results;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+);
+
+ipcMain.handle(
   "getLecturasByFecha",
   async (event, contratosId, fechaEmision) => {
     const conn = await getConnection();
@@ -3028,6 +3507,78 @@ ipcMain.handle("getDatosCuotasByCodigo", async (event, codigoMedidor) => {
 // ----------------------------------------------------------------
 // Funciones de los detalles
 // ----------------------------------------------------------------
+// Funcion de relacion servicio-contratos;
+// Buscamos todos los contratos.
+ipcMain.handle("ejectContratado", async () => {
+  try {
+    const conn = await getConnection();
+    const existentes = await conn.query("SELECT * FROM contratos;");
+    if (existentes.length > 0) {
+      existentes.forEach((existente) => {
+        const newContratado = {
+          fechaEmision: "2023-10-01",
+          estado: "Activo",
+          valorIndividual: 0,
+          numeroPagosIndividual: 1,
+          valorPagosIndividual: 0,
+          descuentoValor: 0,
+          serviciosId: 34,
+          contratosId: existente.id,
+          descuentosId: 1,
+        };
+        const result = conn.query(
+          "Insert into serviciosContratados set ?;",
+          newContratado
+        );
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+ipcMain.handle("ejectContratadoDetalles", async () => {
+  let encabezado = "";
+  let estado = "";
+  try {
+    const conn = await getConnection();
+    const contratadosExistentes = await conn.query(
+      "SELECT * FROM serviciosContratados WHERE serviciosId=?;",
+      34
+    );
+    if (contratadosExistentes.length > 0) {
+      contratadosExistentes.forEach(async (contratadoExistente) => {
+        const detallesAnteriores = await conn.query(
+          "SELECT * FROM viewDetallesServicio WHERE contratosId=?;",
+          contratadoExistente.contratosId
+        );
+        if (detallesAnteriores.length > 0) {
+          encabezado = detallesAnteriores[0].encabezadosId;
+          estado = detallesAnteriores[0].estadoDetalles;
+          const newDetalleServicio = {
+            serviciosContratadosId: contratadoExistente.id,
+
+            descuento: 0,
+            subtotal: 0,
+            total: 0,
+            saldo: 0,
+            abono: 0,
+            fechaEmision: "2023-10-01",
+            encabezadosId: encabezado,
+            estado: estado,
+          };
+          const result = await conn.query(
+            "Insert into detallesServicio set ?;",
+            newDetalleServicio
+          );
+          console.log(result);
+        }
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 // Funcion que carga los servicios de acuerdo al id de la planilla
 ipcMain.handle(
   "getDatosServiciosByContratoId",
@@ -3083,16 +3634,65 @@ ipcMain.handle(
   }
 );
 
-ipcMain.handle("updateDetalle", async (event, id, detalle) => {
-  const conn = await getConnection();
-  console.log("Actualizando detalle: " + id + detalle);
-  const result = await conn.query(
-    "UPDATE detallesServicio set ? where id = ?",
-    [detalle, id]
-  );
-  console.log(result);
-  return result;
-});
+ipcMain.handle(
+  "updateDetalle",
+  async (event, fechaEmision, contratoId, id, detalle) => {
+    try {
+      const conn = await getConnection();
+      console.log("Actualizando detalle: " + id + detalle);
+      // Verificamos si el detalles que se busca actualizar
+      // no este "Cancelado" de estarlo no deberia modificase.
+      // const canceladoSn = await conn.query(
+      //   "SELECT * FROM detallesServicio WHERE id=?",
+      //   id
+      // );
+      // if (canceladoSn[0].estado !== "Cancelado") {
+      //Verificar si servicio guia ha sido cancelado
+      const canceladoGuiaSn = await conn.query(
+        "SELECT * FROM viewDetallesServicio WHERE contratosId=" +
+          contratoId +
+          " AND month(fechaEmision)=month('" +
+          fechaEmision +
+          "') AND " +
+          "year(fechaEmision)=year('" +
+          fechaEmision +
+          "') AND " +
+          "nombre='Socio comuna';"
+      );
+      if (canceladoGuiaSn[0].estadoDetalles !== "Cancelado") {
+        console.log("Editar: " + canceladoGuiaSn[0].estadoDetalles);
+        const result = await conn.query(
+          "UPDATE detallesServicio set ? where id = ?",
+          [detalle, id]
+        );
+        event.sender.send("Notificar", {
+          success: true,
+          title: "Actualizado!",
+          message: "Se ha actualizado la planilla.",
+        });
+        console.log(result);
+        return result;
+        // }
+      } else {
+        event.sender.send("Notificar", {
+          success: false,
+          title: "Error!",
+          message:
+            "No se ha podido actualizar la planilla, los servicios aplicados se encuentran Cancelados.",
+        });
+
+        return;
+      }
+    } catch (error) {
+      event.sender.send("Notificar", {
+        success: false,
+        title: "Error!",
+        message: "Ha ocurrido un error al actualizar la planilla.",
+      });
+      console.log(error);
+    }
+  }
+);
 ipcMain.handle("getDetallesByContratadoId", async (event, contratadoId) => {
   const conn = await getConnection();
   const result = await conn.query(
@@ -3103,6 +3703,30 @@ ipcMain.handle("getDetallesByContratadoId", async (event, contratadoId) => {
   console.log(result);
   return result;
 });
+ipcMain.handle(
+  "getAnuladosByContratoId",
+  async (event, fechaEmision, contratoId) => {
+    try {
+      const conn = await getConnection();
+      const result = await conn.query(
+        "SELECT * FROM viewDetallesServicio WHERE contratosId=" +
+          contratoId +
+          " AND month(fechaEmision)=month('" +
+          fechaEmision +
+          "') AND " +
+          "year(fechaEmision)=year('" +
+          fechaEmision +
+          "') AND " +
+          "estadoDetalles='Anulado';"
+      );
+      console.log(result);
+      return result;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+);
+
 // ----------------------------------------------------------------
 // Funcion de cancelado
 // ----------------------------------------------------------------
@@ -3172,6 +3796,18 @@ ipcMain.handle(
   }
 );
 
+ipcMain.handle("getComprobanteById", async (event, encabezadoId) => {
+  try {
+    const conn = await getConnection();
+    const comprobante = await conn.query(
+      "SELECT * FROM comprobantes WHERE encabezadosId=? ;",
+      encabezadoId
+    );
+    return comprobante[0];
+  } catch (error) {
+    console.log(error);
+  }
+});
 // ----------------------------------------------------------------
 // Funciones de los saldos
 // ----------------------------------------------------------------
@@ -3334,7 +3970,7 @@ ipcMain.handle("getMultasDescByPlanillaId", async (event, planillaId) => {
   return result;
 });
 // Funcion que edita los valores permitidos de la planilla
-ipcMain.handle("updatePlanilla", async (event, id, planilla) => {
+ipcMain.handle("updatePlanilla", async (event, id, planilla, contratoId) => {
   try {
     const conn = await getConnection();
     console.log("Actualizando planilla: " + planilla);
@@ -3350,6 +3986,25 @@ ipcMain.handle("updatePlanilla", async (event, id, planilla) => {
             "Esta planilla ya ha sido cancelada, no puedes editar sus valores.",
         });
       } else {
+        if (contratoId !== undefined) {
+          console.log("Entro al if");
+          if (planilla.tarifa == "Sin consumo") {
+            const aplicadaSn = await conn.query(
+              "SELECT * FROM viewPlanillas WHERE contratosId=? AND tarifa='Sin consumo';",
+              contratoId
+            );
+            if (aplicadaSn.length == 1) {
+              event.sender.send("Notificar", {
+                success: false,
+                title: "Error!",
+                message:
+                  'La tarifa "Sin consumo" ya ha sido aplicada en este medidor.',
+              });
+              return;
+            }
+          }
+        }
+        console.log("No entro al if");
         const result = await conn.query("UPDATE planillas set ? where id = ?", [
           planilla,
           id,

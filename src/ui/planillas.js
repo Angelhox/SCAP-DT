@@ -50,6 +50,9 @@ let valorTarifa = 2.0;
 let lecturaActualEdit = 0;
 let lecturaAnteriorEdit = 0;
 let valorConsumoEdit = 0;
+let planillaEdit = "";
+let tarifaEdit = "";
+let tarifaTemporal = "";
 // ----------------------------------------------------------------
 const valorSubtotal = document.getElementById("valorSubtotal");
 const valorTotalDescuento = document.getElementById("valorTotalDescuento");
@@ -71,6 +74,16 @@ const abonadoDg = document.getElementById("abonado-dg");
 const abonarDg = document.getElementById("abonar-dg");
 const guardarDg = document.getElementById("btnGuardar-dg");
 const administrarDg = document.getElementById("btnAdministrar-dg");
+const anularDg = document.getElementById("btnAnular-dg");
+const doBt = document.getElementById("btnDo");
+const doneBt = document.getElementById("btnDone");
+//----------------------------------------------------------------
+// Variables de los elementos del dialogo de servicios anulados
+const dialogAnulados = document.getElementById("formAnulados");
+const fechaEmisionDg = document.getElementById("fecha-emision-dg");
+const anuladosFijos = document.getElementById("anuladosFijos");
+const cerrarAnuladosBt = document.getElementById("cerrar-form-anulados");
+
 //----------------------------------------------------------------
 // Variables de los elementos de la pagina
 const mostrarLecturas = document.getElementById("mostrar-lecturas");
@@ -78,6 +91,8 @@ const contenedorLecturas = document.getElementById("contenedor-lecturas");
 const collapse = document.getElementById("collapse");
 const calcularConsumoBt = document.getElementById("calcular-consumo");
 const cancelarForm = document.getElementById("cancelarForm");
+const sinConsumoBt = document.getElementById("sin-consumo-bt");
+const anuladosBt = document.getElementById("btnAnulados");
 // ----------------------------------------------------------------
 // Variables contenedoras
 let tarifasDisponibles = [];
@@ -98,7 +113,7 @@ let editPlanillaId = "";
 let editDetalleId = "";
 let fechaEmisionEdit = "";
 let editContratoId = "";
-let fechaCreacion = "2023-10-01 00:00:00";
+let fechaCreacion = "2023-11-01 00:00:00";
 planillaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const newPlanilla = {
@@ -140,12 +155,16 @@ planillaForm.addEventListener("submit", async (e) => {
             editPlanillaId,
             newPlanilla
           );
+          // if (result !== undefined) {
           const resultDetalle = await ipcRenderer.invoke(
             "updateDetalle",
+            fechaEmisionEdit,
+            editContratoId,
             editDetalleId,
             newDetalleServicio
           );
-          console.log(result, resultDetalle);
+          console.log("Resultado: ", result, resultDetalle);
+          // }
         }
       });
     }
@@ -273,6 +292,7 @@ function renderPlanillas(datosPlanillas) {
     console.log("Servicios encontrados: " + datosServicios);
     // Crear elementos para los detalles de servicios (Consumo, Tarifa, Valor)
     var rpValorAguaPotable = null;
+    var rpEstadoAguaPotable = "";
     var rpTotalPagar = 0.0;
     // Contenedor y contenido de consumo
     const consumoDiv = document.createElement("div");
@@ -301,48 +321,53 @@ function renderPlanillas(datosPlanillas) {
     if (datosServicios.length > 0) {
       datosServicios.forEach((datosServicio) => {
         if (datosServicio.nombre === "Agua Potable") {
+          rpEstadoAguaPotable = datosServicio.estadoDetalles;
           rpValorAguaPotable = datosServicio.total;
           tarifaAguaPotable = datosServicio.tarifa;
           // el total de servicio agua al total a pagar de rp
           rpTotalPagar += datosServicio.total;
         } else {
           // Crear elementos de la lista de servicios (Alcantarillado, Recolección de desechos, Riego Agrícola, Bomberos)
-          if (datosServicio.aplazableSn === "Si") {
-            const alcantarilladoLi = document.createElement("li");
-            alcantarilladoLi.className = "titulo-detalles d-flex detalles";
-            const alcantarilladoP = document.createElement("p");
-            alcantarilladoP.textContent = datosServicio.nombre + ": ";
-            const servicioSp = document.createElement("p");
-            servicioSp.textContent = "-";
-            servicioSp.className = "trans mp-0";
-            const alcantarilladoValor = document.createTextNode(
-              // en esta parte esta seliendo null
-              parseFloat(datosServicio.abono).toFixed(2) + "$"
-            );
-            // si el servicio es aplazable sumo el abono al total a pagar de rp
-            rpTotalPagar += datosServicio.abono;
-            alcantarilladoLi.appendChild(alcantarilladoP);
-            alcantarilladoLi.appendChild(servicioSp);
-            alcantarilladoLi.appendChild(alcantarilladoValor);
-            listaUl.appendChild(alcantarilladoLi);
-          } else {
-            const alcantarilladoLi = document.createElement("li");
-            alcantarilladoLi.className = "titulo-detalles d-flex detalles";
-            const alcantarilladoP = document.createElement("p");
-            alcantarilladoP.textContent = datosServicio.nombre + ": ";
-            const servicioSp = document.createElement("p");
-            servicioSp.textContent = "-";
-            servicioSp.className = "trans mp-0";
-            const alcantarilladoValor = document.createTextNode(
-              parseFloat(datosServicio.total).toFixed(2) + "$"
-            );
-            // Si el servicio no es aplazable (fijo u ocacional) sumo el total al total
-            // a pagar de rp
-            rpTotalPagar += datosServicio.total;
-            alcantarilladoLi.appendChild(alcantarilladoP);
-            alcantarilladoLi.appendChild(servicioSp);
-            alcantarilladoLi.appendChild(alcantarilladoValor);
-            listaUl.appendChild(alcantarilladoLi);
+          // Agregamos el estado de anulado para eliminar los valores de los servicios
+          // fijos deseados.
+          if (datosServicio.estadoDetalles !== "Anulado") {
+            if (datosServicio.aplazableSn === "Si") {
+              const alcantarilladoLi = document.createElement("li");
+              alcantarilladoLi.className = "titulo-detalles d-flex detalles";
+              const alcantarilladoP = document.createElement("p");
+              alcantarilladoP.textContent = datosServicio.nombre + ": ";
+              const servicioSp = document.createElement("p");
+              servicioSp.textContent = "-";
+              servicioSp.className = "trans mp-0";
+              const alcantarilladoValor = document.createTextNode(
+                // en esta parte esta seliendo null
+                parseFloat(datosServicio.abono).toFixed(2) + "$"
+              );
+              // si el servicio es aplazable sumo el abono al total a pagar de rp
+              rpTotalPagar += datosServicio.abono;
+              alcantarilladoLi.appendChild(alcantarilladoP);
+              alcantarilladoLi.appendChild(servicioSp);
+              alcantarilladoLi.appendChild(alcantarilladoValor);
+              listaUl.appendChild(alcantarilladoLi);
+            } else {
+              const alcantarilladoLi = document.createElement("li");
+              alcantarilladoLi.className = "titulo-detalles d-flex detalles";
+              const alcantarilladoP = document.createElement("p");
+              alcantarilladoP.textContent = datosServicio.nombre + ": ";
+              const servicioSp = document.createElement("p");
+              servicioSp.textContent = "-";
+              servicioSp.className = "trans mp-0";
+              const alcantarilladoValor = document.createTextNode(
+                parseFloat(datosServicio.total).toFixed(2) + "$"
+              );
+              // Si el servicio no es aplazable (fijo u ocacional) sumo el total al total
+              // a pagar de rp
+              rpTotalPagar += datosServicio.total;
+              alcantarilladoLi.appendChild(alcantarilladoP);
+              alcantarilladoLi.appendChild(servicioSp);
+              alcantarilladoLi.appendChild(alcantarilladoValor);
+              listaUl.appendChild(alcantarilladoLi);
+            }
           }
         }
 
@@ -358,10 +383,12 @@ function renderPlanillas(datosPlanillas) {
       if (
         rpValorAguaPotable === null ||
         rpValorAguaPotable === undefined ||
-        rpValorAguaPotable === "null"
+        rpValorAguaPotable === "null" ||
+        rpEstadoAguaPotable == "Anulado"
       ) {
         // Si despues de almacenar el valor de agua potable la variable sique siendo null
         // no existe el servicio de agua potable asignamos No aplica
+        // o si su valor ha sido anulado.
         console.log("Valor de agua= " + rpValorAguaPotable);
         console.log("Asignando NA");
         const consumoValor = document.createTextNode("NA");
@@ -530,6 +557,7 @@ const getDatosLecturas = async (contratoId, fechaEmision) => {
   return lectura;
 };
 const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
+  console.log("Planilla a editar: " + planillaId);
   console.log("fechaEmision: " + formatearFecha(fechaEmision));
   console.log("fechaEmision: " + fechaEmision);
   editingStatus = true;
@@ -547,8 +575,12 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     fechaEmision
   );
   const planilla = await ipcRenderer.invoke("getPlanillaById", planillaId);
+
   // ----------------------------------------------------------------
   // Datos del encabezado de la planilla a editar
+  tarifaEdit = planilla[0].tarifa;
+  lecturaActual.readOnly = false;
+  tarifaTemporal = planilla[0].tarifa;
   contratoCodigo.textContent = planilla[0].codigo;
   planillaEmision.textContent = formatearFecha(planilla[0].fechaEmision);
   planillaCodigo.textContent = planilla[0].planillasCodigo;
@@ -654,79 +686,84 @@ function renderServicios(servicios, tipo) {
   let totalDescuentoEdit = 0;
   let subtotalEdit = 0;
   console.log("Servicios a renderizard: ", servicios, tipo);
-
   servicios.forEach((servicio) => {
-    // Crear el div principal
-    if (servicio.nombre !== "Agua Potable") {
-      const tr = document.createElement("tr");
-      const tdServicio = document.createElement("td");
-      tdServicio.textContent = servicio.nombre;
-      const tdAplazable = document.createElement("td");
-      tdAplazable.textContent = servicio.aplazableSn;
-      const tdSubtotal = document.createElement("td");
-      tdSubtotal.textContent = parseFloat(
-        servicio.valorIndividual / servicio.numeroPagosIndividual
-      ).toFixed(2);
-      const tdDescuento = document.createElement("td");
-      tdDescuento.textContent = parseFloat(
-        servicio.descuentoValor / servicio.numeroPagosIndividual
-      ).toFixed(2);
-      const tdTotal = document.createElement("td");
-      tdTotal.textContent = parseFloat(
-        servicio.total / servicio.numeroPagosIndividual
-      ).toFixed(2);
-      const tdSaldo = document.createElement("td");
-      tdSaldo.textContent = parseFloat(servicio.saldo).toFixed(2);
-      const tdAbono = document.createElement("td");
-      tdAbono.textContent = parseFloat(servicio.abono).toFixed(2);
-      //----------------------------------------------------------------
-      if (servicio.aplazableSn === "Si") {
-        totalPagarEdit += servicio.abono;
-      } else {
-        totalPagarEdit += servicio.total;
-      }
-      totalDescuentoEdit += servicio.descuento / servicio.numeroPagosIndividual;
-      subtotalEdit = servicio.subtotal;
-      const tdBtnGestionar = document.createElement("td");
-      const btnGestionar = document.createElement("button");
-      btnGestionar.className = "btn";
-      btnGestionar.type = "button";
-      btnGestionar.onclick = () => {
-        detallesServiciodg(servicio);
-      };
-      const iconGestionar = document.createElement("i");
-      iconGestionar.className = "fa-solid fa-ellipsis-vertical";
-      btnGestionar.appendChild(iconGestionar);
-      tdBtnGestionar.appendChild(btnGestionar);
-      if (tipo == "fijos") {
-        tr.appendChild(tdServicio);
-        tr.appendChild(tdSubtotal);
-        tr.appendChild(tdDescuento);
-        tr.appendChild(tdTotal);
-        tr.appendChild(tdBtnGestionar);
-        serviciosFijosList.appendChild(tr);
-      } else {
-        if (servicio.aplazableSn === "Si") {
-          tr.appendChild(tdServicio);
-          tr.appendChild(tdSaldo);
-          tr.appendChild(tdSubtotal);
-          tr.appendChild(tdDescuento);
-          tr.appendChild(tdTotal);
-          tr.appendChild(tdAbono);
-          tr.appendChild(tdBtnGestionar);
-          otrosAplazablesList.appendChild(tr);
-        } else {
-          tr.appendChild(tdServicio);
-          tr.appendChild(tdSubtotal);
-          tr.appendChild(tdDescuento);
-          tr.appendChild(tdTotal);
-          tr.appendChild(tdBtnGestionar);
-          otrosServiciosList.appendChild(tr);
+    if (servicio.estadoDetalles !== "Anulado") {
+      // Crear el div principal
+      if (servicio.nombre !== "Agua Potable") {
+        const tr = document.createElement("tr");
+        const tdServicio = document.createElement("td");
+        tdServicio.textContent = servicio.nombre;
+        const tdAplazable = document.createElement("td");
+        tdAplazable.textContent = servicio.aplazableSn;
+        const tdSubtotal = document.createElement("td");
+        tdSubtotal.textContent = parseFloat(
+          servicio.valorIndividual / servicio.numeroPagosIndividual
+        ).toFixed(2);
+        const tdDescuento = document.createElement("td");
+        tdDescuento.textContent = parseFloat(
+          servicio.descuentoValor / servicio.numeroPagosIndividual
+        ).toFixed(2);
+        const tdTotal = document.createElement("td");
+        tdTotal.textContent = parseFloat(
+          servicio.total / servicio.numeroPagosIndividual
+        ).toFixed(2);
+        const tdSaldo = document.createElement("td");
+        tdSaldo.textContent = parseFloat(servicio.saldo).toFixed(2);
+        const tdAbono = document.createElement("td");
+        tdAbono.textContent = parseFloat(servicio.abono).toFixed(2);
+        //----------------------------------------------------------------
+        if (servicios.estadoDetalles !== "Anulado") {
+          if (servicio.aplazableSn === "Si") {
+            totalPagarEdit += servicio.abono;
+          } else {
+            totalPagarEdit += servicio.total;
+          }
         }
+        totalDescuentoEdit +=
+          servicio.descuento / servicio.numeroPagosIndividual;
+        subtotalEdit = servicio.subtotal;
+        const tdBtnGestionar = document.createElement("td");
+        tdBtnGestionar.style = "text-align:center";
+        const btnGestionar = document.createElement("button");
+        btnGestionar.className = "btn";
+        btnGestionar.type = "button";
+        btnGestionar.onclick = () => {
+          detallesServiciodg(servicio);
+        };
+        const iconGestionar = document.createElement("i");
+        iconGestionar.className = "fa-solid fa-ellipsis-vertical";
+        btnGestionar.appendChild(iconGestionar);
+        tdBtnGestionar.appendChild(btnGestionar);
+        if (tipo == "fijos") {
+          tr.appendChild(tdServicio);
+          tr.appendChild(tdSubtotal);
+          tr.appendChild(tdDescuento);
+          tr.appendChild(tdTotal);
+          tr.appendChild(tdBtnGestionar);
+          serviciosFijosList.appendChild(tr);
+        } else {
+          if (servicio.aplazableSn === "Si") {
+            tr.appendChild(tdServicio);
+            tr.appendChild(tdSaldo);
+            tr.appendChild(tdSubtotal);
+            tr.appendChild(tdDescuento);
+            tr.appendChild(tdTotal);
+            tr.appendChild(tdAbono);
+            tr.appendChild(tdBtnGestionar);
+            otrosAplazablesList.appendChild(tr);
+          } else {
+            tr.appendChild(tdServicio);
+            tr.appendChild(tdSubtotal);
+            tr.appendChild(tdDescuento);
+            tr.appendChild(tdTotal);
+            tr.appendChild(tdBtnGestionar);
+            otrosServiciosList.appendChild(tr);
+          }
+        }
+      } else if (servicio.nombre === "Agua Potable") {
+        editDetalleId = servicio.id;
+        console.log("Id del detalle Agua: " + editDetalleId);
       }
-    } else if (servicio.nombre === "Agua Potable") {
-      editDetalleId = servicio.id;
-      console.log("Id del detalle Agua: " + editDetalleId);
     }
   });
   totalFinal += totalPagarEdit;
@@ -735,7 +772,88 @@ function renderServicios(servicios, tipo) {
   console.log("Total de edit: ", totalFinal);
   recalcularConsumo();
 }
+anuladosBt.addEventListener("click", async () => {
+  if (fechaEmisionEdit !== "" && editContratoId !== "") {
+    const fijosAnulados = await ipcRenderer.invoke(
+      "getAnuladosByContratoId",
+      fechaEmisionEdit,
+      editContratoId
+    );
 
+    renderAnulados(fijosAnulados);
+  } else {
+    console.log("Any planilla selected :)");
+  }
+});
+function renderAnulados(serviciosAnulados) {
+  fechaEmisionDg.textContent = fechaEmisionEdit;
+  fijosAnulados.innerHTML =
+    '<tr><td class="text-center"' +
+    ' colspan="5">Sin servicios anulados para mostrar ' +
+    "</td></tr>";
+  if (serviciosAnulados.length > 0) {
+    fijosAnulados.innerHTML = "";
+    serviciosAnulados.forEach((anulado) => {
+      const trAnulado = document.createElement("tr");
+      const tdServicio = document.createElement("td");
+      tdServicio.textContent = anulado.nombre;
+      const tdSubtotal = document.createElement("td");
+      tdSubtotal.textContent = anulado.subtotal;
+      const tdDescuento = document.createElement("td");
+      tdDescuento.textContent = anulado.descuentoValor;
+      const tdTotal = document.createElement("td");
+      tdTotal.textContent = anulado.total;
+      const btRestaurar = document.createElement("button");
+      btRestaurar.type = "button";
+      btRestaurar.textContent = "Restaurar";
+      btRestaurar.classList = "btn btn-outline-light";
+      btRestaurar.addEventListener("click", async () => {
+        await restaurarAnulado(anulado.id);
+      });
+      trAnulado.appendChild(tdServicio);
+      trAnulado.appendChild(tdSubtotal);
+      trAnulado.appendChild(tdDescuento);
+      trAnulado.appendChild(tdTotal);
+      fijosAnulados.appendChild(trAnulado);
+      trAnulado.appendChild(btRestaurar);
+    });
+  }
+  if (dialogAnulados.close) {
+    dialogAnulados.showModal();
+  }
+}
+cerrarAnuladosBt.addEventListener("click", () => {
+  dialogAnulados.close();
+});
+async function restaurarAnulado(detalleAnuladoId) {
+  dialogAnulados.close();
+  Swal.fire({
+    title: "¿Quieres restaurar este servicio?",
+    text: "El valor se aplicara a la planilla, si esta aún no ha sido cancelada.",
+    icon: "question",
+    iconColor: "#f8c471",
+    showCancelButton: true,
+    confirmButtonColor: "#2874A6",
+    cancelButtonColor: "#EC7063 ",
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const newDetalle = {
+        estado: "Por cancelar",
+      };
+      const result = await ipcRenderer.invoke(
+        "updateDetalle",
+        fechaEmisionEdit,
+        editContratoId,
+        detalleAnuladoId,
+        newDetalle
+      );
+      console.log(result);
+    } else {
+    }
+  });
+}
 const getPlanillas = async (criterio, criterioContent, estado, anio, mes) => {
   planillas = await ipcRenderer.invoke(
     "getDatosPlanillas",
@@ -794,6 +912,27 @@ ipcRenderer.on("Notificar", (event, response) => {
   }
 });
 lecturaActual.addEventListener("input", function () {
+  if (tarifaTemporal == "Sin consumo") {
+    if (tarifaTemporal == "Sin consumo") {
+      Swal.fire({
+        title: "Tarifa Sin consumo",
+        text: "Esta planilla corresponde a una nueva cometida ¿Quieres ingresar lecturas de consumo?",
+        icon: "question",
+        iconColor: "#f8c471",
+        showCancelButton: true,
+        confirmButtonColor: "#2874A6",
+        cancelButtonColor: "#EC7063 ",
+        confirmButtonText: "Sí, continuar",
+        cancelButtonText: "Cancelar",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          tarifaTemporal = "";
+        } else {
+          lecturaActual.value = 0;
+        }
+      });
+    }
+  }
   recalcularConsumo();
 });
 async function getTarifasDisponibles() {
@@ -807,43 +946,51 @@ async function calcularConsumo() {
   let base = 0.0;
   let limitebase = 15.0;
   console.log("Consumo redondeado cC: " + consumo);
+  if (tarifaTemporal !== "Sin consumo") {
+    console.log("Tarifas: " + tarifasDisponibles);
+    if (tarifasDisponibles[0] !== undefined) {
+      tarifasDisponibles.forEach((tarifa) => {
+        if (consumo >= tarifa.desde && consumo <= tarifa.hasta) {
+          tarifaAplicada = tarifa.tarifa;
+          valorTarifa = tarifa.valor;
+          console.log(
+            "Valores que se asignaran: ",
+            tarifaAplicada + "|" + valorTarifa
+          );
+        }
+        if (tarifa.tarifa == "Familiar") {
+          base = tarifa.valor;
+          limitebase = tarifa.hasta;
+          console.log("Bases: ", base + "|" + limitebase);
+        }
+      });
+    }
+    if (tarifaAplicada === "Familiar") {
+      console.log("Aplicando tarifa familiar: " + valorTarifa.toFixed(2));
+      valorConsumo.value = valorTarifa.toFixed(2);
+    } else {
+      totalConsumo = (consumo - limitebase) * valorTarifa;
+      console.log(
+        "Total consumo que excede la base: ",
+        totalConsumo + "|" + base
+      );
 
-  console.log("Tarifas: " + tarifasDisponibles);
-  if (tarifasDisponibles[0] !== undefined) {
-    tarifasDisponibles.forEach((tarifa) => {
-      if (consumo >= tarifa.desde && consumo <= tarifa.hasta) {
-        tarifaAplicada = tarifa.tarifa;
-        valorTarifa = tarifa.valor;
-        console.log(
-          "VAlores que se asignaran: ",
-          tarifaAplicada + "|" + valorTarifa
-        );
-      }
-      if (tarifa.tarifa == "Familiar") {
-        base = tarifa.valor;
-        limitebase = tarifa.hasta;
-        console.log("Bases: ", base + "|" + limitebase);
-      }
-    });
-  }
-  if (tarifaAplicada === "Familiar") {
-    console.log("Aplicando tarifa familiar: " + valorTarifa.toFixed(2));
-    valorConsumo.value = valorTarifa.toFixed(2);
-  } else {
-    totalConsumo = (consumo - limitebase) * valorTarifa;
-    console.log(
-      "Total consumo que excede la base: ",
-      totalConsumo + "|" + base
-    );
+      valorConsumo.value = (totalConsumo + base).toFixed(2);
+    }
 
     valorConsumo.value = (totalConsumo + base).toFixed(2);
+
+    tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+
+    console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
+  } else {
+    tarifaAplicada = "Sin consumo";
+    valorConsumo.value = (totalConsumo + base).toFixed(2);
+
+    tarifaConsumo.value = "Siin Consumo" + "($" + 0.0 + ")";
+
+    console.log("Tarifa: " + "Siin Consumo" + "(" + 0.0 + ")");
   }
-
-  valorConsumo.value = (totalConsumo + base).toFixed(2);
-
-  tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
-
-  console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
 }
 async function recalcularConsumo() {
   if (planillaMedidorSn) {
@@ -853,7 +1000,7 @@ async function recalcularConsumo() {
     console.log("totalRecalculado: " + totalRecalculado);
     console.log("Valor consumo: " + valorConsumo.value);
     totalRecalculado += parseFloat(valorConsumo.value);
-    valorSubtotal.value =( totalRecalculado + descuentoFinal).toFixed(2);
+    valorSubtotal.value = (totalRecalculado + descuentoFinal).toFixed(2);
     valorTotalPagar.value = totalRecalculado.toFixed(2);
   } else {
     console.log("tf-tc: " + totalFinal, totalConsumo);
@@ -898,7 +1045,7 @@ function obtenerPrimerYUltimoDiaDeMes(anio, mes) {
   };
 }
 function cargarMesActual() {
-  mesBusqueda.innerHTML = '<option value="all" selected>Todo mes</option>';
+  mesBusqueda.innerHTML = '<option value="all" >Todo mes</option>';
   // Obtén el mes actual (0-indexed, enero es 0, diciembre es 11)
   const mesActual = new Date().getMonth();
   // Array de nombres de meses
@@ -923,7 +1070,7 @@ function cargarMesActual() {
     option.textContent = nombresMeses[i];
     if (i === mesActual) {
       console.log("seleccionando: " + mesActual);
-      // option.selected = true;
+      option.selected = true;
     }
 
     mesBusqueda.appendChild(option);
@@ -933,7 +1080,7 @@ function cargarMesActual() {
   // mesBusqueda.value = mesActual;
 }
 function cargarAnioBusquedas() {
-  anioBusqueda.innerHTML = '<option value="all" selected>Todo año</option>';
+  anioBusqueda.innerHTML = '<option value="all" >Todo año</option>';
   // Obtener el año actual
   var anioActual = new Date().getFullYear();
   // Crear opciones de años desde el año actual hacia atrás
@@ -942,7 +1089,7 @@ function cargarAnioBusquedas() {
     option.value = i;
     option.text = i;
     if (i === anioActual) {
-      // option.selected = true;
+      option.selected = true;
     }
     anioBusqueda.appendChild(option);
   }
@@ -987,7 +1134,9 @@ const detallesServiciodg = async (servicio) => {
   let aplazable = "No aplazable";
   let cancelados = 0;
   let pendientes = 0;
+  let aplicados = 0;
   let valorCancelado = 0;
+  let valorAplicado = 0;
   let valorAbonar = 0;
   let valorSaldo = 0;
   console.log("Servicio al Dg: " + servicio.contratadosId);
@@ -1014,9 +1163,11 @@ const detallesServiciodg = async (servicio) => {
         valorCancelado += pagoAnterior.abono;
         cancelados++;
       } else {
+        valorAplicado += pagoAnterior.abono;
         pendientes++;
       }
     }
+    valorAbonar = pagoAnterior.abono;
   });
   administrarDg.onclick = async () => {
     const servicioEnviar = {
@@ -1027,21 +1178,37 @@ const detallesServiciodg = async (servicio) => {
   };
   canceladosDg.textContent = cancelados;
   pendientesDg.textContent = pendientes;
-  valorSaldo = servicio.total - valorCancelado;
+  valorSaldo = servicio.total - valorCancelado - valorAplicado;
   saldoDg.textContent = valorSaldo;
   abonadoDg.textContent = valorCancelado;
-  if (valorSaldo - valorCancelado < servicio.valorPagos) {
-    valorAbonar = valorSaldo - valorCancelado;
-  } else {
-    if (servicio.valorPagos !== null) {
-      valorAbonar = servicio.valorPagos;
-    } else {
-      valorAbonar = valorSaldo - valorCancelado;
-    }
-  }
+  // if (valorSaldo - valorCancelado < servicio.valorPagos) {
+  //   valorAbonar = valorSaldo - valorCancelado;
+  // } else {
+  //   if (servicio.valorPagos !== null) {
+  //     valorAbonar = servicio.valorPagos;
+  //   } else {
+  //     valorAbonar = valorSaldo - valorCancelado;
+  //   }
+  // }
   console.log("Abonar: " + valorAbonar);
   if (servicio.tipo !== "Servicio fijo" && servicio.aplazableSn === "Si") {
     abonarDg.readOnly = false;
+    anularDg.style.display = "none";
+    anularDg.disabled = true;
+  } else if (
+    servicio.tipo !== "Servicio fijo" &&
+    servicio.aplazableSn === "No"
+  ) {
+    abonarDg.readOnly = true;
+    anularDg.style.display = "none";
+    anularDg.disabled = true;
+  } else if (servicio.tipo == "Servicio fijo") {
+    abonarDg.readOnly = true;
+    anularDg.style.display = "block";
+    anularDg.disabled = false;
+    anularDg.addEventListener("click", () => {
+      anularFijo(servicio);
+    });
   }
   abonarDg.value = valorAbonar;
   abonarDg.placeHolder = "" + valorAbonar;
@@ -1063,10 +1230,41 @@ const detallesServiciodg = async (servicio) => {
     dialogServicios.showModal();
   }
 };
+async function anularFijo(servicio) {
+  CerrarFormServicios();
+  Swal.fire({
+    title: "¿Quieres anular este servicio?",
+    text: "El valor no se vera reflejado en la planilla, no podrás deshacer esta acción.",
+    icon: "question",
+    iconColor: "#f8c471",
+    showCancelButton: true,
+    confirmButtonColor: "#2874A6",
+    cancelButtonColor: "#EC7063 ",
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const newDetalle = {
+        estado: "Anulado",
+      };
+      const reultAnularFijo = await ipcRenderer.invoke(
+        "updateDetalle",
+        fechaEmisionEdit,
+        editContratoId,
+        servicio.id,
+        newDetalle
+      );
+    } else {
+      detallesServiciodg(servicio);
+    }
+  });
+}
 function resetForm() {
   planillaForm.reset();
   lecturaActualEdit = 0;
   lecturaAnteriorEdit = 0;
+  tarifaEdit = "";
+  tarifaTemporal = "";
   valorConsumoEdit = 0;
   totalFinal = 0.0;
   descuentoFinal = 0;
@@ -1095,6 +1293,41 @@ function resetFormAfterUpdate() {
   editPlanilla(editPlanillaId, editContratoId, fechaEmisionEdit);
   recalcularConsumo();
 }
+doBt.addEventListener("click", () => {
+  Hacer();
+});
+async function Hacer() {
+  const result = await ipcRenderer.invoke("ejectContratado");
+  console.log("Hacer: " + result);
+}
+doneBt.addEventListener("click", () => {
+  Hecho();
+});
+async function Hecho() {
+  const result = await ipcRenderer.invoke("ejectContratadoDetalles");
+  console.log("Hecho: " + result);
+}
+// lecturaActual.addEventListener("click", () => {
+//   if (tarifaTemporal == "Sin consumo") {
+//     Swal.fire({
+//       title: "Tarifa Sin consumo",
+//       text: "Esta planilla corresponde a una nueva cometida ¿Quieres ingresar lecturas de consumo?",
+//       icon: "question",
+//       iconColor: "#f8c471",
+//       showCancelButton: true,
+//       confirmButtonColor: "#2874A6",
+//       cancelButtonColor: "#EC7063 ",
+//       confirmButtonText: "Sí, continuar",
+//       cancelButtonText: "Cancelar",
+//     }).then(async (result) => {
+//       if (result.isConfirmed) {
+//         lecturaActual.readOnly = false;
+//       } else {
+//         lecturaActual.readOnly = true;
+//       }
+//     });
+//   }
+// });
 cancelarForm.addEventListener("click", function () {
   console.log("Borrando form");
   resetForm();
@@ -1127,11 +1360,106 @@ mostrarLecturas.onclick = () => {
   }
 };
 calcularConsumoBt.onclick = () => {
+  if (tarifaEdit == "Sin consumo") {
+    tarifaTemporal = "Sin consumo";
+  }
   lecturaActual.value = lecturaActualEdit;
   lecturaAnterior.value = lecturaAnteriorEdit;
   valorConsumo.value = valorConsumoEdit;
-  calcularConsumo();
+  recalcularConsumo();
 };
+sinConsumoBt.addEventListener("click", async () => {
+  console.log("Tarifa edit: ", tarifaEdit);
+  if (tarifaEdit !== "Sin consumo") {
+    if (lecturaAnterior.value <= 0) {
+      if (!editingStatus) {
+        console.log("Can not create planilla");
+      } else {
+        if (!planillaMedidorSn) {
+          console.log("Guardado :) ");
+        } else {
+          lecturaActual.value = 0;
+          tarifaConsumo.value = "Sin consumo($0)";
+          valorConsumo.value = 0.0;
+          const newPlanilla = {
+            valor: valorConsumo.value,
+            lecturaAnterior: lecturaAnterior.value,
+            lecturaActual: lecturaActual.value,
+            // observacion: "NA",
+            tarifa: "Sin consumo",
+            tarifaValor: 0,
+          };
+          const newDetalleServicio = {
+            subtotal: valorConsumo.value,
+            total: valorConsumo.value,
+            saldo: 0.0,
+            abono: valorConsumo.value,
+          };
+          Swal.fire({
+            title: "¿Aplicar tarifa sin consumo?",
+            text: "El valor de esta tarifa es $0.0 y solo se aplica a nuevas cometidas.",
+            icon: "question",
+            iconColor: "#f8c471",
+            showCancelButton: true,
+            confirmButtonColor: "#2874A6",
+            cancelButtonColor: "#EC7063 ",
+            confirmButtonText: "Sí, continuar",
+            cancelButtonText: "Cancelar",
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              // Aquí puedes realizar la acción que desees cuando el usuario confirme.
+              console.log("Aplicando sin consumo wait...");
+              const result = await ipcRenderer.invoke(
+                "updatePlanilla",
+                editPlanillaId,
+                newPlanilla,
+                editContratoId
+              );
+              if (result !== undefined) {
+                const resultDetalle = await ipcRenderer.invoke(
+                  "updateDetalle",
+                  fechaEmisionEdit,
+                  editContratoId,
+                  editDetalleId,
+                  newDetalleServicio
+                );
+                console.log(result, resultDetalle);
+              }
+            } else {
+              lecturaActual.value = lecturaActualEdit;
+              lecturaAnterior.value = lecturaAnteriorEdit;
+              valorConsumo.value = valorConsumoEdit;
+              calcularConsumo();
+            }
+          });
+        }
+      }
+    } else {
+      Swal.fire({
+        title: "Planilla con lectura anterior",
+        text:
+          "Esta planilla tiene lecturas de consumo " +
+          "no puedes aplicar esta tarifa.",
+        icon: "info",
+        iconColor: "green",
+        showConfirmButton: true,
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "green",
+      });
+    }
+  } else {
+    Swal.fire({
+      title: "Tarifa aplicada",
+      text:
+        'La tarifa "Sin consumo" ya ha sido aplicada ' + "en esta planilla.",
+      icon: "info",
+      iconColor: "green",
+      showConfirmButton: true,
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "green",
+    });
+  }
+});
 function mostrarFormServicios() {
   console.log("MostrarFormServicios");
   if (dialogServicios.close) {

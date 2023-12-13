@@ -140,270 +140,352 @@ planillaForm.addEventListener("submit", async (e) => {
   }
 });
 
-function renderPlanillas(datosPlanillas) {
-  planillasList.innerHTML = "";
-  datosPlanillas.forEach(async (datosPlanilla) => {
-    // Crear el elemento div principal con las clases y el estilo
-    const divContainer = document.createElement("div");
-    divContainer.className = "col-xl-6 col-lg-12 col-md-12 col-sm-12 px-1";
-    divContainer.style.height = "fit-content";
-    divContainer.style.maxHeight = "fit-content";
-    // divContainer.style.backgroundColor = "black";
-    const cardDiv = document.createElement("div");
-    cardDiv.className =
-      "clase col-xl-12 col-lg-12 col-md-12 col-sm-12 my-1 mx-1 card card-planilla";
-    cardDiv.style.backgroundColor = "red";
+//xxx
+let fechaDesde = "";
+let fechaHasta = "";
+let estadoPlanilla = "";
+let contrato = "";
+let socioNombre = "";
+let contratoId = "";
+var rpValorAguaPotable = null;
+var rpTotalPagar = 0.0;
+let datosServiciosGeneral = [];
+let datosServiciosAgrupados = [];
+let totalConsumoRp = 0;
+let totalValorConsumo = 0;
+let lectura = 0;
 
-    cardDiv.style.width = "100%";
-    // cardDiv.style.maxWidth = "100%";
-    cardDiv.style.padding = "0.3em";
-    cardDiv.style.backgroundColor = "#d6eaf8";
-    cardDiv.style.height = "30em";
-    cardDiv.style.minHeight = "30em";
-    cardDiv.style.maxHeight = "30em";
-    // Crear el elemento div para el encabezado de la tarjeta con la clase y el estilo
-    const headerDiv = document.createElement("div");
-    headerDiv.className = "card-header d-flex ";
-    headerDiv.style.backgroundColor = "#85c1e9";
-
-    // Crear el elemento div para la información del contrato
-    const contratoDiv = document.createElement("div");
-    contratoDiv.className = "d-flex col-6 titulo-detalles header-planilla";
-
-    const contratoP = document.createElement("p");
-    contratoP.textContent = "Contrato: ";
-    const espace = document.createElement("p");
-    espace.textContent = "-";
-    espace.className = "trans";
-    const contratoValor = document.createElement("p");
-    contratoValor.textContent = datosPlanilla.codigo;
-    contratoValor.className = "title-contrato ";
-    contratoDiv.appendChild(contratoP);
-    contratoDiv.appendChild(espace);
-    contratoDiv.appendChild(contratoValor);
-
-    // Crear el elemento div para la información de "Cancelado"
-    const canceladoDiv = document.createElement("div");
-    canceladoDiv.className =
-      "d-flex col-6 titulo-detalles header-planilla positive justify-content-end";
-    const canceladoP = document.createElement("p");
-    canceladoP.textContent = "Cancelado: ";
-    const canceladoValor = document.createTextNode(datosPlanilla.estado);
-    // canceladoDiv.appendChild(canceladoP);
-    canceladoDiv.appendChild(canceladoValor);
-
-    // Agregar los elementos de contrato y cancelado al encabezado
-    headerDiv.appendChild(contratoDiv);
-    headerDiv.appendChild(canceladoDiv);
-
-    // Crear el elemento div para el cuerpo de la tarjeta
-    const bodyDiv = document.createElement("div");
-    bodyDiv.className = "card-body cuerpo";
-    bodyDiv.style.backgroundColor = "white";
-    // Crear el elemento div para el título del socio
-    const socioDiv = document.createElement("div");
-    socioDiv.className = "card-title d-flex  mp-0";
-    const socioH5 = document.createElement("p");
-    socioH5.className = "mp-0 titulos";
-    socioH5.textContent = "Socio: ";
-    const espace1 = document.createElement("p");
-    espace1.textContent = "-";
-    espace1.className = "trans mp-0";
-    const socioP = document.createTextNode(datosPlanilla.nombre);
-    socioDiv.appendChild(socioH5);
-    socioDiv.appendChild(espace1);
-    socioDiv.appendChild(socioP);
-
-    // Crear el elemento para la fecha de emisión
-    const fechaEmisionDiv = document.createElement("div");
-    fechaEmisionDiv.className = "d-flex ";
-    const fechaEmisionP = document.createElement("p");
-    fechaEmisionP.className = "titulos mp-0";
-    fechaEmisionP.textContent = "Fecha emisión: ";
-    const fechaEmisionSp = document.createElement("p");
-    fechaEmisionSp.textContent = "-";
-    fechaEmisionSp.className = "trans mp-0";
-    const fechaEmisionValor = document.createTextNode(
-      formatearFecha(datosPlanilla.fechaEmision)
-    );
-    fechaEmisionDiv.appendChild(fechaEmisionP);
-    fechaEmisionDiv.appendChild(fechaEmisionSp);
-    fechaEmisionDiv.appendChild(fechaEmisionValor);
-
-    // Crear el elemento para la sección de servicios
-    const serviciosDiv = document.createElement("div");
-    serviciosDiv.className = "row";
-    const serviciosP = document.createElement("p");
-    serviciosP.className = "text-center titulo-servicios-positive";
-    serviciosP.textContent = "Agua Potable";
-    const serviciosTituloP = document.createElement("p");
-    serviciosTituloP.className = "text-center titulo-servicios-positive";
-    serviciosTituloP.textContent = "Servicios";
-    // Agrega la fecha de Emision y el Socio
-    serviciosDiv.appendChild(socioDiv);
-    serviciosDiv.appendChild(fechaEmisionDiv);
-    serviciosDiv.appendChild(serviciosP);
-
-    // Crear el elemento para la lista de servicios
-    const listaServiciosDiv = document.createElement("div");
-    listaServiciosDiv.className = "lista-servicios";
-    // Crear la lista ul con la clase
-    const listaUl = document.createElement("ul");
-    listaUl.className = "list-group list-group-flush";
-
-    //Consulta los servicios a cancelar de acuerdo al id del contrato
-    const datosServicios = await ipcRenderer.invoke(
+const obtenerServicios = async (contratosId, fechaEmision) => {
+  let serviciosGenerales = [];
+  const datosServicios = await ipcRenderer
+    .invoke(
       "getDatosServiciosByContratoId",
-      datosPlanilla.contratosId,
-      formatearFecha(datosPlanilla.fechaEmision),
+      contratosId,
+      formatearFecha(fechaEmision),
       "all"
-    );
-    console.log("Servicios encontrados: " + datosServicios);
-    // Crear elementos para los detalles de servicios (Consumo, Tarifa, Valor)
-    var rpValorAguaPotable = null;
-    var rpTotalPagar = 0.0;
-    // Contenedor y contenido de consumo
-    const consumoDiv = document.createElement("div");
-    consumoDiv.className = "col-4 d-flex titulo-detalles";
-    const consumoP = document.createElement("p");
-    consumoP.textContent = "Consumo:";
-    const consumoSp = document.createElement("p");
-    consumoSp.textContent = "-";
-    consumoSp.className = "trans mp-0";
-    // Contenedor y contenido de tarifa
-    const tarifaDiv = document.createElement("div");
-    tarifaDiv.className = "col-4 d-flex titulo-detalles";
-    const tarifaP = document.createElement("p");
-    tarifaP.textContent = "Tarifa:";
-    const tarifaSp = document.createElement("p");
-    tarifaSp.textContent = "-";
-    tarifaSp.className = "trans mp-0";
-    // Contenedor y contenido de valor consumo
-    const valorDiv = document.createElement("div");
-    valorDiv.className = "col-4 d-flex titulo-detalles";
-    const valorP = document.createElement("p");
-    valorP.textContent = "Valor:$ ";
-    const valorSp = document.createElement("p");
-    valorSp.textContent = "-";
-    valorSp.className = "trans mp-0";
-    if (datosServicios.length > 0) {
-      datosServicios.forEach((datosServicio) => {
-        if (datosServicio.nombre === "Agua Potable") {
-          rpValorAguaPotable = datosServicio.total;
-          tarifaAguaPotable = datosServicio.tarifa;
-          // el total de servicio agua al total a pagar de rp
-          rpTotalPagar += datosServicio.total;
-        } else {
-          // Crear elementos de la lista de servicios (Alcantarillado, Recolección de desechos, Riego Agrícola, Bomberos)
-          if (
-            datosServicio.nombre !== "Socio comuna" &&
-            datosServicio.estadoDetalles !== "Anulado"
-          ) {
-            if (datosServicio.aplazableSn === "Si") {
-              const alcantarilladoLi = document.createElement("li");
-              alcantarilladoLi.className = "titulo-detalles d-flex detalles";
-              const alcantarilladoP = document.createElement("p");
-              alcantarilladoP.textContent = datosServicio.nombre + ": ";
-              const servicioSp = document.createElement("p");
-              servicioSp.textContent = "-";
-              servicioSp.className = "trans mp-0";
-              const alcantarilladoValor = document.createTextNode(
-                // en esta parte esta seliendo null
-                parseFloat(datosServicio.abono).toFixed(2) + "$"
-              );
-              // si el servicio es aplazable sumo el abono al total a pagar de rp
-              rpTotalPagar += datosServicio.abono;
-              alcantarilladoLi.appendChild(alcantarilladoP);
-              alcantarilladoLi.appendChild(servicioSp);
-              alcantarilladoLi.appendChild(alcantarilladoValor);
-              listaUl.appendChild(alcantarilladoLi);
-            } else {
-              const alcantarilladoLi = document.createElement("li");
-              alcantarilladoLi.className = "titulo-detalles d-flex detalles";
-              const alcantarilladoP = document.createElement("p");
-              alcantarilladoP.textContent = datosServicio.nombre + ": ";
-              const servicioSp = document.createElement("p");
-              servicioSp.textContent = "-";
-              servicioSp.className = "trans mp-0";
-              const alcantarilladoValor = document.createTextNode(
-                parseFloat(datosServicio.total).toFixed(2) + "$"
-              );
-              // Si el servicio no es aplazable (fijo u ocacional) sumo el total al total
-              // a pagar de rp
-              rpTotalPagar += datosServicio.total;
-              alcantarilladoLi.appendChild(alcantarilladoP);
-              alcantarilladoLi.appendChild(servicioSp);
-              alcantarilladoLi.appendChild(alcantarilladoValor);
-              listaUl.appendChild(alcantarilladoLi);
-            }
-          }
-        }
+    )
+    .then((datosServicios) => {
+      serviciosGenerales.push(...datosServicios);
+      console.log("Servicios encontrados: ", serviciosGenerales);
+    });
+  console.log("A retornar: ", serviciosGenerales);
+  return serviciosGenerales;
+};
+const agruparServicios = async (datosServiciosGeneral) => {
+  console.log("Grupos sin suma:", datosServiciosGeneral);
 
-        // Agregar los elementos de servicios al contenedor de servicios
-
-        serviciosDiv.appendChild(consumoDiv);
-        serviciosDiv.appendChild(tarifaDiv);
-        serviciosDiv.appendChild(valorDiv);
-        serviciosDiv.appendChild(serviciosTituloP);
-        listaServiciosDiv.appendChild(listaUl);
-      });
-      console.log("valor agua: " + rpValorAguaPotable);
-      if (
-        rpValorAguaPotable === null ||
-        rpValorAguaPotable === undefined ||
-        rpValorAguaPotable === "null"
-      ) {
-        // Si despues de almacenar el valor de agua potable la variable sique siendo null
-        // no existe el servicio de agua potable asignamos No aplica
-        console.log("Valor de agua= " + rpValorAguaPotable);
-        console.log("Asignando NA");
-        const consumoValor = document.createTextNode("NA");
-        consumoDiv.appendChild(consumoP);
-        consumoDiv.appendChild(consumoSp);
-        consumoDiv.appendChild(consumoValor);
-        const tarifaValor = document.createTextNode("NA");
-        tarifaDiv.appendChild(tarifaP);
-        tarifaDiv.appendChild(tarifaSp);
-        tarifaDiv.appendChild(tarifaValor);
-        const valorValor = document.createTextNode("0.0");
-        valorDiv.appendChild(valorP);
-        valorDiv.appendChild(valorSp);
-        valorDiv.appendChild(valorValor);
+  let datosServiciosAgrupados = await datosServiciosGeneral.reduce(
+    (acumulador, objeto) => {
+      // Verificar si ya hay un grupo con el mismo nombre
+      let grupoExistente = acumulador.find(
+        (nombre) => nombre.nombre === objeto.nombre
+      );
+      // Si el grupo existe, agregar el valor al grupo
+      if (grupoExistente) {
+        grupoExistente.abono += objeto.abono;
+        grupoExistente.total += objeto.total;
+        grupoExistente.objetos.push(objeto);
       } else {
-        lectura = await getDatosLecturas(
-          datosPlanilla.contratosId,
-          formatearFecha(datosPlanilla.fechaEmision)
-        );
-        console.log("Datos Lecturas: ", lectura);
-        const consumoValor = document.createTextNode(
-          lectura[0].lecturaActual - lectura[0].lecturaAnterior
-        );
-        consumoDiv.appendChild(consumoP);
-        consumoDiv.appendChild(consumoSp);
-        consumoDiv.appendChild(consumoValor);
-        const tarifaValor = document.createTextNode(
-          " " + "(" + lectura[0].tarifaValor + ")"
-        );
-        // const tarifaValor = document.createTextNode(
-        //   lectura[0].tarifa + "(" + lectura[0].tarifaValor + ")"
-        // );
-        tarifaDiv.appendChild(tarifaP);
-        tarifaDiv.appendChild(tarifaSp);
-        tarifaDiv.appendChild(tarifaValor);
-        // tarifaDiv.className = "d-flex";
-        const valorValor = document.createTextNode(
-          parseFloat(lectura[0].valor).toFixed(2)
-        );
-        valorDiv.appendChild(valorP);
-        valorDiv.appendChild(valorSp);
-        valorDiv.appendChild(valorValor);
+        // Si el grupo no existe, crear uno nuevo con el valor
+        acumulador.push({
+          nombre: objeto.nombre,
+          abono: objeto.abono,
+          total: objeto.total,
+          objetos: [objeto],
+        });
       }
-      // --->
-      bodyDiv.appendChild(serviciosDiv);
-      bodyDiv.appendChild(listaServiciosDiv);
-    } else {
-      // En caso de que no existan servicios cargados a la planilla
-      console.log("Asignando NA para planillas vacias");
+
+      return acumulador;
+    },
+    []
+  );
+  return datosServiciosAgrupados;
+};
+async function obtenerDatos(datosPlanillas) {
+  console.log("Datos en for:", datosPlanillas);
+  fechaHasta = "";
+  estadoPlanilla = "";
+  contrato = "";
+  socioNombre = "";
+  contratoId = "";
+  rpValorAguaPotable = null;
+  rpTotalPagar = 0.0;
+  datosServiciosGeneral = [];
+  //  datosServiciosAgrupados = [];
+  totalConsumoRp = 0;
+  totalValorConsumo = 0;
+  lectura = [];
+  let index = 0;
+  return await new Promise((resolve) => {
+    datosPlanillas.forEach(async (datosPlanilla) => {
+      fechaHasta = datosPlanilla.fechaEmision;
+      // Obtenemos las lecturas de las planillas
+      totalConsumoRp = 0;
+      totalValorConsumo = 0;
+      lectura = await getDatosLecturas(
+        datosPlanilla.contratosId,
+        formatearFecha(datosPlanilla.fechaEmision)
+      ).then(async (lectura) => {
+        console.log("Index: ", index);
+        index++;
+        console.log("Length: ", datosPlanillas.length);
+        console.log("Index: ", index);
+
+        //Consulta los servicios a cancelar de acuerdo al id del contrato
+        datosServiciosGeneral = await obtenerServicios(
+          datosPlanilla.contratosId,
+          datosPlanilla.fechaEmision
+        ).then(async (datosServicioGeneral) => {
+          totalConsumoRp = 0;
+          totalValorConsumo = 0;
+          console.log("Retornado!: ", datosServicioGeneral);
+          // return datosServicioGeneral;
+          if (index === datosPlanillas.length) {
+            console.log("resuelto");
+            fechaDesde = datosPlanillas[0].fechaEmision;
+            // Almacenamos la fecha de emision recorriendo los objetos la ultima sera la que usaremos.
+          
+            estadoPlanilla = datosPlanilla.estadoPlanilla;
+            contrato = datosPlanilla.codigo;
+            contratoId = datosPlanilla.contratoId;
+            socioNombre = datosPlanilla.nombre;
+            console.log("Nombre en for: ", socioNombre);
+            console.log("Datos Lecturas: ", lectura);
+            let consumo = lectura[0].lecturaActual - lectura[0].lecturaAnterior;
+            if (consumo < 0) {
+              consumo = 0;
+            }
+            totalConsumoRp += consumo;
+            let valorConsumo = lectura[0].valor;
+            totalValorConsumo += valorConsumo;
+            resolve(); // Resolver la Promesa cuando el último elemento ha sido procesado
+            datosServiciosGeneral = datosServicioGeneral;
+          }
+        });
+        // console.log("Retornado!: ", datosServiciosGeneral);
+      });
+
+      // Usar reduce para agrupar objetos por el atributo 'grupo' y sumar los valores
+    });
+  });
+}
+async function renderPlanillas(datosPlanillas) {
+  console.log("Renderizar: ", datosPlanillas);
+  // planillasList.innerHTML = "";
+  // Almacenamos la fecha del primer objeto de las planillas existentes.
+  console.log("Antes: ", datosServiciosGeneral);
+  await obtenerDatos(datosPlanillas).then(async () => {
+    console.log("Nombre: ", socioNombre);
+    console.log("Antes: ", datosServiciosGeneral);
+    datosServiciosAgrupados = await agruparServicios(
+      datosServiciosGeneral
+    ).then(async (datosServiciosAgrupados) => {
+      await render(datosServiciosAgrupados);
+    });
+  });
+
+  // datosPlanillas.forEach(async (datosPlanilla) => {
+  // Crear el elemento div principal con las clases y el estilo
+}
+async function render(datosServiciosAgrupados) {
+  console.log("Grupos con suma:", datosServiciosAgrupados);
+  const divContainer = document.createElement("div");
+  divContainer.className = "col-xl-6 col-lg-12 col-md-12 col-sm-12 px-1";
+  divContainer.style.height = "fit-content";
+  divContainer.style.maxHeight = "fit-content";
+  // divContainer.style.backgroundColor = "black";
+  const cardDiv = document.createElement("div");
+  cardDiv.className =
+    "clase col-xl-12 col-lg-12 col-md-12 col-sm-12 my-1 mx-1 card card-planilla";
+  cardDiv.style.backgroundColor = "red";
+
+  cardDiv.style.width = "100%";
+  // cardDiv.style.maxWidth = "100%";
+  cardDiv.style.padding = "0.3em";
+  cardDiv.style.backgroundColor = "#d6eaf8";
+  cardDiv.style.height = "30em";
+  cardDiv.style.minHeight = "30em";
+  cardDiv.style.maxHeight = "30em";
+  // Crear el elemento div para el encabezado de la tarjeta con la clase y el estilo
+  const headerDiv = document.createElement("div");
+  headerDiv.className = "card-header d-flex ";
+  headerDiv.style.backgroundColor = "#85c1e9";
+
+  // Crear el elemento div para la información del contrato
+  const contratoDiv = document.createElement("div");
+  contratoDiv.className = "d-flex col-6 titulo-detalles header-planilla";
+
+  const contratoP = document.createElement("p");
+  contratoP.textContent = "Contrato: ";
+  const espace = document.createElement("p");
+  espace.textContent = "-";
+  espace.className = "trans";
+  const contratoValor = document.createElement("p");
+  contratoValor.textContent = contrato;
+  contratoValor.className = "title-contrato ";
+  contratoDiv.appendChild(contratoP);
+  contratoDiv.appendChild(espace);
+  contratoDiv.appendChild(contratoValor);
+
+  // Crear el elemento div para la información de "Cancelado"
+  const canceladoDiv = document.createElement("div");
+  canceladoDiv.className =
+    "d-flex col-6 titulo-detalles header-planilla positive justify-content-end";
+  const canceladoP = document.createElement("p");
+  canceladoP.textContent = "Cancelado: ";
+  const canceladoValor = document.createTextNode(estadoPlanilla);
+  // canceladoDiv.appendChild(canceladoP);
+  canceladoDiv.appendChild(canceladoValor);
+
+  // Agregar los elementos de contrato y cancelado al encabezado
+  headerDiv.appendChild(contratoDiv);
+  headerDiv.appendChild(canceladoDiv);
+
+  // Crear el elemento div para el cuerpo de la tarjeta
+  const bodyDiv = document.createElement("div");
+  bodyDiv.className = "card-body cuerpo";
+  bodyDiv.style.backgroundColor = "white";
+  // Crear el elemento div para el título del socio
+  const socioDiv = document.createElement("div");
+  socioDiv.className = "card-title d-flex  mp-0";
+  const socioH5 = document.createElement("p");
+  socioH5.className = "mp-0 titulos";
+  socioH5.textContent = "Socio: ";
+  const espace1 = document.createElement("p");
+  espace1.textContent = "-";
+  espace1.className = "trans mp-0";
+  const socioP = document.createTextNode(socioNombre);
+  socioDiv.appendChild(socioH5);
+  socioDiv.appendChild(espace1);
+  socioDiv.appendChild(socioP);
+
+  // Crear el elemento para la fecha de emisión
+  const fechaEmisionDiv = document.createElement("div");
+  fechaEmisionDiv.className = "d-flex ";
+  const fechaEmisionP = document.createElement("p");
+  fechaEmisionP.className = "titulos mp-0";
+  fechaEmisionP.textContent = "Rango fechas ";
+  const fechaEmisionSp = document.createElement("p");
+  fechaEmisionSp.textContent = "-";
+  fechaEmisionSp.className = "trans mp-0";
+  const fechaEmisionValor = document.createTextNode(
+    formatearFecha(fechaDesde) + "-" + formatearFecha(fechaHasta)
+  );
+  fechaEmisionDiv.appendChild(fechaEmisionP);
+  fechaEmisionDiv.appendChild(fechaEmisionSp);
+  fechaEmisionDiv.appendChild(fechaEmisionValor);
+
+  // // Crear el elemento para la sección de servicios
+  const serviciosDiv = document.createElement("div");
+  serviciosDiv.className = "row";
+  const serviciosP = document.createElement("p");
+  serviciosP.className = "text-center titulo-servicios-positive";
+  serviciosP.textContent = "Agua Potable";
+  const serviciosTituloP = document.createElement("p");
+  serviciosTituloP.className = "text-center titulo-servicios-positive";
+  serviciosTituloP.textContent = "Servicios";
+  // Agrega la fecha de Emision y el Socio
+  serviciosDiv.appendChild(socioDiv);
+  serviciosDiv.appendChild(fechaEmisionDiv);
+  serviciosDiv.appendChild(serviciosP);
+
+  // // Crear el elemento para la lista de servicios
+  const listaServiciosDiv = document.createElement("div");
+  listaServiciosDiv.className = "lista-servicios";
+  // Crear la lista ul con la clase
+  const listaUl = document.createElement("ul");
+  listaUl.className = "list-group list-group-flush";
+  // Contenedor y contenido de consumo
+  const consumoDiv = document.createElement("div");
+  consumoDiv.className = "col-4 d-flex titulo-detalles";
+  const consumoP = document.createElement("p");
+  consumoP.textContent = "Consumo:";
+  const consumoSp = document.createElement("p");
+  consumoSp.textContent = "-";
+  consumoSp.className = "trans mp-0";
+  // Contenedor y contenido de tarifa
+  const tarifaDiv = document.createElement("div");
+  tarifaDiv.className = "col-4 d-flex titulo-detalles";
+  const tarifaP = document.createElement("p");
+  tarifaP.textContent = "Tarifa:";
+  const tarifaSp = document.createElement("p");
+  tarifaSp.textContent = "-";
+  tarifaSp.className = "trans mp-0";
+  // Contenedor y contenido de valor consumo
+  const valorDiv = document.createElement("div");
+  valorDiv.className = "col-4 d-flex titulo-detalles";
+  const valorP = document.createElement("p");
+  valorP.textContent = "Valor:$ ";
+  const valorSp = document.createElement("p");
+  valorSp.textContent = "-";
+  valorSp.className = "trans mp-0";
+
+  if (datosServiciosAgrupados.length > 0) {
+    datosServiciosAgrupados.forEach((servicioAgrupado) => {
+      if (servicioAgrupado.nombre === "Agua Potable") {
+        rpValorAguaPotable = servicioAgrupado.total;
+        // tarifaAguaPotable = servicioAgrupado.tarifa;
+        // el total de servicio agua al total a pagar de rp
+        rpTotalPagar += servicioAgrupado.total;
+      } else {
+        // Crear elementos de la lista de servicios (Alcantarillado, Recolección de desechos, Riego Agrícola, Bomberos)
+        if (servicioAgrupado.objetos[0].aplazableSn === "Si") {
+          const alcantarilladoLi = document.createElement("li");
+          alcantarilladoLi.className = "titulo-detalles d-flex detalles";
+          const alcantarilladoP = document.createElement("p");
+          alcantarilladoP.textContent = servicioAgrupado.nombre + ": ";
+          const servicioSp = document.createElement("p");
+          servicioSp.textContent = "-";
+          servicioSp.className = "trans mp-0";
+          const alcantarilladoValor = document.createTextNode(
+            // en esta parte esta seliendo null
+            parseFloat(servicioAgrupado.abono).toFixed(2) + "$"
+          );
+          // si el servicio es aplazable sumo el abono al total a pagar de rp
+          rpTotalPagar += servicioAgrupado.abono;
+          alcantarilladoLi.appendChild(alcantarilladoP);
+          alcantarilladoLi.appendChild(servicioSp);
+          alcantarilladoLi.appendChild(alcantarilladoValor);
+          listaUl.appendChild(alcantarilladoLi);
+        } else {
+          const alcantarilladoLi = document.createElement("li");
+          alcantarilladoLi.className = "titulo-detalles d-flex detalles";
+          const alcantarilladoP = document.createElement("p");
+          alcantarilladoP.textContent = servicioAgrupado.nombre + ": ";
+          const servicioSp = document.createElement("p");
+          servicioSp.textContent = "-";
+          servicioSp.className = "trans mp-0";
+          const alcantarilladoValor = document.createTextNode(
+            parseFloat(servicioAgrupado.total).toFixed(2) + "$"
+          );
+          // Si el servicio no es aplazable (fijo u ocacional) sumo el total al total
+          // a pagar de rp
+          rpTotalPagar += servicioAgrupado.total;
+          alcantarilladoLi.appendChild(alcantarilladoP);
+          alcantarilladoLi.appendChild(servicioSp);
+          alcantarilladoLi.appendChild(alcantarilladoValor);
+          listaUl.appendChild(alcantarilladoLi);
+        }
+      }
+
+      // Agregar los elementos de servicios al contenedor de servicios
+
+      serviciosDiv.appendChild(consumoDiv);
+      serviciosDiv.appendChild(tarifaDiv);
+      serviciosDiv.appendChild(valorDiv);
+      serviciosDiv.appendChild(serviciosTituloP);
+      listaServiciosDiv.appendChild(listaUl);
+    });
+    console.log("valor agua: " + rpValorAguaPotable);
+    if (
+      rpValorAguaPotable === null ||
+      rpValorAguaPotable === undefined ||
+      rpValorAguaPotable === "null"
+    ) {
+      // Si despues de almacenar el valor de agua potable la variable sique siendo null
+      // no existe el servicio de agua potable asignamos No aplica
+      console.log("Valor de agua= " + rpValorAguaPotable);
+      console.log("Asignando NA");
       const consumoValor = document.createTextNode("NA");
       consumoDiv.appendChild(consumoP);
       consumoDiv.appendChild(consumoSp);
@@ -412,106 +494,151 @@ function renderPlanillas(datosPlanillas) {
       tarifaDiv.appendChild(tarifaP);
       tarifaDiv.appendChild(tarifaSp);
       tarifaDiv.appendChild(tarifaValor);
-      const valorValor = document.createTextNode("NA");
+      const valorValor = document.createTextNode("0.0");
       valorDiv.appendChild(valorP);
       valorDiv.appendChild(valorSp);
       valorDiv.appendChild(valorValor);
-
-      const alcantarilladoLi = document.createElement("li");
-      alcantarilladoLi.className = "titulo-detalles d-flex detalles";
-      const alcantarilladoP = document.createElement("p");
-      alcantarilladoP.textContent = "Sin servicios adeudados" + ": ";
-      const servicioSp = document.createElement("p");
-      servicioSp.textContent = "-";
-      servicioSp.className = "trans mp-0";
-      const alcantarilladoValor = document.createTextNode(
-        parseFloat(0).toFixed(2) + "$"
+    } else {
+      // lectura = await getDatosLecturas(
+      //   datosPlanilla.contratosId,
+      //   formatearFecha(datosPlanilla.fechaEmision)
+      // );
+      console.log("Datos consumo total: ", totalConsumoRp);
+      const consumoValor = document.createTextNode(
+        parseFloat(totalConsumoRp).toFixed(2)
       );
-      // El total a pagar de planillas sera cero
-      rpTotalPagar += 0.0;
-      alcantarilladoLi.appendChild(alcantarilladoP);
-      alcantarilladoLi.appendChild(servicioSp);
-      alcantarilladoLi.appendChild(alcantarilladoValor);
-
-      serviciosDiv.appendChild(consumoDiv);
-      serviciosDiv.appendChild(tarifaDiv);
-      serviciosDiv.appendChild(valorDiv);
-
-      serviciosDiv.appendChild(serviciosTituloP);
-      listaUl.appendChild(alcantarilladoLi);
-      listaServiciosDiv.appendChild(listaUl);
-
-      bodyDiv.appendChild(serviciosDiv);
-      bodyDiv.appendChild(listaServiciosDiv);
+      consumoDiv.appendChild(consumoP);
+      consumoDiv.appendChild(consumoSp);
+      consumoDiv.appendChild(consumoValor);
+      const tarifaValor = document.createTextNode("NA");
+      // const tarifaValor = document.createTextNode(
+      //   lectura[0].tarifa + "(" + lectura[0].tarifaValor + ")"
+      // );
+      tarifaDiv.appendChild(tarifaP);
+      tarifaDiv.appendChild(tarifaSp);
+      tarifaDiv.appendChild(tarifaValor);
+      // tarifaDiv.className = "d-flex";
+      const valorValor = document.createTextNode(
+        parseFloat(totalValorConsumo).toFixed(2)
+      );
+      valorDiv.appendChild(valorP);
+      valorDiv.appendChild(valorSp);
+      valorDiv.appendChild(valorValor);
     }
+    // --->
+    bodyDiv.appendChild(serviciosDiv);
+    bodyDiv.appendChild(listaServiciosDiv);
+  } else {
+    // En caso de que no existan servicios cargados a la planilla
+    console.log("Asignando NA para planillas vacias");
+    const consumoValor = document.createTextNode("NA");
+    consumoDiv.appendChild(consumoP);
+    consumoDiv.appendChild(consumoSp);
+    consumoDiv.appendChild(consumoValor);
+    const tarifaValor = document.createTextNode("NA");
+    tarifaDiv.appendChild(tarifaP);
+    tarifaDiv.appendChild(tarifaSp);
+    tarifaDiv.appendChild(tarifaValor);
+    const valorValor = document.createTextNode("NA");
+    valorDiv.appendChild(valorP);
+    valorDiv.appendChild(valorSp);
+    valorDiv.appendChild(valorValor);
 
-    // Crear el elemento para el pie de la tarjeta
-    const footerDiv = document.createElement("div");
-    footerDiv.className = "card-footer row d-flex";
-    footerDiv.style.border = "none";
-    // Crear elemento para el total
-    const totalDiv = document.createElement("div");
-    totalDiv.className = "col-6 titulo-detalles d-flex";
-    const totalP = document.createElement("p");
-    totalP.textContent = "Total:$";
-    const totalSp = document.createElement("p");
-    totalSp.textContent = "-";
-    totalSp.className = "trans mp-0";
-    // Mostramos en el pie de la planilla el total que se calculo durante rp
-    const totalValor = document.createTextNode(
-      parseFloat(rpTotalPagar).toFixed(2)
+    const alcantarilladoLi = document.createElement("li");
+    alcantarilladoLi.className = "titulo-detalles d-flex detalles";
+    const alcantarilladoP = document.createElement("p");
+    alcantarilladoP.textContent = "Sin servicios adeudados" + ": ";
+    const servicioSp = document.createElement("p");
+    servicioSp.textContent = "-";
+    servicioSp.className = "trans mp-0";
+    const alcantarilladoValor = document.createTextNode(
+      parseFloat(0).toFixed(2) + "$"
     );
-    totalDiv.appendChild(totalP);
-    totalDiv.appendChild(totalSp);
-    totalDiv.appendChild(totalValor);
+    // El total a pagar de planillas sera cero
+    rpTotalPagar += 0.0;
+    alcantarilladoLi.appendChild(alcantarilladoP);
+    alcantarilladoLi.appendChild(servicioSp);
+    alcantarilladoLi.appendChild(alcantarilladoValor);
 
-    // Crear el botón con la clase y el ícono
-    const button = document.createElement("button");
-    button.className = "btn-planilla-positive col-6";
-    // Añadir un evento onclick
-    button.onclick = function () {
-      // Elimina la clase "selected" de todos los elementos
-      const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
-      elementos.forEach((elemento) => {
-        elemento.classList.remove("bg-secondary");
-      });
+    serviciosDiv.appendChild(consumoDiv);
+    serviciosDiv.appendChild(tarifaDiv);
+    serviciosDiv.appendChild(valorDiv);
 
-      // Agrega la clase "selected" al elemento que se hizo clic
-      cardDiv.classList.add("bg-secondary");
-      // detallesContratos(datosContrato.contratosId);
-      editPlanilla(
-        datosPlanilla.planillasId,
-        datosPlanilla.contratosId,
-        formatearFecha(datosPlanilla.fechaEmision)
-      );
-      console.log(
-        "¡Hiciste clic en el botón!",
-        datosPlanilla.planillasId,
-        datosPlanilla.contratosId,
-        formatearFecha(datosPlanilla.fechaEmision)
-      );
-    };
+    serviciosDiv.appendChild(serviciosTituloP);
+    listaUl.appendChild(alcantarilladoLi);
+    listaServiciosDiv.appendChild(listaUl);
 
-    const buttonIcon = document.createElement("i");
-    buttonIcon.className = "fa-solid fa-file-pen";
-    button.appendChild(buttonIcon);
+    bodyDiv.appendChild(serviciosDiv);
+    bodyDiv.appendChild(listaServiciosDiv);
+  }
 
-    // Agregar elementos al pie de la tarjeta
-    footerDiv.appendChild(totalDiv);
-    footerDiv.appendChild(button);
+  // Crear el elemento para el pie de la tarjeta
+  const footerDiv = document.createElement("div");
+  footerDiv.className = "card-footer row d-flex";
+  footerDiv.style.border = "none";
+  // Crear elemento para el total
+  const totalDiv = document.createElement("div");
+  totalDiv.className = "col-6 titulo-detalles d-flex";
+  const totalP = document.createElement("p");
+  totalP.textContent = "Total:$";
+  const totalSp = document.createElement("p");
+  totalSp.textContent = "-";
+  totalSp.className = "trans mp-0";
+  // Mostramos en el pie de la planilla el total que se calculo durante rp
+  const totalValor = document.createTextNode(
+    parseFloat(rpTotalPagar).toFixed(2)
+  );
+  totalDiv.appendChild(totalP);
+  totalDiv.appendChild(totalSp);
+  totalDiv.appendChild(totalValor);
 
-    // Agregar todos los elementos a la tarjeta principal
-    cardDiv.appendChild(headerDiv);
-    cardDiv.appendChild(bodyDiv);
-    // cardDiv.appendChild(serviciosDiv);
-    // cardDiv.appendChild(listaServiciosDiv);
-    cardDiv.appendChild(footerDiv);
-    divContainer.appendChild(cardDiv);
+  // Crear el botón con la clase y el ícono
+  const button = document.createElement("button");
+  button.className = "btn-planilla-positive col-6";
+  // Añadir un evento onclick
+  button.onclick = function () {
+    // Elimina la clase "selected" de todos los elementos
+    const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
+    elementos.forEach((elemento) => {
+      elemento.classList.remove("bg-secondary");
+    });
 
-    // Agregar la tarjeta al documento (por ejemplo, al elemento con el id "planillasList")
-    // const planillasList = document.getElementById("planillasList");
-    planillasList.appendChild(divContainer);
-  });
+    // Agrega la clase "selected" al elemento que se hizo clic
+    cardDiv.classList.add("bg-secondary");
+    // detallesContratos(datosContrato.contratosId);
+    // editPlanilla(
+    //   datosPlanilla.planillasId,
+    //   datosPlanilla.contratosId,
+    //   formatearFecha(datosPlanilla.fechaEmision)
+    // );
+    console.log(
+      "¡Hiciste clic en el botón!",
+      datosPlanilla.planillasId,
+      contratoId,
+      formatearFecha(datosPlanilla.fechaEmision)
+    );
+  };
+
+  const buttonIcon = document.createElement("i");
+  buttonIcon.className = "fa-solid fa-file-pen";
+  button.appendChild(buttonIcon);
+
+  // Agregar elementos al pie de la tarjeta
+  footerDiv.appendChild(totalDiv);
+  footerDiv.appendChild(button);
+
+  // Agregar todos los elementos a la tarjeta principal
+  cardDiv.appendChild(headerDiv);
+  cardDiv.appendChild(bodyDiv);
+  cardDiv.appendChild(serviciosDiv);
+  cardDiv.appendChild(listaServiciosDiv);
+  cardDiv.appendChild(footerDiv);
+  divContainer.appendChild(cardDiv);
+
+  // // Agregar la tarjeta al documento (por ejemplo, al elemento con el id "planillasList")
+  // // const planillasList = document.getElementById("planillasList");
+  planillasList.appendChild(divContainer);
+  // // });
 }
 const getDatosLecturas = async (contratoId, fechaEmision) => {
   console.log("Parámetros de busqueda: " + contratoId, fechaEmision);
@@ -536,8 +663,6 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   descuentoFinal = 0;
   totalFinal = 0.0;
   totalConsumo = 0.0;
-  editContratoId = contratoId;
-  fechaEmisionEdit = fechaEmision;
   console.log(
     "LLamando funcion editPlanilla: " + planillaId,
     contratoId,
@@ -545,8 +670,6 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   );
   const planilla = await ipcRenderer.invoke("getPlanillaById", planillaId);
   planillaEdit = planilla[0];
-  editContratoId = contratoId;
-  fechaEmisionEdit = fechaEmision;
   // ----------------------------------------------------------------
   // Datos del encabezado de la planilla a editar
   contratoCodigo.textContent = planilla[0].codigo;
@@ -708,83 +831,74 @@ async function renderServicios(servicios, tipo) {
   let totalDescuentoEdit = 0;
   // let encabezadoId = "";
   console.log("Servicios a renderizard: ", servicios, tipo);
-  encabezadoId = servicios[0].encabezadosId;
-  console.log("Encabezado desde servicios: " + encabezadoId);
+
   servicios.forEach((servicio) => {
     // Crear el div principal
     if (servicio.nombre !== "Agua Potable") {
-      if (
-        servicio.nombre !== "Socio comuna" &&
-        servicio.estadoDetalles !== "Anulado"
-      ) {
-        encabezadoId = servicio.encabezadosId;
-        console.log("Encabezado desde detalle : " + encabezadoId);
-        const tr = document.createElement("tr");
-        tr.id = servicio.id;
-        const tdServicio = document.createElement("td");
-        tdServicio.textContent = servicio.nombre;
-        const tdAplazable = document.createElement("td");
-        tdAplazable.textContent = servicio.aplazableSn;
-        const tdSubtotal = document.createElement("td");
-        tdSubtotal.textContent = parseFloat(
-          // servicio.valorIndividual / servicio.numeroPagosIndividual
-          servicio.valorIndividual
-        ).toFixed(2);
-        const tdDescuento = document.createElement("td");
-        tdDescuento.textContent = parseFloat(servicio.descuentoValor).toFixed(
-          2
-        );
-        const tdTotal = document.createElement("td");
-        tdTotal.textContent = parseFloat(servicio.total).toFixed(2);
-        const tdSaldo = document.createElement("td");
-        tdSaldo.textContent = parseFloat(servicio.saldo).toFixed(2);
-        const tdAbono = document.createElement("td");
-        tdAbono.className = "valorAbono";
-        tdAbono.textContent = parseFloat(servicio.abono).toFixed(2);
+      encabezadoId = servicio.encabezadosId;
+      console.log("Encabezado desde detalle : " + encabezadoId);
+      const tr = document.createElement("tr");
+      tr.id = servicio.id;
+      const tdServicio = document.createElement("td");
+      tdServicio.textContent = servicio.nombre;
+      const tdAplazable = document.createElement("td");
+      tdAplazable.textContent = servicio.aplazableSn;
+      const tdSubtotal = document.createElement("td");
+      tdSubtotal.textContent = parseFloat(
+        // servicio.valorIndividual / servicio.numeroPagosIndividual
+        servicio.valorIndividual
+      ).toFixed(2);
+      const tdDescuento = document.createElement("td");
+      tdDescuento.textContent = parseFloat(servicio.descuentoValor).toFixed(2);
+      const tdTotal = document.createElement("td");
+      tdTotal.textContent = parseFloat(servicio.total).toFixed(2);
+      const tdSaldo = document.createElement("td");
+      tdSaldo.textContent = parseFloat(servicio.saldo).toFixed(2);
+      const tdAbono = document.createElement("td");
+      tdAbono.className = "valorAbono";
+      tdAbono.textContent = parseFloat(servicio.abono).toFixed(2);
+      if (servicio.aplazableSn === "Si") {
+        totalPagarEdit += servicio.abono;
+      } else {
+        totalPagarEdit += servicio.total;
+      }
+      totalDescuentoEdit += servicio.descuento / servicio.numeroPagosIndividual;
+      const tdBtnGestionar = document.createElement("td");
+      const btnGestionar = document.createElement("button");
+      btnGestionar.className = "btn";
+      btnGestionar.type = "button";
+      btnGestionar.onclick = () => {
+        detallesServiciodg(servicio);
+        valorAbonoEdit = servicio.id;
+      };
+      const iconGestionar = document.createElement("i");
+      iconGestionar.className = "fa-solid fa-ellipsis-vertical";
+      btnGestionar.appendChild(iconGestionar);
+      tdBtnGestionar.appendChild(btnGestionar);
+      if (tipo == "fijos") {
+        tr.appendChild(tdServicio);
+        tr.appendChild(tdSubtotal);
+        tr.appendChild(tdDescuento);
+        tr.appendChild(tdTotal);
+        tr.appendChild(tdBtnGestionar);
+        serviciosFijosList.appendChild(tr);
+      } else {
         if (servicio.aplazableSn === "Si") {
-          totalPagarEdit += servicio.abono;
+          tr.appendChild(tdServicio);
+          tr.appendChild(tdSubtotal);
+          tr.appendChild(tdDescuento);
+          tr.appendChild(tdTotal);
+          tr.appendChild(tdSaldo);
+          tr.appendChild(tdAbono);
+          tr.appendChild(tdBtnGestionar);
+          otrosAplazablesList.appendChild(tr);
         } else {
-          totalPagarEdit += servicio.total;
-        }
-        totalDescuentoEdit +=
-          servicio.descuento / servicio.numeroPagosIndividual;
-        const tdBtnGestionar = document.createElement("td");
-        const btnGestionar = document.createElement("button");
-        btnGestionar.className = "btn";
-        btnGestionar.type = "button";
-        btnGestionar.onclick = () => {
-          detallesServiciodg(servicio);
-          valorAbonoEdit = servicio.id;
-        };
-        const iconGestionar = document.createElement("i");
-        iconGestionar.className = "fa-solid fa-ellipsis-vertical";
-        btnGestionar.appendChild(iconGestionar);
-        tdBtnGestionar.appendChild(btnGestionar);
-        if (tipo == "fijos") {
           tr.appendChild(tdServicio);
           tr.appendChild(tdSubtotal);
           tr.appendChild(tdDescuento);
           tr.appendChild(tdTotal);
           tr.appendChild(tdBtnGestionar);
-          serviciosFijosList.appendChild(tr);
-        } else {
-          if (servicio.aplazableSn === "Si") {
-            tr.appendChild(tdServicio);
-            tr.appendChild(tdSubtotal);
-            tr.appendChild(tdDescuento);
-            tr.appendChild(tdTotal);
-            tr.appendChild(tdSaldo);
-            tr.appendChild(tdAbono);
-            tr.appendChild(tdBtnGestionar);
-            otrosAplazablesList.appendChild(tr);
-          } else {
-            tr.appendChild(tdServicio);
-            tr.appendChild(tdSubtotal);
-            tr.appendChild(tdDescuento);
-            tr.appendChild(tdTotal);
-            tr.appendChild(tdBtnGestionar);
-            otrosServiciosList.appendChild(tr);
-          }
+          otrosServiciosList.appendChild(tr);
         }
       }
     } else if (servicio.nombre === "Agua Potable") {
@@ -835,16 +949,41 @@ guardarDg.onclick = function () {
 
 const getPlanillas = async (criterio, criterioContent, estado, anio, mes) => {
   //BUscamos todos los contratos
-  planillas = await ipcRenderer
-    .invoke("getDatosPlanillas", criterio, criterioContent, estado, anio, mes)
-    .then(async (planillas) => {
-      console.log(planillas);
-      await planillas.sort((a, b) => {
-        console.log("ordenado");
-        return a.primerApellido.localeCompare(b.primerApellido);
-      });
-      renderPlanillas(planillas);
+  const contratos = await ipcRenderer
+    .invoke("getContratos")
+    .then(async (contratos) => {
+      if (contratos.length > 0) {
+        // Obtenemos las planillas del contrato
+        contratos.forEach(async (contrato) => {
+          const planillas = await ipcRenderer
+            .invoke(
+              "getDatosPlanillas",
+              "codigo",
+              contrato.codigo,
+              estado,
+              "all",
+              "all"
+            )
+            .then(async (planillas) => {
+              if (planillas.length > 0) {
+                console.log(planillas);
+                await renderPlanillas(planillas);
+              }
+            });
+        });
+      }
+    })
+    .catch((error) => {
+      console.log(error);
     });
+  // planillas = await ipcRenderer.invoke(
+  //   "getDatosPlanillas",
+  //   criterio,
+  //   criterioContent,
+  //   estado,
+  //   anio,
+  //   mes
+  // );
 };
 
 async function init() {
@@ -948,107 +1087,79 @@ async function calcularConsumo() {
 
   console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
 }
-const planillasAnteriores = async (contratoId, fechaPlanilla) => {
-  const anterioresCancelar = await ipcRenderer.invoke(
-    "getAnterioresCancelar",
-    contratoId,
-    fechaPlanilla
-  );
-  return anterioresCancelar;
-};
-
 async function vistaFactura(planillaEstado) {
   let telefonoDf = "9999999999";
   if (Object.keys(planillaEdit).length > 0 && editPlanillaId !== "") {
-    console.log("Para consulta", editContratoId, fechaEmisionEdit);
-    await planillasAnteriores(editContratoId, fechaEmisionEdit).then(
-      async (planillasAnteriores) => {
-        if (planillasAnteriores.length > 0) {
-          Swal.fire({
-            title: "Existen planillas anteriores",
-            text:
-              "Existen planillas adeudadas anteriores a esta, " +
-              "cancela las planillas anteriores primero.",
-            icon: "info",
-            iconColor: "green",
-            showConfirmButton: true,
-            confirmButtonText: "Aceptar",
-            confirmButtonColor: "green",
-          });
-        } else {
-          let socio = socioNombres.textContent;
-          console.log("Encabezado a enviar: " + socio);
-          const datos = {
-            mensaje: "Hola desde pagina1",
-            otroDato: 12345,
-          };
-          if (
-            planillaEdit.telefonoMovil !== "9999999999" ||
-            planillaEdit.telefonoMovil !== undefined ||
-            planillaEdit.telefonoMovil !== ""
-          ) {
-            telefonoDf = planillaEdit.telefonoMovil;
-          } else {
-            if (
-              planillaEdit.telefonoFijo !== "9999999999" ||
-              planillaEdit.telefonoFijo !== undefined ||
-              planillaEdit.telefonoFijo !== ""
-            ) {
-              telefonoDf = planillaEdit.telefonoFijo;
-            }
-          }
-          const encabezado = {
-            encabezadoId: encabezadoId,
-            socio: planillaEdit.nombre,
-            socioId: planillaEdit.sociosId,
-            fecha: planillaEdit.fechaEmision,
-            cedula: planillaEdit.cedulaPasaporte,
-            contrato: planillaEdit.codigo,
-            planilla: planillaEdit.planillasCodigo,
-            telefono: telefonoDf,
-            direccion: planillaEdit.direccion,
-            ubicacion: planillaEdit.ubicacion,
-          };
-          const datosAgua = {
-            planillaId: editPlanillaId,
-            lecturaAnterior: lecturaAnterior.value,
-            lecturaActual: lecturaActual.value,
-            tarifaConsumo: tarifaConsumo.value,
-            valorConsumo: valorConsumo.value,
-          };
-          const datosTotales = {
-            subtotal: valorSubtotal.value,
-            descuento: valorTotalDescuento.value,
-            totalPagar: valorTotalPagar.value,
-          };
-          console.log("Descuento enviar: " + valorTotalDescuento.value);
-          if (planillaEstado == "Cancelado") {
-            Swal.fire({
-              title: "Planilla cancelada",
-              text:
-                "Esta planilla ya ha sido cancelada " +
-                "revisa el comprobante en la ruta del encabezado.",
-              icon: "info",
-              iconColor: "green",
-              showConfirmButton: true,
-              confirmButtonText: "Aceptar",
-              confirmButtonColor: "green",
-            });
-          } else {
-            await ipcRenderer.send(
-              "datos-a-pagina2",
-              datos,
-              encabezado,
-              serviciosFijos,
-              otrosServicios,
-              datosAgua,
-              datosTotales,
-              editados
-            );
-          }
-        }
+    let socio = socioNombres.textContent;
+    console.log("Encabezado a enviar: " + socio);
+    const datos = {
+      mensaje: "Hola desde pagina1",
+      otroDato: 12345,
+    };
+    if (
+      planillaEdit.telefonoMovil !== "9999999999" ||
+      planillaEdit.telefonoMovil !== undefined ||
+      planillaEdit.telefonoMovil !== ""
+    ) {
+      telefonoDf = planillaEdit.telefonoMovil;
+    } else {
+      if (
+        planillaEdit.telefonoFijo !== "9999999999" ||
+        planillaEdit.telefonoFijo !== undefined ||
+        planillaEdit.telefonoFijo !== ""
+      ) {
+        telefonoDf = planillaEdit.telefonoFijo;
       }
-    );
+    }
+    const encabezado = {
+      encabezadoId: encabezadoId,
+      socio: planillaEdit.nombre,
+      socioId: planillaEdit.sociosId,
+      fecha: planillaEdit.fechaEmision,
+      cedula: planillaEdit.cedulaPasaporte,
+      contrato: planillaEdit.codigo,
+      planilla: planillaEdit.planillasCodigo,
+      telefono: telefonoDf,
+      direccion: planillaEdit.direccion,
+      ubicacion: planillaEdit.ubicacion,
+    };
+    const datosAgua = {
+      planillaId: editPlanillaId,
+      lecturaAnterior: lecturaAnterior.value,
+      lecturaActual: lecturaActual.value,
+      tarifaConsumo: tarifaConsumo.value,
+      valorConsumo: valorConsumo.value,
+    };
+    const datosTotales = {
+      subtotal: valorSubtotal.value,
+      descuento: valorTotalDescuento.value,
+      totalPagar: valorTotalPagar.value,
+    };
+    console.log("Descuento enviar: " + valorTotalDescuento.value);
+    if (planillaEstado == "Cancelado") {
+      Swal.fire({
+        title: "Planilla cancelada",
+        text:
+          "Esta planilla ya ha sido cancelada " +
+          "revisa el comprobante en la ruta del encabezado.",
+        icon: "info",
+        iconColor: "green",
+        showConfirmButton: true,
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "green",
+      });
+    } else {
+      await ipcRenderer.send(
+        "datos-a-pagina2",
+        datos,
+        encabezado,
+        serviciosFijos,
+        otrosServicios,
+        datosAgua,
+        datosTotales,
+        editados
+      );
+    }
   } else {
     console.log("Not planilla selected...");
   }

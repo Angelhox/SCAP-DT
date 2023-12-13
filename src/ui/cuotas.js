@@ -91,9 +91,9 @@ let usuarios = [];
 let valorIndividual = 0.0;
 let editingStatus = false;
 let editServicioId = "";
-let creacionEdit="";
+let creacionEdit = "";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2023-10-01 00:00:00";
+let fechaCreacion = "2023-11-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {
@@ -307,15 +307,12 @@ function renderCuotas(cuotas) {
 }
 async function renderUsuarios(usuarios, servicioId) {
   let ct = [];
-console.log('Id servicio: ' + servicioId);
+  console.log("Id servicio: " + servicioId);
   const contratadosId = await ipcRenderer.invoke(
     "getContratadosById",
     servicioId
   );
-  const servicio = await ipcRenderer.invoke(
-    "getCuotasById",
-    servicioId
-  );
+  const servicio = await ipcRenderer.invoke("getCuotasById", servicioId);
   console.log("Contratados: " + contratadosId);
   contratadosId.forEach((contratadoId) => {
     ct.push(contratadoId.contratosId);
@@ -574,8 +571,9 @@ const mostrarEstadisticas = async (servicioId) => {
   console.log("Estadisticas: " + servicio);
   servicioTit.textContent = servicio.nombre;
   servicioDesc.textContent = "(" + servicio.descripcion + ")";
-  servicioCreaciondet.textContent = "Creado: "+formatearFecha(servicio.fechaCreacion)
- creacionEdit=formatearFecha(servicio.fechaCreacion)
+  servicioCreaciondet.textContent =
+    "Creado: " + formatearFecha(servicio.fechaCreacion);
+  creacionEdit = formatearFecha(servicio.fechaCreacion);
   servicioVal.textContent = "Valor: $" + servicio.valor;
   let aplazableSnText = "No aplazable";
   if (servicio.aplazableSn !== "No") {
@@ -587,7 +585,7 @@ const mostrarEstadisticas = async (servicioId) => {
   console.log(servicio);
   let criterioBuscar = "all";
   let criterioContentBuscar = "all";
-  console.log('Mostrarestadisticas: ' + servicio.id)
+  console.log("Mostrarestadisticas: " + servicio.id);
   await getBeneficiarios(servicio.id);
   await getRecaudaciones(servicioId);
 };
@@ -668,11 +666,11 @@ const getRecaudaciones = async () => {
   valorTotal.textContent = valoresTotales.toFixed(2);
 };
 const getBeneficiarios = async (servicio) => {
-  console.log('Busqueda: ' + servicio)
+  console.log("Busqueda: " + servicio);
   let criterioBuscar = criterioBn.value;
   let criterioContentBuscar = criterioContentBn.value;
   let sectorBuscar = sectoresBusqueda.value;
-  console.log('Criterio enviar: ',criterioBuscar,criterioContentBuscar)
+  console.log("Criterio enviar: ", criterioBuscar, criterioContentBuscar);
   usuarios = await ipcRenderer.invoke(
     "getContratos",
     criterioBuscar,
@@ -690,8 +688,8 @@ const getBeneficiarios = async (servicio) => {
   // }
 };
 const getServicios = async () => {
-  criterioBuscar=criterio.value;
-  criterioContentBuscar=criterioContent.value;
+  criterioBuscar = criterio.value;
+  criterioContentBuscar = criterioContent.value;
   let mesEnviar = mesBusqueda.value;
   let anioEnviar = anioBusqueda.value;
   cuotas = await ipcRenderer.invoke(
@@ -733,9 +731,7 @@ criterioBn.onchange = async () => {
     criterioContentBn.readOnly = true;
     let criterioBuscar = "all";
     let criterioContentBuscar = "all";
-    await getBeneficiarios(
-      editServicioId
-    );
+    await getBeneficiarios(editServicioId);
   } else {
     criterioContentBn.readOnly = false;
   }
@@ -1029,8 +1025,8 @@ async function vistaFactura(tipo) {
   };
   const encabezado = {
     servicio: servicioTit.textContent,
-    creacion:creacionEdit,
-    tipo:'Servicios Ocacionales',
+    creacion: creacionEdit,
+    tipo: "Servicios Ocacionales",
     fechaD: "2023-10-01",
     fechaH: "2023-10-31",
   };
@@ -1221,9 +1217,33 @@ const servicioOpcionesdg = async (usuario, servicio) => {
     pendientesDg.textContent = numeroPagosDf - cancelados;
     abonadoDg.textContent = valorCancelado;
     saldoDg.textContent = total - valorCancelado;
+    guardarDg.style.display = "block";
+    guardarDg.disabled = false;
+
+    guardarDg.onclick = async function () {
+      const newServicioContratado = {
+        // fechaEmision: formatearFecha(new Date()), Mantenemos fechaEmision
+        id: servicioContratado[0].serviciosContratadosId,
+        estado: "Sin aplicar",
+        valorIndividual: subtotal,
+        numeroPagosIndividual: numPagosDg.value,
+        valorPagosIndividual: valPagosDg.value,
+        descuentoValor: descuento,
+        descuentosId: descuentoDg.value,
+        serviciosId: servicio.id,
+        contratosId: usuario.contratosId,
+      };
+      await actualizarServicioContratado(
+        newServicioContratado,
+        usuario,
+        servicio
+      );
+    };
   } else {
     // En caso de que el servicio no este contratado cargamos los valores
     // por defecto del servicio.
+    guardarDg.style.display = "none";
+    guardarDg.disabled = true;
     if (servicio.valor !== null) {
       subtotal = servicio.valor;
     }
@@ -1457,6 +1477,56 @@ const servicioOpcionesdg = async (usuario, servicio) => {
   if (dialogOpciones.close) {
     dialogOpciones.showModal();
   }
+};
+const actualizarServicioContratado = async (
+  detalleActualizar,
+  usuario,
+  servicio
+) => {
+  CerrarFormOpciones();
+  Swal.fire({
+    title: " ¿Quieres guardar los cambios?" + detalleActualizar.id,
+    text: "El servicio y sus valores se actualizarán, si este aún no ha sido cancelado",
+    icon: "question",
+    iconColor: "#f8c471",
+    showCancelButton: true,
+    confirmButtonColor: "#2874A6",
+    cancelButtonColor: "#EC7063 ",
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
+    customClass: "question-contratar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      // Aquí puedes realizar la acción que desees cuando el usuario confirme.
+      const contratado = await ipcRenderer.invoke(
+        "updateContratadoDetalle",
+        detalleActualizar
+      );
+      console.log("Resultado de contratar el servicio: " + contratado);
+
+      if (contratado !== undefined) {
+        console.log("Pasamos a crear Planilla o comprobante");
+        // Llamamos a  create planilla asi nos aseguramos de que en caso de no existir la planilla
+        // correspondiente a ese mes se la cree asi como tambien nos aseguramos de que el detalle
+        // no se aplique dos veces. Los detalles se aplicaran en las planillas vigentes de acuerdo
+        // al mes correspondiente.
+        const result = await ipcRenderer.invoke(
+          "createPlanilla",
+          fechaCreacion
+        );
+        // const resultComprobante = await ipcRenderer.invoke("createComprobante");
+        console.log(result);
+
+        // console.log(resultComprobante);
+        mostrarEstadisticas(servicio.id);
+        // servicioOpcionesdg(usuario, servicio);
+      }
+      // mostrarEstadisticas(servicio.id);
+      // servicioOpcionesdg(usuario, servicio);
+    } else {
+      // servicioOpcionesdg(usuario, servicio);
+    }
+  });
 };
 const desContratarServicio = async (detalleDescontratar, usuario, servicio) => {
   CerrarFormOpciones();

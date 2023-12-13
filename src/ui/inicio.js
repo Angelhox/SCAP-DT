@@ -81,6 +81,11 @@ const abrirPagos = async () => {
   const url = "Pagos";
   await ipcRenderer.send("abrirInterface", url, acceso);
 };
+const abrirPagosII = async () => {
+  const acceso = sessionStorage.getItem("acceso");
+  const url = "PagosII";
+  await ipcRenderer.send("abrirInterface", url, acceso);
+};
 const abrirPlanillas = async () => {
   const acceso = sessionStorage.getItem("acceso");
   const url = "Planillas";

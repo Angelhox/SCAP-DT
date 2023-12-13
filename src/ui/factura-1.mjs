@@ -4,6 +4,8 @@ const Swal = require("sweetalert2");
 // const pdf = require("html-pdf");
 const printer = require("pdf-to-printer");
 // const html2pdf = require("html2pdf.js");
+// const PDFDocument = require("pdfjs-dist");
+// import PDFDocument from 'pdfjs-dist/build/pdf';
 
 const path = require("path");
 const { ipcRenderer } = require("electron");
@@ -64,7 +66,6 @@ let saldosFavor = {};
 // Función para guardar el archivo PDF en la carpeta seleccionada
 async function guardarEnDirectorioSeleccionado(pdfOptions) {
   const content = document.querySelector(".invoice");
-
   try {
     const directorioSeleccionado = await ipcRenderer.invoke("selectDirectory");
     const nombreRuta = codigoGenerado;
@@ -81,6 +82,9 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
             nombreRuta +
             ".pdf"
         );
+        // const halfPageHeight = "148.5mm"; // Mitad de la altura de una página A4 (297mm / 2)
+        // pdfOptions.margin.top = halfPageHeight; // Ajusta el margen superior
+        // pdfOptions.pageRanges = "2"; // Imprime solo la segunda página (la mitad inferior)
         pdfOptions.path = rutaCompleta;
         // Extraer la ruta de la carpeta
         const folderPath = path.dirname(pdfOptions.path);
@@ -95,21 +99,14 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
 
           const browser = await puppeteer.launch({
             executablePath: chromePath,
-            // Otras opciones de configuración si es necesario
           });
-
           // Crea una instancia de navegador
-          // const browser = await puppeteer.launch();
           const page = await browser.newPage();
-          // Agrega un manejador para los mensajes de la consola
+
           page.on("console", (msg) => {
             console.log(`Mensaje de la consola: ${msg.text()}`);
           });
 
-          // Contenido HTML que deseas convertir en PDF
-          // Configura la página como página sin margen
-          //await page.setViewport({ width: 100, height: 100, deviceScaleFactor: 1 }); // No hace caso :(
-          // Carga el contenido HTML en la página
           await page.setContent(content.outerHTML);
           await page.addStyleTag({
             content: `
@@ -120,13 +117,6 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
           }
         `,
           });
-          // Función para agregar una imagen a la página
-          // await page.evaluate(() => {
-          //   const img = document.createElement("img");
-          //   img.src = "src/assets/fonts/bg.jpg"; // Ruta a tu imagen
-          //   img.alt = "Descripción de la imagen"; // Texto alternativo para la imagen
-          //   document.body.appendChild(img); // Agrega la imagen al cuerpo de la página
-          // });
           // Genera el PDF
           await page
             .pdf({
@@ -154,30 +144,40 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
                 encabezadoCancelarId,
                 newComprobante
               );
+              // const options = {
+              //   // printer: "Zebra",
+              //   // pages: "1-3,5",
+              //   paperSize:"letter",
+              //   // side: "duplex",
+              //   copies: 2,
+              //   // scale: "shrink",
+              // };
+              // ----------------------------------------------------------------
+              // const options = {
+              //   pagesPerSheet: 2,
+              // };
+
+              // // print("assets/pdf-sample.pdf", options).then(console.log);
+              // printer.print(pdfOptions.path, options);
+              // // Impresión exitosa
+
+              const pdfDocument = new PDFDocument(pdfOptions.path);
+
               const options = {
-                copies: 2,
+                pageLayout: PDFDocument.TwoPagesPerSheet,
+                // printerName: "Impresora1",
               };
-              // printer.print(pdfOptions.path,options);
-              await ipcRenderer.send(
-                "Dos",
-                [pdfOptions.path, pdfOptions.path],
-                "C:/Users/Usuario/Documents/dos.pdf",
-                // "C:/Users/USE/Documents/dos.pdf",
-                2.5,
-                1
-              );
-              // Impresión exitosa
-              // abrirPagos();
+
+              pdfDocument.print(options);
+              abrirPagos();
               console.log("El PDF se ha enviado a la cola de impresión.");
             })
             .catch((error) => {
               // Error de impresión
-              // abrirPagos();
               console.error("Error al imprimir el PDF:", error);
             });
           // Cierra el navegador
           await browser.close();
-          //await window.print();
           console.log("PDF generado y guardado correctamente.");
         } catch (error) {
           console.error("Error al generar el PDF:", error);
@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const scale = 0.7;
     const scaleX = 0.9; // Escala en el eje X (80%)
     const scaleY = 0.9; // Escala en el eje Y (120%)
-
+    const halfPageHeight = "148.5 mm";
     const pdfOptions = {
       path: "X:/FacturasSCAP/respaldo.pdf", // Nombre del archivo PDF de salida
       format: "A4", // Formato de página
@@ -212,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         left: "0mm",
         right: "10mm",
       },
+      pageRanges: "1",
     };
     cobrosAlDg();
     //await guardarEnDirectorioSeleccionado(pdfOptions);
@@ -250,8 +251,6 @@ ipcRenderer.on(
         " " +
         encabezado.planilla
     );
-    // const mensajeElement = document.getElementById("mensaje");
-    // mensajeElement.textContent = datos.mensaje;
     // Datos del socio
     const fechaImpresionNode = document.createTextNode(
       formatearFecha(new Date())
@@ -549,38 +548,36 @@ function renderDetalles(servicio) {
   console.log("Servicios a cancelar: " + serviciosCancelar);
   // contratosList.innerHTML = "";
   // datosContratos.forEach((contrato) => {
-if(servicio.nombre!=='Socio comuna' && servicio.estadoDetalles !== 'Anulado'){
   detailsList.innerHTML += `
-  <tr>
-  <td>${servicio.nombre}</td>
-    <td>${servicio.descripcion}</td>
-    <td     style="
-    text-align: center;
-    padding: 5px;
-    
-    font-size: 15px;
-  ">${parseFloat(servicio.total).toFixed(2)}</td>
-    <td     style="
-    text-align: center;
-    padding: 5px;
-    
-    font-size: 15px;
-  ">${parseFloat(servicio.descuento).toFixed(2)}</td>
-    <td     style="
-    text-align: center;
-    padding: 5px;
-
-    font-size: 15px;
-  ">${parseFloat(servicio.saldo).toFixed(2)}</td>
-    <td     style="
-    text-align: center;
-    padding: 5px;
-    
-    font-size: 15px;
-  ">${parseFloat(servicio.abono).toFixed(2)}</td>
- </tr>
-    `;
-}
+      <tr>
+      <td>${servicio.nombre}</td>
+        <td>${servicio.descripcion}</td>
+        <td     style="
+        text-align: center;
+        padding: 5px;
+        
+        font-size: 15px;
+      ">${parseFloat(servicio.total).toFixed(2)}</td>
+        <td     style="
+        text-align: center;
+        padding: 5px;
+        
+        font-size: 15px;
+      ">${parseFloat(servicio.descuento).toFixed(2)}</td>
+        <td     style="
+        text-align: center;
+        padding: 5px;
+ 
+        font-size: 15px;
+      ">${parseFloat(servicio.saldo).toFixed(2)}</td>
+        <td     style="
+        text-align: center;
+        padding: 5px;
+        
+        font-size: 15px;
+      ">${parseFloat(servicio.abono).toFixed(2)}</td>
+     </tr>
+        `;
   // });
   if (!aguaSn) {
     dataAgua.style.display = "none";
@@ -646,13 +643,13 @@ ipcRenderer.on("ResultadoPago", async (event, response) => {
       width: "210mm",
       height: "297mm",
       scale: scale,
-      lanscape: true,
       margin: {
-        top: "2mm",
-        bottom: "2mm",
-        left: "1mm",
-        right: "2mm",
+        top: "5mm",
+        bottom: "0mm",
+        left: "5mm",
+        right: "5mm",
       },
+      // pageRanges: "1", // Imprime solo la primera página (la mitad superior)
     };
     //cobrosAlDg();
     await guardarEnDirectorioSeleccionado(pdfOptions);

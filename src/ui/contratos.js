@@ -328,6 +328,22 @@ contratoForm.addEventListener("submit", async (e) => {
             "Muestro id resultado de insertar contrato: ",
             contratoId
           );
+          const servicioGuia = {
+            fechaEmision: contratoFecha.value,
+            estado: "Activo",
+            valorIndividual: 0,
+            numeroPagosIndividual: 1,
+            valorPagosIndividual: 0,
+            descuentoValor: 0,
+            serviciosId: 34,
+            contratosId: contratoId,
+            descuentosId: 1,
+          };
+          const resultGuia = await ipcRenderer.invoke(
+            "createServicioGuia",
+            servicioGuia
+          );
+          console.log("resultado de crearGuia: ", resultGuia);
 
           fakeMedidor.contratosId = contratoId;
           const result = await ipcRenderer.invoke(

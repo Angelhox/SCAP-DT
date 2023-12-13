@@ -475,18 +475,18 @@
             <div class="col-12">
               <div class="row">
                 <div class="col-3">
-              <label for="criterio">Buscar por...</label>
+                  <label for="criterio">Buscar por...</label>
 
                   <select
                     id="criterio-bn"
                     class="form-select btn-rd"
                     aria-label="Default select example"
                   >
-                  <option value="all" selected>Todas</option>
-                  <option value="codigo">Contrato</option>
-                  <option value="nombres">Nombres del socio</option>
-                  <option value="apellidos">Apellidos del socio</option>
-                  <option value="cedulaPasaporte">Cédula del socio</option>
+                    <option value="all" selected>Todas</option>
+                    <option value="codigo">Contrato</option>
+                    <option value="nombres">Nombres del socio</option>
+                    <option value="apellidos">Apellidos del socio</option>
+                    <option value="cedulaPasaporte">Cédula del socio</option>
                     <!-- <option value="estado-bn">Beneficiarios</option>
                     <option value="estado-nbn">No beneficiarios</option> -->
                   </select>
@@ -507,7 +507,6 @@
                   <label for="sectores">Sector</label>
                   <select name="" id="sectores" class="form-select">
                     <option value="all" selected>Todos</option>
-                
                   </select>
                 </div>
                 <div class="col-2">
@@ -539,7 +538,6 @@
               <p class="trans">-</p>
               <p id="fechaCreacion-det">Creado: 12-11-2000</p>
             </div>
-            
 
             <p class="" id="servicio-det">Servicio fijo | No aplazable</p>
             <p id="servicio-val">Valor: $2.50</p>
@@ -557,7 +555,7 @@
               min-width: 100%;
               /* padding: 0.5em 0.2em 0 0.5em; */
               padding: 0.5em 0.2em 0 0.2em;
-              margin: 0 0 0 .1em;
+              margin: 0 0 0 0.1em;
             "
           >
             <div class="col-6 card mb-3" style="max-width: 100%">
@@ -924,7 +922,6 @@
               <p class="mp-0" id="descripcion-dg">
                 Servicio de agua potable para la comuniad
               </p>
-             
             </div>
             <p class="" id="detalles-dg">Servicio fijo | No aplazable</p>
             <p id="servicio-val-dg">Valor: $</p>
@@ -1017,7 +1014,7 @@
                 </select>
               </div>
               <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Valor Cuota:</label>
+                <label for="subtotal" class="fs-5">Valor Cuotas:</label>
                 <!-- <p id="valorPagos-dg">6.00</p> -->
                 <input
                   readonly
@@ -1067,11 +1064,21 @@
                 <button class="btn btn-success mx-1" id="btnContratar-dg">
                   Contratar
                 </button>
-                <button class="btn btn-success mx-1" id="btnAdministrar-dg">
-                  Comprobante
+
+                <button
+                  disabled
+                  style="display: none"
+                  class="btn btn-success mx-1"
+                  id="btnGuardar-dg"
+                >
+                  Actualizar
                 </button>
-                <button class="btn btn-success mx-1" id="btnGuardar-dg">
-                  Guardar
+                <button
+                  style="display: none"
+                  class="btn btn-success mx-1"
+                  id="btnAdministrar-dg"
+                >
+                  Comprobante
                 </button>
                 <button
                   class="btn btn-danger mx-1"

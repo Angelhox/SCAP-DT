@@ -125,8 +125,8 @@
 }
 
 .btn-cancelar {
-   
-    background-color:  #F1948A ;
+
+    background-color: #F1948A;
     padding: 0 1em;
     font-size: 16px;
     cursor: pointer;
@@ -139,10 +139,11 @@
 }
 
 .btn-cancelar:hover {
-    background-color:#f2f2f2;
-    color: rgb(0,0,0);
+    background-color: #f2f2f2;
+    color: rgb(0, 0, 0);
     /* Cambia el color de fondo al pasar el ratón por encima */
 }
+
 .encabezado-planilla {
     padding: 1em 1em 0 1em;
     background-color: #85C1E9;
@@ -363,4 +364,80 @@ button:hover .fa-caret-up {
 button:hover .fa-caret-down {
     color: #f8c471;
     /* Cambiar el color en hover */
+}
+
+/* Estilos para el botón */
+.btn-sin-consumo {
+    background-color: #85C1E9;
+    border: none;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    /* font-size: px; */
+    padding: 0 .5em;
+}
+
+/* Estilos para el cuadro de información */
+.informacion {
+    max-width: 50%;
+    width: 8.5em;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1em;
+    z-index: 9999;
+    display: none;
+    position: absolute;
+    /* background-color: rgba(0, 0, 0, 0.7); */
+    background-color: rgba(255, 255, 255, 1);
+    color: rgb(0, 0, 0);
+
+}
+
+
+/* Estilos para el cuadro de información al pasar el cursor sobre el botón */
+.btn-sin-consumo:hover {
+    background-color: #f1f1f1;
+    color: rgb(0, 0, 0);
+
+}
+
+.btn-sin-consumo:hover .informacion {
+    color: rgb(0, 0, 0);
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Estilo base del botón */
+.btn-outline-anulados {
+    height: fit-content;
+    color: #f8f9fa;
+    /* Color del texto */
+    background-color: transparent;
+    /* Fondo transparente */
+    border: 1px solid #f8f9fa;
+    /* Borde con color del texto */
+    padding: 0.1rem 0.75rem;
+    /* Espaciado interno */
+    font-size: 1rem;
+    /* Tamaño del texto */
+    line-height: 1.5;
+    /* Altura de línea */
+    border-radius: 0.25rem;
+    /* Borde redondeado */
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    /* Transición suave */
+}
+
+/* Cambios de estilo al pasar el ratón sobre el botón */
+.btn-outline-anulados:hover {
+    color: #212529;
+    /* Cambio de color del texto al pasar el ratón */
+    background-color: #f8f9fa;
+    /* Cambio de color de fondo al pasar el ratón */
+    border-color: #f8f9fa;
+    /* Cambio de color del borde al pasar el ratón */
 }

@@ -201,9 +201,9 @@
                     class="form-select"
                     aria-label="Default select example"
                   >
-                    <option value="all" selected>Todas</option>
+                    <option value="all" >Todas</option>
                     <option value="cedulaPasaporte">Cédula del socio</option>
-                    <option value="nombre">Nombres/Apellidos</option>
+                    <option selected value="nombre">Nombres/Apellidos</option>
                     <option value="codigo">Código</option>
                   </select>
                 </div>
@@ -440,7 +440,7 @@
                 <div class="col-6 d-flex mp-0">
                   <label for="cedula" class="fs-6 mp-0">Comprobante:</label>
                   <p class="trans mp-0">-</p>
-                  <p class="text-white mp-0" id="codigoComprobante"></p>
+                  <p class="text-white mp-0" id="comprobante"></p>
                 </div>
               </div>
             </div>
@@ -769,7 +769,7 @@
                           type="button"
                           class="btn btn-danger mx-1"
                           type="button"
-                      id="vista-factura"
+                          id="vista-factura"
                           style="width: 45%"
                         >
                           Pagar
@@ -783,10 +783,9 @@
                           Cancelar
                         </button>
                         <button
-                        
                           class="btn bg-secondary"
                           type="submit"
-                          style="width: 30%;display: none;"
+                          style="width: 30%; display: none"
                         >
                           Guardar
                         </button>
@@ -918,7 +917,112 @@
         </div>
       </section>
     </dialog>
+    <dialog id="formComprobantes" class="dialog-servicios">
+      <section
+        style="width: 90vh; height: fit-content"
+        class="active section-dialog"
+      >
+        <div class="row container-fluid" style="margin: 0; padding: 0">
+          <div class="col-12 encabezado-servicios">
+            <div id="pdf-viewer"></div>
+          </div>
+          <div
+            class="col-12 d-flex justify-content-between align-items-center encabezado-bt"
+          >
+            <div class="d-flex align-items-baseline mp-0">
+              <!-- <p class="servicio-title mp-0" id="servicio-tit">Agua Potable</p>
+            <p class="trans">-</p> -->
+
+              <p class="mp-0" id="descripcion-dg">
+                Servicio de agua potable para la comuniad
+              </p>
+            </div>
+
+            <p class="" id="detalles-dg">Servicio fijo | No aplazable</p>
+            <!-- <p id="servicio-val">Valor: $2.50</p> -->
+          </div>
+          <div class="col-12" style="overflow: none">
+            <div class="row justify-content-between text-center">
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Subtotal:</label>
+                <p id="subtotal-dg">10.25</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Descuento:</label>
+                <p id="descuento-dg">1.50</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Total:</label>
+                <p id="total-dg">8.75</p>
+              </div>
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Numero de Pagos:</label>
+                <p id="numPagos-dg">3</p>
+              </div>
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Aplicados:</label>
+                <p id="aplicados-dg">1</p>
+              </div>
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Cancelados:</label>
+                <p id="cancelados-dg">1</p>
+              </div>
+
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Por cancelar:</label>
+                <p id="pendientes-dg">2</p>
+              </div>
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Saldo aplicar:</label>
+                <p id="saldo-aplicar-dg">2.75</p>
+              </div>
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Saldo cancelar:</label>
+                <p id="saldo-dg">2.75</p>
+              </div>
+
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Cancelado:</label>
+                <p id="abonado-dg">6.00</p>
+              </div>
+              <div class="col-3 my-1 item-custom">
+                <label for="subtotal" class="fs-5">Abonar:</label>
+                <input
+                  id="abonar-dg"
+                  readonly
+                  type="number"
+                  step="any"
+                  class="form-control text-center"
+                  placeholder="$0.0"
+                />
+              </div>
+              <div class="col-12 err-container" id="err-container">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p id="errorTextAbono">Error</p>
+              </div>
+              <div
+                class="col-12 d-flex align-items-center justify-content-center my-4"
+              >
+                <button class="btn btn-success mx-1" id="btnGuardar-dg">
+                  Aceptar
+                </button>
+                <button class="btn btn-success mx-1" id="btnAdministrar-dg">
+                  Administrar
+                </button>
+                <button
+                  class="btn btn-danger mx-1"
+                  onclick="CerrarFormServicios()"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </dialog>
   </body>
+
   <script src="../../node_modules/jquery/dist/jquery.min.js"></script>
   <script src="../../node_modules/select2/dist/js/select2.min.js"></script>
   <script src="../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
