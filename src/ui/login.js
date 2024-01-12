@@ -44,18 +44,18 @@ loginForm.addEventListener("submit", async (e) => {
 // Funcion de recepcion de respuesta al intentar logearse
 // ----------------------------------------------------------------
 ipcRenderer.on("loginResponse", async (event, response) => {
-  let acceso=""
+  let acceso = "";
   if (response.success) {
     console.log("Incio de session correcto");
     const url = "Inicio";
     try {
-      acceso=response.data;
+      acceso = response.data;
       sessionStorage.setItem("acceso", acceso);
       console.log(sessionStorage.getItem("acceso"));
     } catch (error) {
       console.log(error);
     }
-    await ipcRenderer.send("abrirInterface", url,acceso);
+    await ipcRenderer.send("abrirInterface", url, acceso);
   } else {
     if (response.message === "No existe este usuario") {
       console.log("Usuario incorrecto");
@@ -111,3 +111,8 @@ document.getElementById("outButton").addEventListener("click", function () {
 //   const url = "src/ui/usuarios.html";
 //   const result = ipcRenderer.send("abrirInterface", url);
 // });
+
+ipcRenderer.on("Log out", () => {
+  sessionStorage.removeItem("acceso");
+  console.log("Sin acceso!");
+});

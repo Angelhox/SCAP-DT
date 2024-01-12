@@ -39,6 +39,8 @@ const saldo = document.getElementById("saldo");
 const pendiente = document.getElementById("pendiente");
 const recaudado = document.getElementById("recaudado");
 const totalFinal = document.getElementById("totalFinal");
+const filtrado = document.getElementById("totalFiltrado");
+const filtradoTitle = document.getElementById("filtradoTitle");
 const recaudacionesList = document.getElementById("recaudaciones");
 let aguaSn = false;
 let planillaCancelarId = "";
@@ -59,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // );
     // Configura las opciones para la generación de PDF
     const content = document.querySelector(".invoice");
-    const scale = 0.7;
+    const scale = 0.9;
     const scaleX = 0.9; // Escala en el eje X (80%)
     const scaleY = 0.9; // Escala en el eje Y (120%)
 
@@ -208,44 +210,87 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
 const generarCodigoComprobante = async () => {
   const timestamp = Date.now();
   const codigoUnico = `${timestamp}`;
-  codigoGenerado =  nombreCuotaRuta+codigoUnico ;
+  codigoGenerado = nombreCuotaRuta + codigoUnico;
   console.log("Codigo generado: ", codigoGenerado);
   return codigoGenerado;
 };
+function caragarEncabezado(reporte, encabezado) {
+  let tipoReporte = "Reporte general";
+  switch (reporte) {
+    case "cancelados":
+      tipoReporte = "Reporte de valores abonados";
+      fechaDesde.textContent = "De:" + " " + encabezado.fechaD;
+      fechaHasta.textContent = "Hasta:" + " " + encabezado.fechaH;
+      break;
+    case "sinCancelar":
+      tipoReporte = "Reporte de valores sin cancelar";
+      fechaDesde.textContent = "De::" + " " + encabezado.fechaD;
+      fechaHasta.textContent = "Hasta:" + " " + encabezado.fechaH;
+      break;
+    case "Por dias":
+      tipoReporte = "Reporte por día de recaudación";
+      fechaDesde.textContent =
+        "Día de recaudación::" + " " + encabezado.fechaFiltro;
+      break;
+    case "Por mes":
+      tipoReporte = "Reporte por mes de recaudación";
+      fechaDesde.textContent =
+        "Mes de recaudación:" + " " + encabezado.fechaFiltro;
+
+      break;
+    case "general":
+      tipoReporte = "Reporte general";
+      fechaDesde.textContent = "Desde:" + " " + encabezado.fechaD;
+      fechaHasta.textContent = "Hasta:" + " " + encabezado.fechaH;
+      break;
+  }
+  const fe = document.createTextNode(formatearFecha(new Date()));
+  const fi = document.createTextNode(formatearFecha(new Date()));
+  fechaEmision.appendChild(fe);
+  fechaImpresion.appendChild(fi);
+  nombreServicio.textContent = encabezado.servicio + " (" + tipoReporte + ")";
+}
 ipcRenderer.on(
   "datos-a-pagina3",
   async (event, datos, encabezado, recaudaciones, datosTotales) => {
-    console.log("Llego Petición");
+    let reporte = encabezado.tipoReporte;
+    console.log("Llego Petición: ", recaudaciones);
+    await caragarEncabezado(reporte, encabezado);
     let carpetaRutaDf = "Servicios Fijos";
-    // Hacer algo con los datos recibidos
+    // Al recibir los datos
     console.log(datos, encabezado);
     if (encabezado.tipo !== undefined) {
       carpetaRuta = encabezado.tipo;
     }
+
     cuotaRuta = encabezado.creacion + encabezado.servicio;
     nombreCuotaRuta = encabezado.servicio;
     await generarCodigoComprobante();
-    const fe = document.createTextNode(formatearFecha(new Date()));
-    const fi = document.createTextNode(formatearFecha(new Date()));
-    fechaEmision.appendChild(fe);
-    fechaImpresion.appendChild(fi);
-    nombreServicio.textContent = encabezado.servicio;
-    fechaDesde.textContent = "De:-" + encabezado.fechaD;
-    fechaHasta.textContent = "Hasta:-" + encabezado.fechaH;
+
     recaudacionesList.innerHTML = "";
     recaudaciones.forEach((recaudacion) => {
-      let abonoRp = 0;
-      if (
-        parseFloat(recaudacion.abono) == 0 &&
-        recaudacion.detalleEstado == "Cancelado"
-      ) {
-        abonoRp = recaudacion.total;
-      } else if (recaudacion.detalleEstado == "Cancelado") {
-        abonoRp = recaudacion.abono;
-      } else {
-        abonoRp = 0;
+      let abonoRp = recaudacion.abono;
+      let estado = "Sin cancelar";
+      if (abonoRp == recaudacion.total) {
+        estado = "Cancelado";
+      } else if (abonoRp < recaudacion.total && abonoRp > 0) {
+        estado = "Abonado";
+      } else if (abonoRp <= 0) {
+        estado = "Sin cancelar";
       }
-
+      if (reporte == "Por dias") {
+        filtradoTitle.style.display = "block";
+        filtrado.style.display = "block";
+        abonoRp = recaudacion.abonoFiltrado;
+        filtradoTitle.textContent = "Recaudado por día";
+        filtrado.textContent = datosTotales.totalFiltrado;
+      } else if (reporte == "Por mes") {
+        filtradoTitle.style.display = "block";
+        filtrado.style.display = "block";
+        abonoRp = recaudacion.abonoFiltrado;
+        filtradoTitle.textContent = "Recaudado por mes";
+        filtrado.textContent = datosTotales.totalFiltrado;
+      }
       recaudacionesList.innerHTML += `
       <tr>
       <td style="
@@ -253,7 +298,7 @@ ipcRenderer.on(
       padding: 5px;
       
       font-size: 15px;
-    ">${recaudacion.contratosCodigo}</td>
+    ">${recaudacion.codigo}</td>
       <td style="
       text-align: left;
       padding: 5px;
@@ -264,7 +309,7 @@ ipcRenderer.on(
       text-align: left;
       padding: 5px;
       font-size: 15px;
-    ">${recaudacion.detalleEstado}</td>
+    ">${estado}</td>
 
     <td style="
     text-align: center;
@@ -284,86 +329,16 @@ ipcRenderer.on(
       text-align: center;
       padding: 5px;
       font-size: 15px;
-    ">${parseFloat(recaudacion.total - abonoRp).toFixed(2)}</td>        
+    ">${parseFloat(recaudacion.total - recaudacion.abono).toFixed(
+      2
+    )}</td>        
   </tr>
       `;
     });
     pendiente.textContent = datosTotales.pendiente;
     recaudado.textContent = datosTotales.recaudado;
+
     totalFinal.textContent = datosTotales.totalFinal;
-    // planillaCancelarId = datosAgua.planillaId;
-    // encabezadoCancelarId = encabezado.encabezadoId;
-    // console.log(
-    //   "Recibido par cancelar" + encabezadoCancelarId + " " + planillaCancelarId
-    // );
-    // Por ejemplo, mostrarlos en un elemento HTML
-    // const mensajeElement = document.getElementById("mensaje");
-    // mensajeElement.textContent = datos.mensaje;
-
-    // const socioNode = document.createTextNode(encabezado.socio);
-
-    // socioNombres.appendChild(socioNode);
-    // // const stSocio = document.createElement("strong");
-    // //   stSocio.textContent = "Socio: ";
-    // //   socioNombres.appendChild(stSocio);
-    // //   socioNombres.TEXT_NODE = encabezado.socio;
-    // const cedulaNode = document.createTextNode(encabezado.cedula);
-    // socioCedula.appendChild(cedulaNode);
-    // const planillaNode = document.createTextNode(encabezado.planilla);
-    // planilla.appendChild(planillaNode);
-    // const contratoNode = document.createTextNode(encabezado.contrato);
-    // contrato.appendChild(contratoNode);
-    // const fechaNode = document.createTextNode(encabezado.fecha);
-    // fechaEmision.appendChild(fechaNode);
-
-    // if (serviciosFijos !== null && serviciosFijos !== undefined) {
-    //   serviciosFijos.forEach((servicioFijo) => {
-    //     if (servicioFijo.nombre === "Agua Potable") {
-    //       serviciosCancelar.push(servicioFijo);
-    //       aguaSn = true;
-    //       console.log("Tiene agua");
-    //       lecturaAnterior.textContent = datosAgua.lecturaAnterior;
-    //       lecturaActual.textContent = datosAgua.lecturaActual;
-    //       consumo.textContent =
-    //         datosAgua.lecturaActual - datosAgua.lecturaAnterior;
-    //       tarifa.textContent = datosAgua.tarifaConsumo;
-    //       total.textContent = datosAgua.valorConsumo;
-    //     } else {
-    //       renderDetalles(servicioFijo);
-    //     }
-    //   });
-    // }
-    // if (otrosServicios !== null && otrosServicios !== undefined) {
-    //   otrosServicios.forEach(async (otroServicio) => {
-    //     console.log("Edita2: " + editados);
-    //     const servicioEditado = await editados.find(
-    //       (editado) => editado.id === otroServicio.id
-    //     );
-    //     if (servicioEditado) {
-    //       console.log(`Se encontró un objeto con el ID ${otroServicio.id}`);
-    //       console.log("Nuevo abono: " + servicioEditado.valor);
-    //       otroServicio.abono = servicioEditado.valor;
-    //     } else {
-    //       console.log(`No se encontró un objeto con el ID ${otroServicio.id}`);
-    //     }
-    //     // if (otroServicio.nombre === "Agua Potable") {
-    //     //   aguaSn = true;
-    //     //   console.log("Tiene agua");
-    //     //   lecturaAnterior.textContent = datosAgua.lecturaAnterior;
-    //     //   lecturaActual.textContent = datosAgua.lecturaActual;
-    //     //   consumo.textContent =
-    //     //     datosAgua.lecturaActual - datosAgua.lecturaAnterior;
-    //     //   tarifa.textContent = datosAgua.tarifaConsumo;
-    //     //   total.textContent = datosAgua.valorConsumo;
-    //     // } else {
-    //     renderDetalles(otroServicio);
-    //     // }
-    // });
-    //   }
-    //   subtotal.textContent = "$" + datosTotales.totalPagar;
-    //   descuento.textContent = "$0.0";
-    //   totalPagar.textContent = "$" + datosTotales.totalPagar;
-    // }
   }
 );
 function renderDetalles(servicio) {

@@ -29,10 +29,10 @@
 .container-title h6 {
     color: #f8c471;
     padding: 0;
-    margin: .1em 0 .3em 0;
+    margin: 0;
 }
 
-.container-socios {
+.container-descripcion {
     height: 3.5em;
     max-height: 3.5em;
     overflow-y: auto;
@@ -40,7 +40,7 @@
     margin: 0;
 }
 
-.container-socios p {
+.container-descripcion p {
     padding: 0;
     margin: .2em 0 .2em 0;
 }
@@ -133,8 +133,8 @@
 
 
 .btn-servicios-custom {
-    margin: .1em;
-    height: 30%;
+    /* margin: .1em; */
+    height: 100%;
     padding: 0 20px;
     font-size: 16px;
     cursor: pointer;
@@ -255,7 +255,7 @@
     width: 100%;
     padding: 0 .5em 0 .5em;
     /* margin: 0 .5em 0 .5em; */
-    height: 50vh;
+    height: 20vh;
     max-height: 50vh;
     overflow-y: auto;
 }
@@ -416,4 +416,38 @@ section.active {
     /* Bordes redondeados */
     padding: 8px;
     /* Espaciado interno */
+}
+
+.barraDeProgresoContainer {
+    background-color: #F8C471;
+    padding: 0;
+    width: 100%;
+    margin: 0;
+    border: 3px solid #85C1E9;
+    overflow: hidden;
+}
+
+.barraDeProgreso {
+    height: 15px;
+    background-color: #2ECC71;
+    width: 0;
+    transition: width 0.3s ease-in-out;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    color: #fff;
+    font-size: .8em;
+    font-weight: 500;
+}
+
+.separator {
+    width: 50px;
+}
+
+thead {
+
+
+    table-layout: fixed;
+    position: sticky;
+    top: 0;
 }

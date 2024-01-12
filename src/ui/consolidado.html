@@ -138,10 +138,10 @@
       /* height: max-content; */
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
+      padding: 5% 0 0 0;
     "
   >
-    <div style="width: 100%; height: 5%; position:fixed; top:0">
+    <div style="width: 100%; height: 5%; position: fixed; top: 0">
       <div style="display: flex; justify-content: end; align-items: center">
         <button class="btn-print-custom" id="boton" type="button">
           Imprimir<i class="ico-btn fa-solid fa-print"></i>
@@ -161,7 +161,7 @@
         height: max-content;
         margin: 0 5%;
         background-color: white;
-        padding: 20px 0 0 0;
+        padding: 0 0 0 0;
         border-radius: 5px;
         border: solid 2px black;
       "
@@ -169,10 +169,11 @@
       <div
         style="
           width: 100%;
+          height: fit-content;
           display: flex;
           text-align: center;
-          margin-bottom: 5px;
           border-bottom: solid 2px black;
+    
         "
       >
         <!-- <img
@@ -186,192 +187,115 @@
           src="./../assets/fonts/logo.png"
           alt="Not found"
         /> -->
-        <h1
-          style="
-            align-self: start;
-            padding: 10px;
-            padding-top: none;
-            filter: grayscale(100%);
-            width: 15%;
-            font-size: 4em;
-          "
-        >
-          SCAP
-        </h1>
+
 
         <div
-          style="align-self: center; margin: 0 auto; width: 60%; height: 100%"
+          style="display: flex;align-self: start; margin: 0 auto; width: 100%; height: 100%;padding: 1em 0 0 0;"
         >
-          <h1
-            style="
-              align-self: center;
-              margin: 0 auto;
-              color: #333;
-              font-size: 24px;
-            "
-          >
-            RECAUDACION DE CONSUMO DE AGUA POTABLE Y SERVICIOS
-          </h1>
-          <p>Santo domingo N°1</p>
-          <div
-            style="
-              align-self: center;
-              margin: 0 auto;
-              display: flex;
-              justify-content: space-evenly;
-            "
-          >
-            <div style="display: flex">
-              <p><strong>Direccion:</strong></p>
-              <p style="color: #00000000">-</p>
-              <p>Cayambe parroquia de Ayora</p>
-            </div>
-            <div style="display: flex">
-              <p><strong>Teléfono:</strong></p>
-              <p style="color: #00000000">-</p>
-              <p>022-110-198</p>
-            </div>
-          </div>
-          <div
-            style="
-              align-self: center;
-              margin: 0 auto;
-              display: flex;
-              justify-content: space-evenly;
-            "
-          >
-            <div style="display: flex">
-              <p><strong>Correo:</strong></p>
-              <p style="color: #00000000">-</p>
-              <p>santoDomingouno@gmail.com</p>
-            </div>
-          </div>
-        </div>
-        <hr style="border: solid 1px black; opacity: 0.5" />
-        <div style="align-self: center; margin: 0 auto; width: 35%">
-          <div style="display: flex; margin-top: -1em">
-            <h3 style="margin-left: 1em; color: #333; font-size: 24px">
-              Comprobante N°.
-            </h3>
-          </div>
-          <div style="display: flex">
-            <p style="margin-left: 1.5em; padding-top: 0; margin-top: -0.9em">
-              100-200-300-400-500
-            </p>
+        <h1
+        style="
+        
+          padding: .5em .15em .5em .15em;
+       margin: 0 ;
+          filter: grayscale(100%);
+          width: 20%;
+          font-size: 4em;
+     
+        "
+      >
+        SCAP
+      </h1>
+     <div style="width: 100%;">     <h1
+      style="
+        align-self: center;
+        margin: 0 auto;
+        color: #333;
+       width: 100%;
+font-stretch: condensed;
+      "
+    >
+      RECAUDACION DE CONSUMO DE AGUA POTABLE Y SERVICIOS
+    </h1>
+    <h3 style="margin:0;padding: 0 0 0 0;width: 100%;">Santo domingo N°1</h3>
+    <div
+      style="
+
+        align-self: center;
+        margin: 0 auto;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
+      "
+    >
+      <div style="display: flex; margin:0;padding: 0;">
+        <p style="margin:0;padding: 0;">Direccion:</p>
+        <p style="color: #00000000;margin:0;padding: 0;">-</p>
+        <p style="margin:0;padding: 0;">Cayambe parroquia de Ayora</p>
+      </div>
+      <div style="display: flex;margin:0;padding: 0;">
+        <p style="margin:0;padding: 0;">Teléfonos:</p>
+        <p style="color: #00000000;margin:0;padding: 0;">-</p>
+        <p style="margin:0;padding: 0;">022-110-198</p>
+      </div>
+      <div style="display: flex;margin:0;padding: 0;">
+        <p style="margin:0;padding: 0;">Correo:</p>
+        <p style="color: #00000000;margin:0;padding: 0;">-</p>
+        <p style="margin:0;padding: 0;">santoDomingouno@gmail.com</p>
+      </div>
+    </div></div>
+
           </div>
 
-          <div
-            style="
-              align-self: center;
-              margin: 0 0 0 1.7em;
-              display: flex;
-              padding: 0;
-              justify-content: start;
-            "
-          >
-            <div style="display: flex; margin: 0; padding: 0">
-              <p id="fechaEmision" style="margin: 0; padding: 0">
-                <strong>Fecha de emisión:</strong>
-              </p>
-              <p style="color: #00000000; margin: 0; padding: 0">-</p>
-              <p style="margin: 0; padding: 0">.</p>
-            </div>
-          </div>
-          <div
-            style="
-              align-self: center;
-              margin: 1em 0 0 1.7em;
-              display: flex;
-              padding: 0;
-              justify-content: start;
-            "
-          >
-            <div style="display: flex; margin: 0; padding: 0">
-              <p id="fechaImpresion" style="margin: 0; padding: 0">
-                <strong>Fecha de impresión:</strong>
-              </p>
-              <p style="color: #00000000; margin: 0; padding: 0">-</p>
-              <p style="margin: 0; padding: 0"></p>
-            </div>
-          </div>
-          <p style="color: #00000000">-</p>
-        </div>
       </div>
 
-      <!-- <div
+      <div
         style="
+          align-self: center;
+          margin: 0 auto;
+          width: 100%;
           display: flex;
-          margin-top: 0;
-          padding: 0;
-          justify-content: space-evenly;
+          flex-direction: column;
+          padding: .5em .5em;
+          justify-content: space-between;
         "
       >
-        <div style="display: flex">
-          <p><strong>Socio:</strong></p>
-          <p style="color: #00000000">-</p>
-          <p id="socioNombres">.</p>
+        <div style="display: flex; margin: 0; padding:0">
+          <h4 style="margin: 0; padding: 0">Comprobante N°</h4>
+          <p style="margin: 0">100-200-300-400-500212121212121212121212121</p>
         </div>
-        <div style="display: flex">
-          <p><strong>CI:</strong></p>
-          <p style="color: #00000000">-</p>
-          <p id="socioCedula">.</p>
+
+        <div style="display: flex; margin: 0; padding: 0">
+          <h4 style="margin: 0; padding: 0">Fecha de emisión:</h4>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p id="fechaEmision" style="margin: 0; padding: 0"></p>
+          <p style="padding-top: 0; padding-bottom: 0; margin: 0">.</p>
         </div>
-        <div style="display: flex">
-          <p><strong>Telf:</strong></p>
-          <p style="color: #00000000">-</p>
-          <p id="socioTelefono">.</p>
+
+        <div style="display: flex; margin: 0; padding:0">
+          <h4 style="margin: 0; padding: 0">Fecha de impresión:</h4>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p id="fechaImpresion" style="margin: 0; padding: 0"></p>
+          <p style="margin: 0; padding: 0"></p>
         </div>
-        <div style="display: flex">
-          <p><strong>Dir</strong></p>
-          <p style="color: #00000000">-</p>
-          <p id="socioDireccion">
-            Cayambe, Juan Montalvo, Principal y secundaria.
-          </p>
-        </div>
-      </div> -->
-      <!-- <hr class="separator" /> -->
-      <!-- <div
-        style="
-          display: flex;
-          margin-top: 0;
-          padding: 0;
-          justify-content: space-evenly;
-        "
-      >
-        <div style="display: flex">
-          <p><strong>Planilla:</strong></p>
-          <p style="color: #00000000">-</p>
-          <p id="planilla">100-200-300</p>
-        </div>
-        <div style="display: flex">
-          <p><strong>Contrato:</strong></p>
-          <p style="color: #00000000">-</p>
-          <p id="contrato">.</p>
-        </div>
-        <div style="display: flex">
-          <p>
-            <strong>Ubicacion:</strong>
-          </p>
-          <p style="color: #00000000">-</p>
-          <p id="ubicacion">Barrio Central, Floresta y Buenavista</p>
-        </div>
-        <div style="display: flex">
-          <p><strong>Fecha de emisión:</strong></p>
-          <p style="color: #00000000">-</p>
-          <p id="fechaEmisionPlanilla">2023-12-11</p>
-        </div>
-      </div> -->
-      <!-- <hr class="separator" /> -->
-      <table id="data-agua" style="width: 100%; margin-bottom: 10px">
-        <thead>
-          <tr>
+
+        <!-- <p style="color: #00000000;margin: 0; padding:0">-</p> -->
+      </div>
+      <hr style="border: solid 1px black; opacity: 0.5;margin: 0; padding: 0" />
+
+    
+      <table id="data-agua" style="width: 100%;">
+        <thead >
+          <tr  style="margin: 0; padding: .5em 0">
             <th
               id="nombreServicio"
               colspan="2"
               class="titles"
               style="
                 text-align: left;
-                padding: 5px;
+                padding: .5em .5em 1em .5em;
+
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
@@ -384,34 +308,34 @@
               class="titles"
               style="
                 text-align: left;
-                padding: 5px;
+                padding: .5em .5em 1em .5em;
+
+                margin: 0;
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
                 font-weight: 200;
               "
-            >
-              De: 2023-10-01
-            </th>
+            ></th>
             <th
               id="fechaHasta"
               colspan="2"
               class="titles"
               style="
                 text-align: left;
-                padding: 5px;
+                padding: .5em .5em 1em .5em;
+                margin: 0;
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
                 font-weight: 200;
               "
-            >
-              Hasta: 2023-10-31
-            </th>
+            ></th>
           </tr>
           <tr>
             <th
               style="
                 text-align: center;
-                padding: 5px;
+                padding: 0;
+                margin: 0;
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
@@ -636,7 +560,7 @@
         <thead>
           <tr>
             <th
-              colspan="5"
+              colspan="6"
               style="
                 text-align: left;
                 padding: 5px;
@@ -644,7 +568,7 @@
                 font-size: 15px;
               "
             >
-              Total
+              Valores totales
             </th>
           </tr>
           <tr>
@@ -665,15 +589,15 @@
               "
             ></th>
             <th
-            style="
-              text-align: center;
-              padding: 5px;
-              border-bottom: 1px solid #ccc;
-              font-size: 15px;
-            "
-          >
-            Pendiente
-          </th>
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Pendiente
+            </th>
             <th
               style="
                 text-align: center;
@@ -684,7 +608,19 @@
             >
               Recaudado
             </th>
-        
+
+            <th
+              style="
+              display: none;
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="filtradoTitle"
+            >
+              Total filtrado
+            </th>
             <th
               style="
                 text-align: center;
@@ -715,7 +651,7 @@
                 font-size: 15px;
               "
             ></td>
-      
+
             <td
               style="
                 text-align: center;
@@ -728,16 +664,28 @@
               $0.0
             </td>
             <td
-            style="
-              text-align: center;
-              padding: 5px;
-              border-bottom: 1px solid #ccc;
-              font-size: 15px;
-            "
-            id="recaudado"
-          >
-            $0.0
-          </td>
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="recaudado"
+            >
+              $0.0
+            </td>
+            <td
+              style="
+              display: none;
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="totalFiltrado"
+            >
+              $0.0
+            </td>
             <td
               style="
                 text-align: center;
@@ -769,7 +717,6 @@
       <div
         class="signatures"
         style="
-
           width: 50%;
           /* position: fixed; */
           /* bottom: 5em; */

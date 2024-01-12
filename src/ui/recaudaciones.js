@@ -4,6 +4,7 @@
 const { ipcRenderer } = require("electron");
 const validator = require("validator");
 const Swal = require("sweetalert2");
+const Chart = require("chart.js");
 // ----------------------------------------------------------------
 const servicioCreacion = document.getElementById("fechacreacion");
 const servicioNombre = document.getElementById("nombre");
@@ -103,7 +104,7 @@ let editServicioId = "";
 let creacionEdit = "";
 let ultimaFechaPago = "";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2023-12-01 00:00:00";
+let fechaCreacion = "2023-11-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {
@@ -163,6 +164,9 @@ servicioForm.addEventListener("submit", async (e) => {
     }
   }
 });
+
+// Datos de ejemplo para el gráfico de barras
+
 function renderCuotas(cuotas) {
   serviciosList.innerHTML = "";
   cuotas.forEach((cuota) => {
@@ -759,7 +763,7 @@ const getServicios = async () => {
   let mesEnviar = mesBusqueda.value;
   let anioEnviar = anioBusqueda.value;
   cuotas = await ipcRenderer.invoke(
-    "getCuotas",
+    "getRecaudacionesCuotas",
     criterioBuscar,
     criterioContentBuscar,
     mesEnviar,
@@ -839,6 +843,7 @@ async function init() {
   cargarMesActual();
   cargarAnioBusquedas();
   cargarsSectores();
+  myBarChart();
   let criterioBuscar = "all";
   let criterioContentBuscar = "all";
   await getServicios(criterioBuscar, criterioContentBuscar);

@@ -96,6 +96,11 @@ const abrirContratos = async () => {
   const url = "Contratos";
   await ipcRenderer.send("abrirInterface", url, acceso);
 };
+const abrirRecaudaciones = async () => {
+  const acceso = sessionStorage.getItem("acceso");
+  const url = "Recaudaciones";
+  await ipcRenderer.send("abrirInterface", url, acceso);
+};
 const abrirServicios = async () => {
   const acceso = sessionStorage.getItem("acceso");
   const url = "Servicios fijos";

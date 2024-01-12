@@ -11,16 +11,16 @@ const connection = mysql.createConnection({
 function getConnection() {
   return connection;
 }
-function cerrarConnection() {
-  connection.end((err) => {
-    if (err) {
-      console.error("Error al cerrar la conexión:", err);
-    } else {
-      connection = null;
-      console.log("Conexión cerrada correctamente.");
-    }
-  });
+function closeConnection() {
+
 }
+function cerrarConnection() {
+  closeConnection().catch((err) => {
+    console.error('Error al cerrar la conexión (fuera de la función):', err);
+  });
+  // The connection is terminated now
+}
+
 module.exports = { getConnection, cerrarConnection };
 //const mysql = require('mysql');
 

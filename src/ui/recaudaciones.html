@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="./principal.css" />
-    <link rel="stylesheet" href="../ui/style/servicios.css" />
+    <link rel="stylesheet" href="../ui/style/recaudaciones.css" />
     <link
       rel="stylesheet"
       href="../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
@@ -22,7 +22,7 @@
       rel="stylesheet"
       href="../../node_modules/bootstrap/dist/css/bootstrap.min.css"
     />
-    <title>Servicios</title>
+    <title>Cuotas</title>
   </head>
   <body class="vh-100 overflow-hidden body">
     <!-- Navbar -->
@@ -163,10 +163,10 @@
         </div>
       </nav>
     </header>
-    <section class="active" id="seccion1">
+    <section id="seccion1" class="active">
       <div class="row container-fluid" style="padding-top: 7em">
         <div
-          class="col-lg-8 col-md-8 col-sm-12"
+          class="col-lg-6 col-md-6 col-sm-12"
           style="height: 68vh; padding: 0"
         >
           <div class="col-12 encabezado-servicios">
@@ -174,7 +174,7 @@
               class="col-12 mp-0 d-flex flex-column align-items-start justify-content-end"
             >
               <p class="fs-1 mp-0">
-                Servicios
+                Recaudaciones
                 <i class="fs-1 fa-solid fa-gears mx-2 my-2"></i>
               </p>
             </div>
@@ -194,7 +194,7 @@
                     </option>
                   </select>
                 </div>
-                <div class="col-4">
+                <div class="col-5">
                   <label for="criterio-content"></label>
                   <div class="input-group">
                     <input
@@ -206,7 +206,7 @@
                     />
                   </div>
                 </div>
-                <div class="col-3">
+                <div class="col-4">
                   <label for="anioBusqueda">Fecha de creación</label>
                   <div class="col-row d-flex">
                     <div class="col-6 text-center mp-0">
@@ -236,17 +236,19 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-2">
-                  <label for="buscarServicios"></label>
-                  <!-- <label class="text-white" for="criterio">Buscar</label> -->
-                  <button
-                    type="button"
-                    class="btn-buscar"
-                    style="width: 100%"
-                    id="buscarServicios"
-                  >
-                    Buscar<i class="fa fa-search mx-1"></i>
-                  </button>
+                <div class="col-12 d-flex justify-content-end mp-0">
+                  <div class="col-2 mp-0">
+                    <label for="criterio-content"></label>
+
+                    <!-- <label class="text-white" for="criterio">Buscar</label> -->
+                    <button
+                      type="button"
+                      class="btn-buscar w-100"
+                      id="buscarServicios"
+                    >
+                      Buscar<i class="fa fa-search mx-1"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -254,7 +256,7 @@
           <!-- Tabla de listado de usuarios -->
           <!-- <div class="container-servicios"> -->
           <div
-            class="row justify-content-between align-items-start container-servicios-list mp-0"
+            class="row justify-content-start align-items-start container-servicios-list mp-0"
             id="servicios"
             style="
               overflow-y: auto;
@@ -264,8 +266,17 @@
               padding: 1em 1em 0 0.5em;
             "
           >
-            <div class="col-6 card mb-3 card-servicios" style="max-width: 100%">
-              <div class="row">
+            <div style="width: 80%; margin: auto; display: none">
+              <canvas id="graficoDeBarras"></canvas>
+            </div>
+            <div id="barraDeProgresoContainer">
+              <div id="barraDeProgreso"></div>
+            </div>
+            <div
+              class="col-12 card mb-3 card-servicios"
+              style="max-width: 100%; padding: 0.5em 0.15em"
+            >
+              <div class="row g-0">
                 <div
                   class="col-2 d-flex justify-content-center align-items-center container-img"
                 >
@@ -276,9 +287,12 @@
                   />
                 </div>
                 <div
-                  class="col-9 d-flex justify-content-center align-items-center"
+                  class="col-10 d-flex justify-content-center align-items-center"
                 >
-                  <div class="card-body">
+                  <div
+                    class="card-body"
+                    style="padding-top: 0; padding-bottom: 0"
+                  >
                     <div class="row container-title">
                       <h6 class="card-title">Agua Potable</h6>
                     </div>
@@ -287,6 +301,7 @@
                         Agua potable para los socios e industrias de la comuna.
                       </p>
                     </div>
+
                     <div class="row container-detalles">
                       <div class="d-flex align-items-baseline col-4 pm-0">
                         <h6>Valor:</h6>
@@ -304,130 +319,198 @@
                         <p>No</p>
                       </div>
                     </div>
+
+                    <div class="row container-detalles">
+                      <hr class="mt-2 mb-0" />
+                      <div class="d-flex align-items-baseline col-3 pm-0">
+                        <h6>Total:</h6>
+                        <p class="text-white">-</p>
+                        <p>1.500,00</p>
+                      </div>
+                      <div class="d-flex align-items-baseline col-3 pm-0">
+                        <h6>Recaudado:</h6>
+                        <p class="text-white">-</p>
+                        <p>870,00</p>
+                      </div>
+                      <div class="d-flex align-items-baseline col-3 pm-0">
+                        <h6>Pendiente:</h6>
+                        <p class="text-white">-</p>
+                        <p>630,00</p>
+                      </div>
+                      <div
+                        class="d-flex align-items-center justify-content-end col-3 pm-0"
+                        style="height: 2.5em"
+                      >
+                        <button class="btn-servicios-custom">
+                          <i class="fa-solid fa-chart-simple"></i>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div class="col-1 d-flex flex-column justify-content-center">
-                  <button class="btn-servicios-custom">
-                    <i class="fa fa-file-pen"></i>
-                  </button>
-                  <button class="btn-servicios-custom">
-                    <i class="fa fa-trash"></i>
-                  </button>
-                  <button class="btn-servicios-custom">
-                    <i class="fa-solid fa-chart-simple"></i>
-                  </button>
-                </div>
+                <!-- <div
+                  class="col-1 d-flex flex-column justify-content-end pt-2 bg-primary" 
+                  style="display: none"
+                ></div> -->
               </div>
             </div>
           </div>
         </div>
 
         <div
-          class="col-lg-4 col-md-4 col-sm-12 encabezado-form"
+          class="col-lg-6 col-md-6 col-sm-12 encabezado-form"
           style="margin: -5em 0 0 0; padding: 0 0 0 1.5em"
         >
           <form class="form-horizontal" id="servicioForm">
-            <div class="col-12 text-center fs-4">Detalles del Servicio</div>
+            <div class="col-12 text-center fs-4">Recaudaciones Generales</div>
             <div
-              class="col-12"
               id="mensajeError"
               style="color: red; font-size: 200; height: 20px"
             ></div>
-            <!-- <input type="text" class="form-control my-2" placeholder="Id" /> -->
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4>Total</h4>
+                <p id="total-recaudar">12.000$</p>
+              </div>
+              <div>
+                <h4>Recaudado</h4>
+                <p id="total-recaudado">12.000$</p>
+              </div>
+              <div>
+                <h4>Pendiente</h4>
+                <p id="total-pendiente">12.000$</p>
+              </div>
+            </div>
             <div class="row">
-              <div class="col-6">
-                <label for="sector">Fecha de creación del servicio</label>
+              <div class="col-12 d-flex justify-content-between">
+                <h5>Dias recaudados</h5>
+                <div class="form-check form-check-reverse">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    value=""
+                    id="filtrar-mes"
+                  />
+                  <label class="form-check-label" for="filtrar-mes">
+                    Filtrar por meses
+                  </label>
+                </div>
+              </div>
+              <div class="px-2 pb-2">
+                <hr style="padding: 0; margin: 0; color: #000" />
+              </div>
 
-                <input
-                  type="date"
-                  readonly
-                  class="form-control my-2"
-                  placeholder="fechaCreacion"
-                  id="fechaCreacion"
-                />
+              <div class="col-6 d-flex align-items-end">
+                <h5>Recaudado:</h5>
+                <p id="valor-recaudado-filtrado"></p>
+              </div>
+              <div class="col-6">
+                <select id="dias-pagos" class="form-select">
+                  <option value="Sin fecha" selected>Sin fechas aún...</option>
+                </select>
+
+                <select
+                  id="mes-pagos"
+                  class="form-select"
+                  style="display: none"
+                >
+                  <option value="Sin fecha" selected>Sin fechas aún...</option>
+                </select>
               </div>
               <div class="col-12">
-                <label for="sector">Nombre del servicio</label>
+                <h6 class="form-control-reverse">Detalles</h6>
+                <div class="mp-0 table-st-container">
+                  <table class="table">
+                    <thead class="table-dark">
+                      <tr>
+                        <th>Servicio</th>
+                        <th>Recaudado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Agua Potable</td>
+                        <td>1289.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Comunal</td>
+                        <td>1345.20</td>
+                      </tr>
 
-                <input
-                  type="text"
-                  class="form-control my-2"
-                  placeholder="Nombre del servicio"
-                  id="nombre"
-                />
-              </div>
-              <div class="col-12">
-                <label for="sector">Descripción del servicio</label>
-
-                <input
-                  type="text"
-                  class="form-control my-2"
-                  placeholder="Descripcion del servicio"
-                  id="descripcion"
-                />
-              </div>
-
-              <div class="col-6">
-                <label for="sector">Valor del servicio</label>
-                <input
-                  type="number"
-                  step="any"
-                  class="form-control my-2"
-                  placeholder="Valor"
-                  id="valor"
-                />
-              </div>
-              <div style="display: none" class="col-6">
-                <label for="individualSn">Forma de pago</label>
-                <div class="col-12 my-2">
-                  <div class="input-group">
-                    <button class="boton-info">
-                      <i class="fas fa-info-circle"></i>
-                      <span class="informacion">
-                        <p class="mp-0">
-                          Por contrato: El valor se aplicara a cada contrato.
-                        </p>
-                        <p class="mp-0">
-                          Por socio: Si el usuario presenta dos contratos o mas,
-                          el valor se aplicara solo al contrato principal.
-                        </p>
-                        <p class="mp-0">
-                          Servicio compartido: Los valores se aplicaran en el
-                          contrato que los adquiera compartiendo los beneficios.
-                        </p>
-                      </span>
-                    </button>
-                    <select class="form-select" id="individualSn">
-                      <option value="Si" selected>Por contrato</option>
-                      <option value="No">Por socio</option>
-                      <option value="Compartido">Servicio compartido</option>
-                    </select>
-                  </div>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                      <tr>
+                        <td>Fondo Mortuorio</td>
+                        <td>543.50</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
-            <div class="my-2 col-12 d-flex justify-content-end">
-              <button class="btn btn-primary mx-2 rounded-2">Guardar</button>
-              <button
-                type="button"
-                onclick="resetForm()"
-                class="btn btn-danger rounded-2"
+
+            <div style="display: none">
+              <div
+                class="col-12 d-flex justify-content-end"
+                style="display: none"
               >
-                Cancelar
-              </button>
+                <button class="btn btn-primary mx-2 rounded-2">Guardar</button>
+                <button
+                  type="button"
+                  class="btn btn-danger rounded-2"
+                  id="cancelar-form"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </form>
         </div>
       </div>
     </section>
     <section id="seccion2">
-      <div
-        class="row container-fluid"
-        style="padding-top: 7em; display: flex; flex-wrap: wrap"
-      >
+      <div class="row container-fluid" style="padding-top: 7em">
         <div
-          class="col-lg-8 col-md-8 col-sm-8"
-          style="height: 68vh; padding: 0"
+          class="col-lg-8 col-md-8 col-sm-12"
+          style="height: 64vh; padding: 0"
         >
           <div class="col-12 encabezado-servicios">
             <div
@@ -449,6 +532,7 @@
               <div class="row">
                 <div class="col-3">
                   <label for="criterio">Buscar por...</label>
+
                   <select
                     id="criterio-bn"
                     class="form-select btn-rd"
@@ -483,6 +567,7 @@
                 </div>
                 <div class="col-2">
                   <label for="buscarBeneficiarios"></label>
+
                   <!-- <label class="text-white" for="criterio">Buscar</label> -->
                   <button
                     type="button"
@@ -524,6 +609,7 @@
               max-height: 100%;
               width: 100%;
               min-width: 100%;
+              /* padding: 0.5em 0.2em 0 0.5em; */
               padding: 0.5em 0.2em 0 0.2em;
               margin: 0 0 0 0.1em;
             "
@@ -909,12 +995,30 @@
         </div>
       </div>
     </section>
-    <dialog id="formServicios" class="dialog-servicios">
+    <dialog id="formOpciones" class="dialog-servicios">
       <section
-        style="width: 90vh; height: fit-content"
+        style="
+          width: fit-content;
+          height: fit-content;
+          margin: 0 auto;
+          background-color: #00000000;
+          overflow-x: hidden;
+        "
+        id="section-opciones"
         class="active section-dialog"
       >
-        <div class="row container-fluid" style="margin: 0; padding: 0">
+        <div
+          class="col-xl-6 col-lg-8 col-md-10 col-sm-12 row container-fluid"
+          style="
+            margin: 0 auto;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+          "
+          id="container-opciones"
+        >
           <div class="col-12 encabezado-servicios">
             <div
               class="col-12 mp-0 d-flex flex-column align-items-center justify-content-end"
@@ -936,46 +1040,127 @@
                 Servicio de agua potable para la comuniad
               </p>
             </div>
-
             <p class="" id="detalles-dg">Servicio fijo | No aplazable</p>
-            <!-- <p id="servicio-val">Valor: $2.50</p> -->
+            <p id="servicio-val-dg">Valor: $</p>
           </div>
           <div class="col-12" style="overflow: none">
-            <div class="row justify-content-between text-center">
-              <div class="col-4 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Subtotal:</label>
-                <p id="subtotal-dg">10.25</p>
+            <div class="row justify-content-center text-center">
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom">
+                <label for="subtotal" id="subtotalText" class="fs-5"
+                  >Subtotal:</label
+                >
+                <!-- <p id="subtotal-dg">10.25</p> -->
+                <input
+                  readonly
+                  step="any"
+                  type="number"
+                  class="text-center form-control"
+                  style="border: none"
+                  id="subtotal-dg"
+                />
               </div>
-              <div class="col-4 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Descuento:</label>
-                <p id="descuento-dg">1.50</p>
+              <div
+                class="col-xl-6 col-lg-6 col-md-8 col-sm-12 my-2 item-custom"
+              >
+                <label for="subtotal" class="col-12 fs-5">Descuento:</label>
+                <div class="d-flex">
+                  <div class="col-8 mp-0">
+                    <!-- <p id="descuento-dg">1.50</p> -->
+                    <!-- <input
+            type="text"
+            class="text-center form-control"
+            style="border: none"
+            id="descuento-dg"
+          /> -->
+                    <select
+                      id="descuento-dg"
+                      class="mp-0 form-select text-center"
+                      style="
+                        border-top-right-radius: 0;
+                        border-bottom-right-radius: 0;
+                      "
+                    >
+                      <option value="1">Sin descuento</option>
+                    </select>
+                  </div>
+                  <!-- </div>
+      <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom"> -->
+                  <div class="col-4 mp-0">
+                    <input
+                      readonly
+                      type="number"
+                      step="any"
+                      class="mp-0 text-center form-control"
+                      style="
+                        border-top-left-radius: 0;
+                        border-bottom-left-radius: 0;
+                      "
+                      id="descuento-val-dg"
+                    />
+                  </div>
+                </div>
               </div>
-              <div class="col-4 my-2 item-custom">
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom">
                 <label for="subtotal" class="fs-5">Total:</label>
-                <p id="total-dg">8.75</p>
+                <!-- <p id="total-dg">8.75</p> -->
+                <input
+                  type="number"
+                  readonly
+                  step="any"
+                  class="text-center form-control"
+                  style="border: none"
+                  id="total-dg"
+                />
               </div>
-              <div class="col-4 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Numero de Pagos:</label>
-                <p id="numPagos-dg">3</p>
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom">
+                <label for="total-dg" class="fs-5">N° Pagos:</label>
+                <!-- <p id="numPagos-dg">3</p> -->
+                <!-- <input
+                  type="text"
+                  class="text-center form-control"
+                  style="border: none"
+                  id="numPagos-dg"
+                /> -->
+                <select id="numPagos-dg" class="form-select">
+                  <option value="1">1 Pago</option>
+                  <option value="2">2 Pagos</option>
+                  <option value="3">3 Pagos</option>
+                  <option value="4">4 Pagos</option>
+                  <option value="5">5 Pagos</option>
+                  <option value="6">6 Pagos</option>
+                </select>
               </div>
-              <div class="col-4 my-2 item-custom">
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Valor Cuotas:</label>
+                <!-- <p id="valorPagos-dg">6.00</p> -->
+                <input
+                  readonly
+                  type="number"
+                  step="any"
+                  class="text-center form-control"
+                  id="valorPagos-dg"
+                  style="border: none"
+                />
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom">
                 <label for="subtotal" class="fs-5">Cancelados:</label>
                 <p id="cancelados-dg">1</p>
               </div>
-              <div class="col-4 my-2 item-custom">
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom">
                 <label for="subtotal" class="fs-5">Pendientes:</label>
                 <p id="pendientes-dg">2</p>
               </div>
-              <div class="col-4 my-2 item-custom">
+
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Abonado:</label>
+                <p id="abonado-dg">6.00</p>
+              </div>
+              <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 my-2 item-custom">
                 <label for="subtotal" class="fs-5">Saldo:</label>
                 <p id="saldo-dg">2.75</p>
               </div>
 
-              <div class="col-4 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Abonado:</label>
-                <p id="abonado-dg">6.00</p>
-              </div>
-              <div class="col-4 my-1 item-custom">
+              <div style="display: none" class="col-4 my-1 item-custom">
                 <label for="subtotal" class="fs-5">Abonar:</label>
                 <input
                   id="abonar-dg"
@@ -991,17 +1176,30 @@
                 <p id="errorTextAbono">Error</p>
               </div>
               <div
-                class="col-12 d-flex align-items-center justify-content-center my-4"
+                class="col-xl-12 col-lg-12 col-md- d-flex align-items-center justify-content-center my-4"
               >
-                <button class="btn btn-success mx-1" id="btnGuardar-dg">
-                  Guardar
+                <button class="btn btn-success mx-1" id="btnContratar-dg">
+                  Contratar
                 </button>
-                <button class="btn btn-success mx-1" id="btnAdministrar-dg">
-                  Administrar
+
+                <button
+                  disabled
+                  style="display: none"
+                  class="btn btn-success mx-1"
+                  id="btnGuardar-dg"
+                >
+                  Actualizar
+                </button>
+                <button
+                  style="display: none"
+                  class="btn btn-success mx-1"
+                  id="btnAdministrar-dg"
+                >
+                  Comprobante
                 </button>
                 <button
                   class="btn btn-danger mx-1"
-                  onclick="CerrarFormServicios()"
+                  onclick="CerrarFormOpciones()"
                 >
                   Cerrar
                 </button>
@@ -1012,14 +1210,9 @@
       </section>
     </dialog>
   </body>
+
   <script src="../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
   <script src="../../node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
   <script src="./bootstrap/js/bootstrap.min.js"></script>
-  <script src="./servicios.js" defer></script>
-  <script>
-    function mostrarLogin() {
-      const dialog = document.getElementById("loginDialog");
-      dialog.showModal();
-    }
-  </script>
+  <script src="./recaudacionesP.js" defer></script>
 </html>

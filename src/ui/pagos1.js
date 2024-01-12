@@ -278,7 +278,7 @@ async function obtenerDatos(datosPlanillas) {
     // Usar reduce para agrupar objetos por el atributo 'grupo' y sumar los valores
   });
   serv = await ipcRenderer.invoke(
-    "getSrv",
+    "getServiciosAgrupados",
     formatearFecha(fechaDesde),
     formatearFecha(fechaHasta),
     contratoId
@@ -715,7 +715,7 @@ const editPlanillasAgrupadas = async (datosPlanillas) => {
     fechaHasta = datosPlanilla.fechaEmision;
   });
   serviciosEdit = await ipcRenderer
-    .invoke("getSrv", formatearFecha(fechaDesde), formatearFecha(fechaHasta), contratoId)
+    .invoke("getServiciosAgrupados", formatearFecha(fechaDesde), formatearFecha(fechaHasta), contratoId)
     .then(async (serviciosEdit) => {
       console.log("A enviar: " + serviciosEdit);
       serviciosAgrupadosEdit = await agruparServicios(serviciosEdit).then(
@@ -1463,27 +1463,7 @@ async function generarPlanilla() {
   //getPlanillas();
 }
 
-function obtenerNombreMes(fecha) {
-  const meses = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-  ];
 
-  const fechaDate = new Date(fecha);
-  // Obtener el nombre del mes
-  const numeroMes = fechaDate.getMonth();
-  return meses[numeroMes + 1];
-}
 function cargarMesActual() {
   mesBusqueda.innerHTML = '<option value="all" selected>Todo mes</option>';
   // Obtén el mes actual (0-indexed, enero es 0, diciembre es 11)
@@ -1790,4 +1770,24 @@ const abrirCuotas = async () => {
   const url = "Servicios ocacionales";
   await ipcRenderer.send("abrirInterface", url, acceso);
 };
-init();
+init();function obtenerNombreMes(fecha) {
+  const meses = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
+
+  const fechaDate = new Date(fecha);
+  // Obtener el nombre del mes
+  const numeroMes = fechaDate.getMonth();
+  return meses[numeroMes+1];
+}

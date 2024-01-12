@@ -50,6 +50,8 @@ let valorTarifa = 2.0;
 let lecturaActualEdit = 0;
 let lecturaAnteriorEdit = 0;
 let valorConsumoEdit = 0;
+let tarifaTemporal = "";
+
 // ----------------------------------------------------------------
 const valorSubtotal = document.getElementById("valorSubtotal");
 const valorTotalDescuento = document.getElementById("valorTotalDescuento");
@@ -550,6 +552,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   // ----------------------------------------------------------------
   // Datos del encabezado de la planilla a editar
   contratoCodigo.textContent = planilla[0].codigo;
+  tarifaTemporal = planilla[0].tarifa;
   planillaEmision.textContent = formatearFecha(planilla[0].fechaEmision);
   planillaCodigo.textContent = planilla[0].planillasCodigo;
   socioNombres.textContent = planilla[0].nombre;
@@ -910,43 +913,51 @@ async function calcularConsumo() {
   let base = 0.0;
   let limitebase = 15.0;
   console.log("Consumo redondeado cC: " + consumo);
+  if (tarifaTemporal !== "Sin consumo") {
+    console.log("Tarifas: " + tarifasDisponibles);
+    if (tarifasDisponibles[0] !== undefined) {
+      tarifasDisponibles.forEach((tarifa) => {
+        if (consumo >= tarifa.desde && consumo <= tarifa.hasta) {
+          tarifaAplicada = tarifa.tarifa;
+          valorTarifa = tarifa.valor;
+          console.log(
+            "Valores que se asignaran: ",
+            tarifaAplicada + "|" + valorTarifa
+          );
+        }
+        if (tarifa.tarifa == "Familiar") {
+          base = tarifa.valor;
+          limitebase = tarifa.hasta;
+          console.log("Bases: ", base + "|" + limitebase);
+        }
+      });
+    }
+    if (tarifaAplicada === "Familiar") {
+      console.log("Aplicando tarifa familiar: " + valorTarifa.toFixed(2));
+      valorConsumo.value = valorTarifa.toFixed(2);
+    } else {
+      totalConsumo = (consumo - limitebase) * valorTarifa;
+      console.log(
+        "Total consumo que excede la base: ",
+        totalConsumo + "|" + base
+      );
 
-  console.log("Tarifas: " + tarifasDisponibles);
-  if (tarifasDisponibles[0] !== undefined) {
-    tarifasDisponibles.forEach((tarifa) => {
-      if (consumo >= tarifa.desde && consumo <= tarifa.hasta) {
-        tarifaAplicada = tarifa.tarifa;
-        valorTarifa = tarifa.valor;
-        console.log(
-          "VAlores que se asignaran: ",
-          tarifaAplicada + "|" + valorTarifa
-        );
-      }
-      if (tarifa.tarifa == "Familiar") {
-        base = tarifa.valor;
-        limitebase = tarifa.hasta;
-        console.log("Bases: ", base + "|" + limitebase);
-      }
-    });
-  }
-  if (tarifaAplicada === "Familiar") {
-    console.log("Aplicando tarifa familiar: " + valorTarifa.toFixed(2));
-    valorConsumo.value = valorTarifa.toFixed(2);
-  } else {
-    totalConsumo = (consumo - limitebase) * valorTarifa;
-    console.log(
-      "Total consumo que excede la base: ",
-      totalConsumo + "|" + base
-    );
+      valorConsumo.value = (totalConsumo + base).toFixed(2);
+    }
 
     valorConsumo.value = (totalConsumo + base).toFixed(2);
+
+    tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+
+    console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
+  } else {
+    tarifaAplicada = "Sin consumo";
+    valorConsumo.value = (totalConsumo + base).toFixed(2);
+
+    tarifaConsumo.value = "Siin Consumo" + "($" + 0.0 + ")";
+
+    console.log("Tarifa: " + "Siin Consumo" + "(" + 0.0 + ")");
   }
-
-  valorConsumo.value = (totalConsumo + base).toFixed(2);
-
-  tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
-
-  console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
 }
 const planillasAnteriores = async (contratoId, fechaPlanilla) => {
   const anterioresCancelar = await ipcRenderer.invoke(

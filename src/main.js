@@ -144,8 +144,11 @@ ipcMain.on(
 // Funciones para el cierre de sesion
 // ----------------------------------------------------------------
 ipcMain.on("cerrarSesion", async (event) => {
-  // await cerrarConnection();
-  event.sender.send("sesionCerrada");
+  const outPage='src/ui/login.html';
+  //  await cerrarConnection();
+  // event.sender.send("sesionCerrada");
+  await window.loadFile(outPage);
+  await window.webContents.send("Log out")
 });
 // ----------------------------------------------------------------
 // Funcion para el cierre de la aplicacion
@@ -280,6 +283,7 @@ ipcMain.on("datos-a-ocacionales", async (event, servicio) => {
 // Manejo de rutas
 // ----------------------------------------------------------------
 ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
+ 
   console.log("Name: " + interfaceName);
   let url = "";
   if (interfaceName == "Inicio") {
@@ -349,6 +353,19 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
         break;
       case "Digitador":
         url = "src/ui/contratos.html";
+        break;
+      default:
+    }
+  } else if (interfaceName == "Recaudaciones") {
+    switch (acceso) {
+      case "Auditor":
+        console.log("Auditor");
+        url = "src/ui/recaudaciones.html";
+        break;
+      case "Cajero":
+        break;
+      case "Digitador":
+        url = "src/ui/recaudaciones.html";
         break;
       default:
     }
@@ -1317,6 +1334,20 @@ ipcMain.handle("getRecaudaciones", async (event, servicioId, desde, hasta) => {
     console.log(error);
   }
 });
+ipcMain.handle("getRecaudarByServicio", async (event, servicioId) => {
+  console.log("Buscando: ", servicioId);
+  try {
+    const conn = await getConnection();
+    const result = await conn.query(
+      "SELECT * from viewEstadoPagos WHERE serviciosId= ? order by primerApellido;",
+      servicioId
+    );
+    console.log("Resultados: ", result);
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+});
 ipcMain.handle("getServicioAgua", async (event, contratoId, fechaEmision) => {
   try {
     const conn = await getConnection();
@@ -1358,6 +1389,115 @@ ipcMain.handle("createServicioGuia", async (event, servicioGuia) => {
 // ----------------------------------------------------------------
 // Funciones de las cuotas
 // ----------------------------------------------------------------
+ipcMain.handle(
+  "getRecaudacionesCuotas",
+  async (event, criterio, criterioContent, mes, anio) => {
+    console.log("Criterios: " + mes, anio);
+    const conn = await getConnection();
+    if (mes == undefined) {
+      mes = "all";
+    }
+    if (anio == undefined) {
+      anio = "all";
+    }
+    try {
+      if (criterio == "all" || criterio == undefined) {
+        if (mes == "all" && anio == "all") {
+          const results = conn.query(
+            "SELECT * FROM viewEstadoPagos where tipo='Cuota' and not estadoDetalles ='Anulado' ;"
+          );
+          console.log(results);
+          return results;
+        } else if (mes !== "all" && anio == "all") {
+          const results = conn.query(
+            "SELECT * FROM viewEstadoPagos where " +
+              "tipo='Cuota' AND month(fechaCreacion)='" +
+              mes +
+              "' where not estadoDetalles ='Anulado' order by id asc;"
+          );
+          console.log(results);
+          return results;
+        } else if (mes == "all" && anio !== "all") {
+          const results = conn.query(
+            "SELECT * FROM viewEstadoPagos where " +
+              "tipo='Cuota' AND year(fechaCreacion) = '" +
+              anio +
+              "' where not estadoDetalles ='Anulado' order by id asc;"
+          );
+          console.log(results);
+          return results;
+        } else if (mes !== "all" && anio !== "all") {
+          const results = conn.query(
+            "SELECT * FROM viewEstadoPagos where " +
+              "tipo='Cuota' AND month(fechaCreacion)='" +
+              mes +
+              "' AND year(fechaCreacion) = '" +
+              anio +
+              "' where not estadoDetalles ='Anulado' order by id asc;"
+          );
+          console.log(results);
+          return results;
+        }
+      } else {
+        if (mes == "all" && anio == "all") {
+          const results = conn.query(
+            "SELECT * FROM viewEstadoPagos where " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%'" +
+              " and tipo='Cuota' where not estadoDetalles ='Anulado' order by id asc;"
+          );
+          console.log(results);
+          return results;
+        } else if (mes !== "all" && anio == "all") {
+          const results = conn.query(
+            "SELECT * FROM viewEstadoPagos where " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%'" +
+              " and tipo='Cuota' AND month(fechaCreacion)= '" +
+              mes +
+              "' where not estadoDetalles ='Anulado' order by id asc;"
+          );
+          console.log(results);
+          return results;
+        } else if (mes == "all" && anio !== "all") {
+          const results = conn.query(
+            "SELECT * FROM viewEstadoPagos where " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%'" +
+              " and tipo='Cuota' AND year(fechaCreacion) = '" +
+              anio +
+              "' where not estadoDetalles ='Anulado' order by id asc;"
+          );
+          console.log(results);
+          return results;
+        } else if (mes !== "all" && anio !== "all") {
+          const results = conn.query(
+            "SELECT * FROM viewEstadoPagos where " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%'" +
+              " and tipo='Cuota' AND month(fechaCreacion)= '" +
+              mes +
+              "' AND year(fechaCreacion) = '" +
+              anio +
+              "' where not estadoDetalles ='Anulado' order by id asc;"
+          );
+          console.log(results);
+          return results;
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+);
 ipcMain.handle(
   "getCuotas",
   async (event, criterio, criterioContent, mes, anio) => {
@@ -3659,30 +3799,30 @@ ipcMain.handle(
           "') AND " +
           "nombre='Socio comuna';"
       );
-      if (canceladoGuiaSn[0].estadoDetalles !== "Cancelado") {
-        console.log("Editar: " + canceladoGuiaSn[0].estadoDetalles);
-        const result = await conn.query(
-          "UPDATE detallesServicio set ? where id = ?",
-          [detalle, id]
-        );
-        event.sender.send("Notificar", {
-          success: true,
-          title: "Actualizado!",
-          message: "Se ha actualizado la planilla.",
-        });
-        console.log(result);
-        return result;
-        // }
-      } else {
-        event.sender.send("Notificar", {
-          success: false,
-          title: "Error!",
-          message:
-            "No se ha podido actualizar la planilla, los servicios aplicados se encuentran Cancelados.",
-        });
+      // if (canceladoGuiaSn[0].estadoDetalles !== "Cancelado") {
+      console.log("Editar: " + canceladoGuiaSn[0].estadoDetalles);
+      const result = await conn.query(
+        "UPDATE detallesServicio set ? where id = ?",
+        [detalle, id]
+      );
+      event.sender.send("Notificar", {
+        success: true,
+        title: "Actualizado!",
+        message: "Se ha actualizado la planilla.",
+      });
+      console.log(result);
+      return result;
+      // }
+      // // } else {
+      // //   event.sender.send("Notificar", {
+      // //     success: false,
+      // //     title: "Error!",
+      // //     message:
+      // //       "No se ha podido actualizar la planilla, los servicios aplicados se encuentran Cancelados.",
+      // //   });
 
-        return;
-      }
+      // //   return;
+      // }
     } catch (error) {
       event.sender.send("Notificar", {
         success: false,
@@ -3978,45 +4118,45 @@ ipcMain.handle("updatePlanilla", async (event, id, planilla, contratoId) => {
       "SELECT planillas.estado FROM planillas WHERE planillas.id= " + id + " ;"
     );
     if (planillaCancelada[0] !== undefined) {
-      if (planillaCancelada[0].estado == "Cancelado") {
-        event.sender.send("Notificar", {
-          success: false,
-          title: "Error!",
-          message:
-            "Esta planilla ya ha sido cancelada, no puedes editar sus valores.",
-        });
-      } else {
-        if (contratoId !== undefined) {
-          console.log("Entro al if");
-          if (planilla.tarifa == "Sin consumo") {
-            const aplicadaSn = await conn.query(
-              "SELECT * FROM viewPlanillas WHERE contratosId=? AND tarifa='Sin consumo';",
-              contratoId
-            );
-            if (aplicadaSn.length == 1) {
-              event.sender.send("Notificar", {
-                success: false,
-                title: "Error!",
-                message:
-                  'La tarifa "Sin consumo" ya ha sido aplicada en este medidor.',
-              });
-              return;
-            }
+      // if (planillaCancelada[0].estado == "Cancelado") {
+      // event.sender.send("Notificar", {
+      //   success: false,
+      //   title: "Error!",
+      //   message:
+      //     "Esta planilla ya ha sido cancelada, no puedes editar sus valores.",
+      // });
+      // } else {
+      if (contratoId !== undefined) {
+        console.log("Entro al if");
+        if (planilla.tarifa == "Sin consumo") {
+          const aplicadaSn = await conn.query(
+            "SELECT * FROM viewPlanillas WHERE contratosId=? AND tarifa='Sin consumo';",
+            contratoId
+          );
+          if (aplicadaSn.length == 1) {
+            event.sender.send("Notificar", {
+              success: false,
+              title: "Error!",
+              message:
+                'La tarifa "Sin consumo" ya ha sido aplicada en este medidor.',
+            });
+            return;
           }
         }
-        console.log("No entro al if");
-        const result = await conn.query("UPDATE planillas set ? where id = ?", [
-          planilla,
-          id,
-        ]);
-        console.log(result);
-        event.sender.send("Notificar", {
-          success: true,
-          title: "Actualizado!",
-          message: "Se ha hactualizado la planilla.",
-        });
-        return result;
       }
+      console.log("No entro al if");
+      const result = await conn.query("UPDATE planillas set ? where id = ?", [
+        planilla,
+        id,
+      ]);
+      console.log(result);
+      event.sender.send("Notificar", {
+        success: true,
+        title: "Actualizado!",
+        message: "Se ha hactualizado la planilla.",
+      });
+      return result;
+      // }
     } else {
       event.sender.send("Notificar", {
         success: false,

@@ -615,18 +615,20 @@
           class="col-lg-4 col-md-4 col-sm-12 encabezado-form"
           style="margin: -5em 0 0 0; padding: 0 0 0 1.5em"
         >
-          <div class="row mx-1 encabezado-st">
-            <div class="col-12 text-center fs-4">Recaudaciones</div>
-            <div class="col-6">
+          <div class="row encabezado-st">
+            <div class="col-12 text-center fs-4 mp-0">
+              <h4 class="mp-0">Recaudaciones</h4>
+            </div>
+            <div style="display: none" class="col-6">
               <label for="criterio-st">Ver por</label>
               <select id="criterio-st" class="form-select">
                 <option value="actual" selected>Actual</option>
-                <!-- <option value="all">Todos</option> -->
+                <option value="all">Todos</option>
                 <option value="mes">Mes</option>
                 <!-- <option value="periodo">Periodo</option> -->
               </select>
             </div>
-            <div class="col-6">
+            <div style="display: none" class="col-6">
               <label class="trans" for="criterio">Buscar</label>
               <button
                 type="button"
@@ -637,12 +639,17 @@
                 Buscar<i class="fa fa-search mx-1"></i>
               </button>
             </div>
-            <div class="row d-flex justify-content-between my-2">
-              <p class="col-6 mp-0">Fecha de consulta...</p>
+            <div
+              style="display: none"
+              class="row d-flex justify-content-between my-2"
+            >
+              <p style="display: none" class="col-6 mp-0">
+                Fecha de consulta...
+              </p>
               <p class="col-6 mp-0" style="display: none">Hasta...</p>
               <p class="col-6 mp-0" style="display: none">Hasta...</p>
             </div>
-            <div class="col-6">
+            <div class="col-6" style="display: none">
               <div class="col-row d-flex mp-0">
                 <div class="col-6 text-center mp-0">
                   <label for="mes" class="text-center">Mes</label>
@@ -699,32 +706,86 @@
               </div>
             </div>
 
-            <div class="row d-flex justify-content-between pt-4">
+            <div class="row d-flex justify-content-between mp-0">
+              <div class="col-12"><h5>Valores totales $</h5></div>
               <div class="col-3 d-flex">
-                <p>Recaudado: $</p>
+                <h6>Recaudado:</h6>
                 <p class="trans">-</p>
                 <p id="valorRecaudado">$253.25</p>
               </div>
               <div class="col-3 d-flex">
-                <p>Pendiente: $</p>
+                <h6>Pendiente:</h6>
                 <p class="trans">-</p>
                 <p id="valorPendiente">$253.25</p>
               </div>
               <div class="col-3 d-flex">
-                <p>Total: $</p>
+                <h6>Total:</h6>
                 <p class="trans">-</p>
                 <p id="valorTotal">$253.25</p>
               </div>
             </div>
-            <div class="col-12 table-st-container">
+            <div class="row d-flex justify-content-between mp-0">
+              <div class="col-12">
+                <p class="mp-0">Fechas de pago</p>
+                <hr class="mp-0" />
+              </div>
+
+              <div class="col-12 mb-2">
+                <div class="form-check form-check-reverse">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    value=""
+                    id="filtrar-mes"
+                  />
+                  <label class="form-check-label" for="filtrar-mes">
+                    Filtrar por meses
+                  </label>
+                </div>
+              </div>
+              <div class="col-12 pb-2">
+                <select id="dias-pagos" class="form-select">
+                  <option value="Sin fecha" selected>Sin fechas aún...</option>
+                </select>
+                <select
+                  id="mes-pagos"
+                  class="form-select"
+                  style="display: none"
+                >
+                  <option value="Sin fecha" selected>Sin fechas aún...</option>
+                </select>
+              </div>
+
+              <div class="col-12 mb-2">
+                <div class="d-flex " >
+                  <div class="col-6 d-flex">
+                    <h6>Recaudado:</h6>
+                    <p class="trans">-</p>
+                    <p id="valor-recaudado-filtrado"></p>
+                  </div>
+                  <div class="col-6 form-check form-check-reverse">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      value=""
+                      id="filtrar-cancelados"
+                    />
+                    <label class="form-check-label" for="filtrar-cancelados">
+                      Filtrar cancelados
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 table-st-container mt-2">
               <table class="table mp-0" style="width: 100%; margin-bottom: 0">
                 <thead class="table-dark" style="position: sticky">
                   <tr>
                     <th>Contrato</th>
                     <th>Socio</th>
-                    <th>Estado</th>
-                    <th>Abonado</th>
                     <th>Total</th>
+                    <th>Abonado</th>
+                    <th>Estado</th>
                     <th>Saldo</th>
                   </tr>
                 </thead>
