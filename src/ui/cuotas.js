@@ -103,7 +103,7 @@ let editServicioId = "";
 let creacionEdit = "";
 let ultimaFechaPago = "";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2023-12-01 00:00:00";
+let fechaCreacion = "2024-03-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {

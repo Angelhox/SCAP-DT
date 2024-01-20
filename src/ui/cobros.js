@@ -648,7 +648,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     otrosServiciosList.innerHTML = "";
   }
   recalcularConsumo();
-  valorTotalPagar.value = totalFinal + totalConsumo;
+  valorTotalPagar.value = (totalFinal + totalConsumo).toFixed(2);
   // valorTotalDescuento.value=0;
   valorTotalDescuento.value = descuentoFinal;
 };
@@ -954,9 +954,9 @@ async function calcularConsumo() {
     tarifaAplicada = "Sin consumo";
     valorConsumo.value = (totalConsumo + base).toFixed(2);
 
-    tarifaConsumo.value = "Siin Consumo" + "($" + 0.0 + ")";
+    tarifaConsumo.value = "Sin Consumo" + "($" + 0.0 + ")";
 
-    console.log("Tarifa: " + "Siin Consumo" + "(" + 0.0 + ")");
+    console.log("Tarifa: " + "Sin Consumo" + "(" + 0.0 + ")");
   }
 }
 const planillasAnteriores = async (contratoId, fechaPlanilla) => {

@@ -201,7 +201,7 @@
                     class="form-select"
                     aria-label="Default select example"
                   >
-                    <option value="all" >Todas</option>
+                    <option value="all">Todas</option>
                     <option value="cedulaPasaporte">Cédula del socio</option>
                     <option selected value="nombre">Nombres/Apellidos</option>
                     <option value="codigo">Código</option>
@@ -432,15 +432,25 @@
                   <p class="trans mp-0">-</p>
                   <p class="mp-0" id="planillaEstado"></p>
                 </div>
-                <div class="col-3 d-flex mp-0">
+                <!-- Hasta saber para que puse Recargo-->
+                <div class="col-4 mp-0" style="display: none">
                   <label for="cedula" class="fs-6 mp-0">Recargo:</label>
                   <p class="trans mp-0">-</p>
                   <p class="text-white mp-0" id="planillaRecargo"></p>
                 </div>
-                <div class="col-6 d-flex mp-0">
-                  <label for="cedula" class="fs-6 mp-0">Comprobante:</label>
+                <div class="col-5"></div>
+                <div
+                  class="col-3 d-flex mp-0 justify-content-start"
+                  id="comprobante"
+                >
+                  <button class="btn-comprobante" onclick="comprobantesDg()">
+                    <i class="fs-5 mx-1 fa-regular fa-folder-open"> </i>
+                    Comprobante
+                  </button>
+
+                  <!-- <label for="cedula" class="fs-6 mp-0">Comprobante:</label>
                   <p class="trans mp-0">-</p>
-                  <p class="text-white mp-0" id="comprobante"></p>
+                  <p class=" mp-0" id="comprobante"></p> -->
                 </div>
               </div>
             </div>
@@ -754,7 +764,7 @@
                     <div class="col-6">
                       <label for="lecturaActual">Total a pagar</label>
                       <input
-                        type="text"
+                        type="number"
                         class="form-control"
                         placeholder="$0.0"
                         id="valorTotalPagar"
@@ -924,98 +934,80 @@
       >
         <div class="row container-fluid" style="margin: 0; padding: 0">
           <div class="col-12 encabezado-servicios">
-            <div id="pdf-viewer"></div>
-          </div>
-          <div
-            class="col-12 d-flex justify-content-between align-items-center encabezado-bt"
-          >
-            <div class="d-flex align-items-baseline mp-0">
-              <!-- <p class="servicio-title mp-0" id="servicio-tit">Agua Potable</p>
-            <p class="trans">-</p> -->
-
-              <p class="mp-0" id="descripcion-dg">
-                Servicio de agua potable para la comuniad
+            <div
+              class="col-12 mp-0 d-flex flex-column align-items-center justify-content-end"
+            >
+              <p class="fs-1 mp-0">
+                Comprobantes <i class="fs-1 mx-2 my-2 fa-solid fa-receipt"></i>
               </p>
             </div>
-
-            <p class="" id="detalles-dg">Servicio fijo | No aplazable</p>
-            <!-- <p id="servicio-val">Valor: $2.50</p> -->
           </div>
-          <div class="col-12" style="overflow: none">
-            <div class="row justify-content-between text-center">
-              <div class="col-4 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Subtotal:</label>
-                <p id="subtotal-dg">10.25</p>
-              </div>
-              <div class="col-4 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Descuento:</label>
-                <p id="descuento-dg">1.50</p>
-              </div>
-              <div class="col-4 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Total:</label>
-                <p id="total-dg">8.75</p>
-              </div>
-              <div class="col-3 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Numero de Pagos:</label>
-                <p id="numPagos-dg">3</p>
-              </div>
-              <div class="col-3 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Aplicados:</label>
-                <p id="aplicados-dg">1</p>
-              </div>
-              <div class="col-3 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Cancelados:</label>
-                <p id="cancelados-dg">1</p>
-              </div>
+          <div
+            class="col-12 d-flex justify-content-start align-items-center encabezado-bt"
+          >
+   
+            <i class="fs-4 fa-solid fa-sliders mx-1"></i>
+            <div class="input-group w-50 d-flex justify-content-end">
+              <span class="input-group-text" id="basic-addon1">
+                <i class="fa fa-search mx-1"></i
+              ></span>
 
-              <div class="col-3 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Por cancelar:</label>
-                <p id="pendientes-dg">2</p>
-              </div>
-              <div class="col-3 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Saldo aplicar:</label>
-                <p id="saldo-aplicar-dg">2.75</p>
-              </div>
-              <div class="col-3 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Saldo cancelar:</label>
-                <p id="saldo-dg">2.75</p>
-              </div>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Código"
+                id="filtrar-comprobantes"
+                autofocus="false"
+              />
+            </div>
+          </div>
+          <div class="col-12 mt-3" style="overflow: none">
+            <div
+              style="height: 30vh; max-height: 30vh; overflow-y: auto"
+              class="tbl-rounded"
+            >
+              <table class="table table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Código</th>
+                    <th>Fecha de emisión</th>
+                    <th>Estado</th>
+                    <th>Fecha anulación</th>
+                    <th>
+                      <i class="fs-5 fa-regular fa-folder-open"></i>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="comprobantes">
+                  <tr>
+                    <td class="text-center" colspan="5">
+                      <div
+                        class="d-flex justify-content-center align-items-center"
+                      >
+                        <i
+                          class="mx-2 fs-3 fa-solid fa-face-frown-open clr-b2babb"
+                        ></i>
+                        Sin comprobantes para mostrar
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-              <div class="col-3 my-2 item-custom">
-                <label for="subtotal" class="fs-5">Cancelado:</label>
-                <p id="abonado-dg">6.00</p>
-              </div>
-              <div class="col-3 my-1 item-custom">
-                <label for="subtotal" class="fs-5">Abonar:</label>
-                <input
-                  id="abonar-dg"
-                  readonly
-                  type="number"
-                  step="any"
-                  class="form-control text-center"
-                  placeholder="$0.0"
-                />
-              </div>
-              <div class="col-12 err-container" id="err-container">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <p id="errorTextAbono">Error</p>
-              </div>
-              <div
-                class="col-12 d-flex align-items-center justify-content-center my-4"
+            <div
+              class="col-12 d-flex align-items-center justify-content-center my-3"
+              id="botones-comprobantes"
+            >
+              <button
+                class="btn btn-danger mx-1 w-25"
+                id="cerrar-form-comprobantes"
               >
-                <button class="btn btn-success mx-1" id="btnGuardar-dg">
-                  Aceptar
-                </button>
-                <button class="btn btn-success mx-1" id="btnAdministrar-dg">
-                  Administrar
-                </button>
-                <button
-                  class="btn btn-danger mx-1"
-                  onclick="CerrarFormServicios()"
-                >
-                  Cerrar
-                </button>
-              </div>
+                Cerrar
+              </button>
+              <!-- <button class="btn btn-danger mx-1 w-25" id="anular-comprobante">
+                Anular
+              </button> -->
             </div>
           </div>
         </div>
@@ -1029,5 +1021,5 @@
   <script src="../../node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
   <script src="./bootstrap/js/bootstrap.min.js"></script>
 
-  <script src="./cobros.js" defer></script>
+  <script src="./cobrosTest.js" defer></script>
 </html>

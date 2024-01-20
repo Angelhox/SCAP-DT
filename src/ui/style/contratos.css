@@ -347,3 +347,49 @@ font-weight: 500;
     font-weight: 500;
     
 }
+  
+#contenedor-sugerencias {
+    position: relative;
+    width: 100%;
+  }
+
+  #lista-sugerencias {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    z-index: 1;
+    background-color: #00000000;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .form-control {
+    border-radius: 0;
+    box-shadow: none;
+    border-color: #d2d6de;
+  }
+  
+  .form-control {
+    display: block;
+    width: 100%;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -webkit-transition: border-color ease-in-out 0.15s,
+      -webkit-box-shadow ease-in-out 0.15s;
+    -o-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+  }
+
+ 

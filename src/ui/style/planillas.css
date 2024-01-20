@@ -177,10 +177,18 @@
     ;
     border: solid 3px #85C1E9;
     border-top: none;
-    padding: .5em 1.1em .1em 1.1em;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
+    padding: .5em 1.1em .5em 1.1em;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
 
+.tbl-rounded {
+    border-radius: 5px;
+    border: #d7dbdd solid 2px;
+}
+
+.clr-b2babb {
+    color: #B2BABB
 }
 
 .lecturas-title {
@@ -341,6 +349,10 @@ input {
     background-color: #00000000;
 }
 
+.fila-active {
+    background-color: #85C1E9;
+}
+
 /* Estilo para el ícono en estado normal (sin hover) */
 .fa-caret-down {
     color: black;
@@ -440,4 +452,26 @@ button:hover .fa-caret-down {
     /* Cambio de color de fondo al pasar el ratón */
     border-color: #f8f9fa;
     /* Cambio de color del borde al pasar el ratón */
+}
+
+.btn-comprobante {
+    display: flex;
+    justify-content: start;
+    width: 100%;
+    background-color: rgb(255, 255, 255);
+    padding: 0;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-comprobante:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
 }

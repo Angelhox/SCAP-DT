@@ -1,6 +1,6 @@
 const { BrowserWindow, Notification, dialog, session } = require("electron");
 const { app, ipcMain } = require("electron");
-const { getConnection, cerrarConnection } = require("./database");
+const { getConnection, closeConnection } = require("./database");
 const SecureElectronStore = require("secure-electron-store").default;
 const fs = require("fs").promises;
 const { PDFDocument, degrees, rgb } = require("pdf-lib");
@@ -144,11 +144,20 @@ ipcMain.on(
 // Funciones para el cierre de sesion
 // ----------------------------------------------------------------
 ipcMain.on("cerrarSesion", async (event) => {
-  const outPage='src/ui/login.html';
-  //  await cerrarConnection();
+  const outPage = "src/ui/login.html";
+  // const conn = await getConnection();
+  // conn
+  //   .end()
+  //   .then(() => {
+  //     console.log("Closed :)");
+  //   })
+  //   .catch((error) => {
+  //     console.error("No closed :(", error);
+  //   });
+  await closeConnection();
   // event.sender.send("sesionCerrada");
   await window.loadFile(outPage);
-  await window.webContents.send("Log out")
+  await window.webContents.send("Log out");
 });
 // ----------------------------------------------------------------
 // Funcion para el cierre de la aplicacion
@@ -283,7 +292,6 @@ ipcMain.on("datos-a-ocacionales", async (event, servicio) => {
 // Manejo de rutas
 // ----------------------------------------------------------------
 ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
- 
   console.log("Name: " + interfaceName);
   let url = "";
   if (interfaceName == "Inicio") {
@@ -1376,9 +1384,28 @@ ipcMain.handle("createServicioGuia", async (event, servicioGuia) => {
     );
     if (guia.length > 0) {
       servicioGuia.serviciosId = guia[0].id;
-      const result = conn.query(
+      const result = await conn.query(
         "INSERT INTO serviciosContratados set ? ;",
         servicioGuia
+      );
+      return result;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+// Insertar servicio de recargo
+ipcMain.handle("createRecargo", async (event, servicioRecargo) => {
+  try {
+    const conn = await getConnection();
+    const recargo = await conn.query(
+      "SELECT * FROM servicios WHERE nombre='Recargo';"
+    );
+    if (recargo.length > 0) {
+      servicioRecargo.serviciosId = recargo[0].id;
+      const result = await conn.query(
+        "INSERT INTO serviciosContratados set ? ;",
+        servicioRecargo
       );
       return result;
     }
@@ -2697,7 +2724,8 @@ ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
             );
             if (lecturaConsulta[0] !== undefined) {
               console.log(
-                "lectura Anterior: " + lecturaConsulta[0].lecturaActual
+                "lectura Anterior: ",
+                lecturaConsulta[0].lecturaActual
               );
               lecturaAnterior = lecturaConsulta[0].lecturaActual;
             }
@@ -2810,6 +2838,7 @@ ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
 async function createCuentaServicios(contratoId, fechaCreacion) {
   console.log("Consultando encabezado para: " + contratoId);
   const conn = await getConnection();
+
   let encabezadoId;
   try {
     // Consultamos si existe un encabezado con los detalles de los servicios contratados segun el contrato
@@ -2858,7 +2887,12 @@ async function createCuentaServicios(contratoId, fechaCreacion) {
         contratoId +
         " AND estado='Activo' AND tipo='Servicio fijo' AND aplazableSn='No';"
     );
-    createDetallesServicios(serviciosContratados, encabezadoId, fechaCreacion);
+    createDetallesServicios(
+      serviciosContratados,
+      encabezadoId,
+      fechaCreacion,
+      contratoId
+    );
     // Consultamos los servicios ocacionales, las cuotas y las multas que no son aplazables para
     // incluirlas en el detalle de servicios y relacionarlos con un encabezado correspondiente a la
     // cuenta de servicios de cada mes.
@@ -2891,7 +2925,12 @@ async function createCuentaServicios(contratoId, fechaCreacion) {
         " AND NOT tipo='Servicio fijo';"
     );
 
-    createDetallesServicios(otrosValores, encabezadoId, fechaCreacion);
+    createDetallesServicios(
+      otrosValores,
+      encabezadoId,
+      fechaCreacion,
+      contratoId
+    );
   } catch (error) {
     console.log("Error al crear cuentaservicios: " + error);
   }
@@ -2899,9 +2938,15 @@ async function createCuentaServicios(contratoId, fechaCreacion) {
 async function createDetallesServicios(
   serviciosContratados,
   encabezadoId,
-  fechaCreacion
+  fechaCreacion,
+  contratoId
 ) {
   const conn = await getConnection();
+  // Conteo de planillas Adeudadas
+  const planillasAdeudadas =await conn.query(
+    "SELECT * FROM viewPlanillas where contratosId=? and estado='por cobrar';",
+    contratoId
+  );
   serviciosContratados.forEach(async (servicioContratado) => {
     console.log("Servicio contratado a buscar: " + servicioContratado.id);
     // Mediante la fecha consultamos si ya se ha creado un detalle para el servicio en determinado mes.
@@ -3079,23 +3124,64 @@ async function createDetallesServicios(
           }
         } else {
           console.log("Es no aplazable fijo");
-          abono = servicioContratado.valorPagosIndividual;
-          //total = servicioContratado.valorIndividual;
-          // valorPagos = servicioContratado.valorPagosindividual;
-          newDetalleServicios = {
-            serviciosContratadosId: servicioContratado.id,
-            descuento: servicioContratado.descuentoValor,
-            subtotal: servicioContratado.valorIndividual,
-            total: totalPagar,
-            // El saldo debe ser calculado
-            saldo: totalPagar - abono,
-            // El abono debe ser calculado
-            abono: abono,
-            encabezadosId: encabezadoId,
-            estado: "Por cancelar",
-            // fechaEmision va comentado
-            fechaEmision: fechaCreacion,
-          };
+          //Evaluamos si el servicio corresponde al recargo
+          if (servicioContratado.nombre === "Recargo") {
+            if (planillasAdeudadas.length >= 2) {
+              abono = servicioContratado.valorPagosIndividual;
+              //total = servicioContratado.valorIndividual;
+              // valorPagos = servicioContratado.valorPagosindividual;
+              newDetalleServicios = {
+                serviciosContratadosId: servicioContratado.id,
+                descuento: servicioContratado.descuentoValor,
+                subtotal: 3,
+                total: 3,
+                // El saldo debe ser calculado
+                saldo: 0,
+                // El abono debe ser calculado
+                abono: 3,
+                encabezadosId: encabezadoId,
+                estado: "Por cancelar",
+                // fechaEmision va comentado
+                fechaEmision: fechaCreacion,
+              };
+            } else {
+              abono = servicioContratado.valorPagosIndividual;
+              //total = servicioContratado.valorIndividual;
+              // valorPagos = servicioContratado.valorPagosindividual;
+              newDetalleServicios = {
+                serviciosContratadosId: servicioContratado.id,
+                descuento: servicioContratado.descuentoValor,
+                subtotal: servicioContratado.valorIndividual,
+                total: totalPagar,
+                // El saldo debe ser calculado
+                saldo: totalPagar - abono,
+                // El abono debe ser calculado
+                abono: abono,
+                encabezadosId: encabezadoId,
+                estado: "Por cancelar",
+                // fechaEmision va comentado
+                fechaEmision: fechaCreacion,
+              };
+            }
+          } else {
+            abono = servicioContratado.valorPagosIndividual;
+            //total = servicioContratado.valorIndividual;
+            // valorPagos = servicioContratado.valorPagosindividual;
+            newDetalleServicios = {
+              serviciosContratadosId: servicioContratado.id,
+              descuento: servicioContratado.descuentoValor,
+              subtotal: servicioContratado.valorIndividual,
+              total: totalPagar,
+              // El saldo debe ser calculado
+              saldo: totalPagar - abono,
+              // El abono debe ser calculado
+              abono: abono,
+              encabezadosId: encabezadoId,
+              estado: "Por cancelar",
+              // fechaEmision va comentado
+              fechaEmision: fechaCreacion,
+            };
+          }
         }
       }
       // Borrado 0001
@@ -3130,7 +3216,6 @@ async function createDetallesServicios(
     }
   });
 }
-
 // Cargamos las planillas disponibles
 ipcMain.handle(
   "getDatosPlanillas",
@@ -3935,19 +4020,76 @@ ipcMain.handle(
     }
   }
 );
-
-ipcMain.handle("getComprobanteById", async (event, encabezadoId) => {
+ipcMain.handle("getComprobantes", async (event, encabezadoId) => {
   try {
     const conn = await getConnection();
-    const comprobante = await conn.query(
-      "SELECT * FROM comprobantes WHERE encabezadosId=? ;",
+    const comprobantes = await conn.query(
+      "SELECT * FROM comprobantes WHERE encabezadosId=?;",
       encabezadoId
     );
-    return comprobante[0];
+    console.log("Comprobantes: ", comprobantes);
+    return comprobantes;
   } catch (error) {
     console.log(error);
   }
 });
+ipcMain.handle("getEstados", async (event, encabezadoId) => {
+  try {
+    const conn = await getConnection();
+    const estados = await conn.query(
+      "SELECT estado FROM comprobantes WHERE encabezadosId=?;",
+      encabezadoId
+    );
+    console.log("Estados: ", estados);
+    return estados;
+  } catch (error) {
+    console.log(error);
+  }
+});
+ipcMain.handle(
+  "anularPago",
+  async (event, planillaId, encabezadoId, comprobante) => {
+    try {
+      const conn = await getConnection();
+      const resultPlanilla = await conn
+        .query(
+          "UPDATE planillas set estado='Por cobrar' WHERE id= ?",
+          planillaId
+        )
+        .then(async (resultPlanilla) => {
+          const resultEncabezado = await conn.query(
+            "UPDATE encabezado set estado=null,fechaPago=null WHERE id=?",
+            encabezadoId
+          );
+        })
+        .then(async (resultEncabezado) => {
+          const resultDetalles = await conn.query(
+            "UPDATE detallesServicio set estado='Por cancelar' WHERE encabezadosId=?",
+            encabezadoId
+          );
+        })
+        .then(async (resultDetalles) => {
+          const resultComprobante = await conn.query(
+            "UPDATE comprobantes set ? WHERE id=?",
+            [comprobante, comprobante.id]
+          );
+          event.sender.send("Notificar", {
+            success: true,
+            title: "Actualizado!",
+            message: "Se ha anulado el pago y el comprobante.",
+          });
+          return resultComprobante;
+        });
+    } catch (error) {
+      event.sender.send("Notificar", {
+        success: false,
+        title: "Error!",
+        message: "Ha ocurrido un error al anular el pago.",
+      });
+      console.log("Error al anular el pago: ", error);
+    }
+  }
+);
 // ----------------------------------------------------------------
 // Funciones de los saldos
 // ----------------------------------------------------------------

@@ -1,4 +1,5 @@
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, shell } = require("electron");
+const fs = require("fs");
 const validator = require("validator");
 const Swal = require("sweetalert2");
 // ----------------------------------------------------------------
@@ -12,6 +13,7 @@ const lecturaActual = document.getElementById("lecturaActual");
 const valorConsumo = document.getElementById("valorConsumo");
 const tarifaConsumo = document.getElementById("tarifaConsumo");
 const planillasList = document.getElementById("planillas");
+const comprobanteContainer = document.getElementById("comprobante");
 // ----------------------------------------------------------------
 // Varibles de busqueda de las planillas
 // ----------------------------------------------------------------
@@ -26,7 +28,6 @@ const btnBuscar = document.getElementById("btnBuscar");
 // ----------------------------------------------------------------
 const socioNombres = document.getElementById("socioNombres");
 const socioCedula = document.getElementById("socioCedula");
-const socioUbicacion = document.getElementById("socioUbicacion");
 // ----------------------------------------------------------------
 // Variables del contrato/medidor
 // ----------------------------------------------------------------
@@ -41,22 +42,32 @@ const errortextAbono = document.getElementById("errorTextAbono");
 const errContainer = document.getElementById("err-container");
 // ----------------------------------------------------------------
 // Variables del los totales de la planilla
-let subtotalFinal = 0;
-let totalFinal = 0;
-let totalConsumo = 0;
+// ----------------------------------------------------------------
+let totalFinal = 0.0;
+let totalConsumo = 0.0;
 let descuentoFinal = 0;
 let tarifaAplicada = "Familiar";
 let valorTarifa = 2.0;
 let lecturaActualEdit = 0;
 let lecturaAnteriorEdit = 0;
 let valorConsumoEdit = 0;
-let planillaEdit = "";
-let tarifaEdit = "";
 let tarifaTemporal = "";
+
 // ----------------------------------------------------------------
 const valorSubtotal = document.getElementById("valorSubtotal");
 const valorTotalDescuento = document.getElementById("valorTotalDescuento");
 const valorTotalPagar = document.getElementById("valorTotalPagar");
+// ----------------------------------------------------------------
+// Variables del dialogo de los comprobantes
+const dialogComprobantes = document.getElementById("formComprobantes");
+const comprobantesList = document.getElementById("comprobantes");
+const cerrarComprobantes = document.getElementById("cerrar-form-comprobantes");
+// const anularComprobantes = document.getElementById("anular-comprobante");
+const botonesComprobantes = document.getElementById("botones-comprobantes");
+const filtrarComprobantes = document.getElementById("filtrar-comprobantes");
+
+// Variable que almacena globalmente los comprobantes
+let comprobantesGeneral = [];
 // ----------------------------------------------------------------
 // Variables del dialogo de los servicios
 const dialogServicios = document.getElementById("formServicios");
@@ -76,37 +87,24 @@ const abonadoDg = document.getElementById("abonado-dg");
 const abonarDg = document.getElementById("abonar-dg");
 const guardarDg = document.getElementById("btnGuardar-dg");
 const administrarDg = document.getElementById("btnAdministrar-dg");
-const anularDg = document.getElementById("btnAnular-dg");
-const doBt = document.getElementById("btnDo");
-const doneBt = document.getElementById("btnDone");
-//----------------------------------------------------------------
-// Variables de los elementos del dialogo de servicios anulados
-const dialogAnulados = document.getElementById("formAnulados");
-const fechaEmisionDg = document.getElementById("fecha-emision-dg");
-const anuladosFijos = document.getElementById("anuladosFijos");
-const cerrarAnuladosBt = document.getElementById("cerrar-form-anulados");
-
 //----------------------------------------------------------------
 // Variables de los elementos de la pagina
+const vistaFacturaBt = document.getElementById("vista-factura");
 const mostrarLecturas = document.getElementById("mostrar-lecturas");
 const contenedorLecturas = document.getElementById("contenedor-lecturas");
 const collapse = document.getElementById("collapse");
 const calcularConsumoBt = document.getElementById("calcular-consumo");
 const cancelarForm = document.getElementById("cancelarForm");
-const sinConsumoBt = document.getElementById("sin-consumo-bt");
-const anuladosBt = document.getElementById("btnAnulados");
 // ----------------------------------------------------------------
 // Variables contenedoras
 let tarifasDisponibles = [];
-// const socioNombre = document.getElementById("nombrecompleto");
-// const medidorCodigo = document.getElementById("codigo");
-// const medidorMarca = document.getElementById("marca");
-// const medidorBarrio = document.getElementById("barrio");
-// const medidorPrincipal = document.getElementById("principal");
-// const medidorSecundaria = document.getElementById("secundaria");
-// const medidorNumeroCasa = document.getElementById("numerocasa");
-// const medidorReferencia = document.getElementById("referencia");
-// const medidorObservacion = document.getElementById("observacion");
+
+let abonarStatus = false;
+let valorAbonoEdit = 0;
+let datosServicios = [];
+let serviciosFijos = [];
+let otrosServicios = [];
+let editados = [];
 
 let planillas = [];
 let editingStatus = false;
@@ -115,7 +113,9 @@ let editPlanillaId = "";
 let editDetalleId = "";
 let fechaEmisionEdit = "";
 let editContratoId = "";
-let fechaCreacion = "2024-03-01 00:00:00";
+let planillaEdit = {};
+let encabezadoId = "";
+let editPlanillaEstado = "";
 planillaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const newPlanilla = {
@@ -129,47 +129,26 @@ planillaForm.addEventListener("submit", async (e) => {
   const newDetalleServicio = {
     subtotal: valorConsumo.value,
     total: valorConsumo.value,
-    saldo: 0.0,
-    abono: valorConsumo.value,
+    saldo: valorConsumo.value,
+    abono: 0.0,
   };
   if (!editingStatus) {
     console.log("Can not create planilla");
   } else {
-    if (!planillaMedidorSn) {
-      console.log("Guardado :) ");
-    } else {
-      Swal.fire({
-        title: "¿Quieres guardar los cambios?",
-        text: "No podrás deshacer esta acción.",
-        icon: "question",
-        iconColor: "#f8c471",
-        showCancelButton: true,
-        confirmButtonColor: "#2874A6",
-        cancelButtonColor: "#EC7063 ",
-        confirmButtonText: "Sí, continuar",
-        cancelButtonText: "Cancelar",
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          // Aquí puedes realizar la acción que desees cuando el usuario confirme.
-          console.log("Update planilla wait...");
-          const result = await ipcRenderer.invoke(
-            "updatePlanilla",
-            editPlanillaId,
-            newPlanilla
-          );
-          // if (result !== undefined) {
-          const resultDetalle = await ipcRenderer.invoke(
-            "updateDetalle",
-            fechaEmisionEdit,
-            editContratoId,
-            editDetalleId,
-            newDetalleServicio
-          );
-          console.log("Resultado: ", result, resultDetalle);
-          // }
-        }
-      });
-    }
+    // console.log("Editing planilla with electron");
+    // const result = await ipcRenderer.invoke(
+    //   "updatePlanilla",
+    //   editPlanillaId,
+    //   newPlanilla
+    // );
+    // const resultDetalle = await ipcRenderer.invoke(
+    //   "updateDetalle",
+    //   editDetalleId,
+    //   newDetalleServicio
+    // );
+    // editingStatus = false;
+    // editPlanillaId = "";
+    // console.log(result, resultDetalle);
   }
 });
 
@@ -294,7 +273,6 @@ function renderPlanillas(datosPlanillas) {
     console.log("Servicios encontrados: " + datosServicios);
     // Crear elementos para los detalles de servicios (Consumo, Tarifa, Valor)
     var rpValorAguaPotable = null;
-    var rpEstadoAguaPotable = "";
     var rpTotalPagar = 0.0;
     // Contenedor y contenido de consumo
     const consumoDiv = document.createElement("div");
@@ -323,16 +301,16 @@ function renderPlanillas(datosPlanillas) {
     if (datosServicios.length > 0) {
       datosServicios.forEach((datosServicio) => {
         if (datosServicio.nombre === "Agua Potable") {
-          rpEstadoAguaPotable = datosServicio.estadoDetalles;
           rpValorAguaPotable = datosServicio.total;
           tarifaAguaPotable = datosServicio.tarifa;
           // el total de servicio agua al total a pagar de rp
           rpTotalPagar += datosServicio.total;
         } else {
           // Crear elementos de la lista de servicios (Alcantarillado, Recolección de desechos, Riego Agrícola, Bomberos)
-          // Agregamos el estado de anulado para eliminar los valores de los servicios
-          // fijos deseados.
-          if (datosServicio.estadoDetalles !== "Anulado") {
+          if (
+            datosServicio.nombre !== "Socio comuna" &&
+            datosServicio.estadoDetalles !== "Anulado"
+          ) {
             if (datosServicio.aplazableSn === "Si") {
               const alcantarilladoLi = document.createElement("li");
               alcantarilladoLi.className = "titulo-detalles d-flex detalles";
@@ -385,14 +363,12 @@ function renderPlanillas(datosPlanillas) {
       if (
         rpValorAguaPotable === null ||
         rpValorAguaPotable === undefined ||
-        rpValorAguaPotable === "null" ||
-        rpEstadoAguaPotable == "Anulado"
+        rpValorAguaPotable === "null"
       ) {
         // Si despues de almacenar el valor de agua potable la variable sique siendo null
         // no existe el servicio de agua potable asignamos No aplica
-        // o si su valor ha sido anulado.
-        console.log("Valor de agua= " + rpValorAguaPotable);
-        console.log("Asignando NA");
+        // console.log("Valor de agua= " + rpValorAguaPotable);
+        // console.log("Asignando NA");
         const consumoValor = document.createTextNode("NA");
         consumoDiv.appendChild(consumoP);
         consumoDiv.appendChild(consumoSp);
@@ -410,7 +386,7 @@ function renderPlanillas(datosPlanillas) {
           datosPlanilla.contratosId,
           formatearFecha(datosPlanilla.fechaEmision)
         );
-        console.log("Datos Lecturas: ", lectura);
+        // console.log("Datos Lecturas: ", lectura);
         const consumoValor = document.createTextNode(
           lectura[0].lecturaActual - lectura[0].lecturaAnterior
         );
@@ -439,7 +415,7 @@ function renderPlanillas(datosPlanillas) {
       bodyDiv.appendChild(listaServiciosDiv);
     } else {
       // En caso de que no existan servicios cargados a la planilla
-      console.log("Asignando NA para planillas vacias");
+      // console.log("Asignando NA para planillas vacias");
       const consumoValor = document.createTextNode("NA");
       consumoDiv.appendChild(consumoP);
       consumoDiv.appendChild(consumoSp);
@@ -550,7 +526,7 @@ function renderPlanillas(datosPlanillas) {
   });
 }
 const getDatosLecturas = async (contratoId, fechaEmision) => {
-  console.log("Parámetros de busqueda: " + contratoId, fechaEmision);
+  // console.log("Parámetros de busqueda: " + contratoId, fechaEmision);
   const lectura = await ipcRenderer.invoke(
     "getLecturasByFecha",
     contratoId,
@@ -558,49 +534,323 @@ const getDatosLecturas = async (contratoId, fechaEmision) => {
   );
   return lectura;
 };
+vistaFacturaBt.addEventListener("click", () => {
+  if (editPlanillaId !== "" || editPlanillaId !== undefined) {
+    vistaFactura(editPlanillaEstado);
+  }
+});
+
+// ----------------------------------------------------------------
+// Funciones relacionadas al formulario de comprobates
+// Abrir formulario de comprobantes.
+function comprobantesDg() {
+  if (dialogComprobantes.close) {
+    dialogComprobantes.showModal();
+  }
+}
+// Buscamos el comprobante de acuerdo al encabezado.
+async function buscarComprobante(encabezadoId) {
+  comprobanteContainer.innerHTML = "";
+  console.log("Comprobante: ", encabezadoId);
+  comprobantesGeneral = await ipcRenderer.invoke(
+    "getComprobantes",
+    encabezadoId
+  );
+  // console.log("Comprobantes 1: ", comprobantesGeneral);
+  const comprobanteAcceso = document.createElement("button");
+  comprobanteAcceso.className = "btn-comprobante";
+  comprobanteAcceso.innerHTML = `<i class="fs-5 mx-1 fa-regular fa-folder-open"> </i>
+      Ver Comprobante`;
+  comprobanteContainer.append(comprobanteAcceso);
+  renderComprobantes(comprobantesGeneral);
+  comprobanteAcceso.addEventListener("click", () => {
+    comprobantesDg();
+  });
+}
+// Cargamos los comprobantes obtenidos en el dialogo de comprobantes.
+function renderComprobantes(comprobantes) {
+  let comprobanteVigente = {};
+  comprobantesList.innerHTML = "";
+  botonesComprobantes.innerHTML = "";
+  // Boton anular comprobante
+  const anularComprobantes = document.createElement("button");
+  anularComprobantes.className = "btn btn-danger mx-1 w-25";
+  anularComprobantes.textContent = "Anular";
+  // Boton cerrar comprobante
+  const cerrarComprobantes = document.createElement("button");
+  cerrarComprobantes.className = "btn btn-danger mx-1 w-25";
+  cerrarComprobantes.textContent = "Cerrar";
+  cerrarComprobantes.addEventListener("click", () => {
+    dialogComprobantes.close();
+  });
+  botonesComprobantes.append(cerrarComprobantes);
+
+  if (comprobantes.length > 0) {
+    comprobantes.forEach((comprobante) => {
+      if (comprobante.estado === "Vigente") {
+        comprobanteVigente = comprobante;
+      }
+      const trComprobante = document.createElement("tr");
+      trComprobante.className = "c-fila p-2";
+      const tdCodigo = document.createElement("td");
+      tdCodigo.textContent = comprobante.codigo;
+      tdCodigo.style.backgroundColor = "#00000000";
+      const tdEmision = document.createElement("td");
+      tdEmision.textContent = formatearFecha(comprobante.fechaEmision);
+      tdEmision.style.backgroundColor = "#00000000";
+      const tdEstado = document.createElement("td");
+      tdEstado.textContent = comprobante.estado;
+      tdEstado.style.backgroundColor = "#00000000";
+      const tdAnulacion = document.createElement("td");
+      tdAnulacion.textContent = comprobante.fechaAnulacion
+        ? formatearFecha(comprobante.fechaAnulacion)
+        : "Sin fecha";
+      tdAnulacion.style.backgroundColor = "#00000000";
+      const tdComprobante = document.createElement("td");
+
+      tdComprobante.innerHTML = `<i class="fs-5 fa-solid fa-file"></i>`;
+      tdComprobante.style = "text-align: center; width: 5em";
+      tdComprobante.style.backgroundColor = "#00000000";
+
+      trComprobante.addEventListener("click", () => {
+        const elementos = document.querySelectorAll(".c-fila");
+        elementos.forEach((elemento) => {
+          elemento.classList.remove("fila-active");
+        });
+        trComprobante.classList.add("fila-active");
+
+        // Damos la funcion de mostrar a todos los comprobantes obtenidos.
+        abrirComprobante(comprobante);
+      });
+      trComprobante.appendChild(tdCodigo);
+      trComprobante.appendChild(tdEmision);
+      trComprobante.appendChild(tdEstado);
+      trComprobante.appendChild(tdAnulacion);
+      trComprobante.appendChild(tdComprobante);
+      comprobantesList.append(trComprobante);
+    });
+    botonesComprobantes.append(anularComprobantes);
+    anularComprobantes.addEventListener("click", () => {
+      dialogComprobantes.close();
+      anularPagos(comprobanteVigente);
+    });
+  } else {
+    const trComprobante = document.createElement("tr");
+    const tdSinComprobante = document.createElement("td");
+    tdSinComprobante.colSpan = 5;
+    tdSinComprobante.innerHTML = `<div
+    class="d-flex justify-content-center align-items-center"
+  >
+    <i
+      class="mx-2 fs-3 fa-solid fa-face-frown-open clr-b2babb"
+    ></i>
+    Sin comprobantes para mostrar
+  </div>`;
+    tdSinComprobante.className = "text-center";
+    trComprobante.appendChild(tdSinComprobante);
+    comprobantesList.append(trComprobante);
+  }
+}
+async function filtroComprobantes() {
+  console.log("A filtrar: ", comprobantesGeneral);
+  let filtro = filtrarComprobantes.value;
+  let filtrados = comprobantesGeneral.filter((comprobanteFiltrado) => {
+    return comprobanteFiltrado.codigo.includes(filtro);
+  });
+  renderComprobantes(filtrados);
+}
+filtrarComprobantes.addEventListener("input", () => {
+  filtroComprobantes();
+});
+// Permitimos visualizar el comprobante de acuero al objeto parametro.
+function abrirComprobante(comprobante) {
+  console.log("Click en ver comprobante: ", comprobante.rutaLocal);
+  const rutaAccesible = comprobante.rutaLocal.replace(/\\/g, "/");
+  console.log("Click en ver comprobante: ", rutaAccesible);
+
+  if (fs.existsSync(rutaAccesible)) {
+    shell.openPath(rutaAccesible);
+  } else {
+    Swal.fire({
+      title: "Archivo no encontrado!",
+      text:
+        "No se encontro la ruta: " +
+        rutaAccesible +
+        " en el sistema de archivos",
+      icon: "warning",
+      iconColor: "green",
+      showConfirmButton: true,
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "green",
+    });
+  }
+}
+
+async function anularPagos(vigente) {
+  // Consultamos si se quiere anular em comprobante vigente.
+  Swal.fire({
+    title: "¿Quieres anular el pago de esta planilla?",
+    text: "Se anulara el comprobante de pago vigente de esta planilla.",
+    icon: "question",
+    iconColor: "#f8c471",
+    showCancelButton: true,
+    confirmButtonColor: "#2874A6",
+    cancelButtonColor: "#EC7063 ",
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        icon: "warning",
+        title: "Antes revisa el comprobante vigente",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Revisar",
+        denyButtonText: `Anular`,
+        cancelButtonText: `Cancelar`,
+      }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          // En caso de seleccionar revisar se debe abrir el comprobante.
+          // Swal.fire("Saved!", "", "success");
+          abrirComprobante(vigente);
+        } else if (result.isDenied) {
+          mostrarAlertaConFormulario({
+            titulo: "Motivo de anulación",
+            opciones: [
+              {
+                value: "Correccion de valores",
+                label: "Corrección de valores",
+              },
+              {
+                value: "Comprobante sin cancelar",
+                label: "Comprobante sin cancelar",
+              },
+              { value: "Otros", label: "Otros..." },
+              // Puedes agregar más opciones según tus necesidades
+            ],
+            botonAceptar: "Aceptar",
+            botonCancelar: "Cancelar",
+          }).then((result) => {
+            if (result) {
+              const newComprobante = {
+                motivoAnulacion: result.seleccion,
+                estado: "Anulado",
+                id: vigente.id,
+                fechaAnulacion: new Date(),
+              };
+
+              console.log("Selección:", result.seleccion);
+              motivoDescripcion =
+                result.nuevoTexto !== null ? result.nuevoTexto : "";
+              console.log("Nuevo texto:", result.nuevoTexto);
+              Swal.fire({
+                title: "Confirmar acción?",
+                text: "No podrás deshacer esta acción!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Confirmar",
+                cancelButtonText: "Cancelar",
+              }).then(async (result) => {
+                if (result.isConfirmed) {
+                  const result = await ipcRenderer.invoke(
+                    "anularPago",
+                    editPlanillaId,
+                    encabezadoId,
+                    newComprobante
+                  );
+                }
+              });
+            } else {
+              console.log("El usuario canceló");
+            }
+          });
+        }
+      });
+    } else {
+      comprobantesDg();
+    }
+  });
+}
+function mostrarAlertaConFormulario(opciones) {
+  return new Promise((resolve) => {
+    Swal.fire({
+      title: opciones.titulo || "Selecciona o escribe algo",
+      html:
+        '<select id="opciones" class="swal2-select">' +
+        opciones.opciones
+          .map(
+            (opcion) =>
+              `<option value="${opcion.value}">${opcion.label}</option>`
+          )
+          .join("") +
+        "</select>" +
+        '<label for="nuevaOpcion" class="w-100">Descripción</label>' +
+        '<input id="nuevaOpcion" class="swal2-input mp-0 w-100" placeholder="(Opcional) 100 max...">',
+
+      showCancelButton: true,
+      confirmButtonText: opciones.botonAceptar || "Aceptar",
+      cancelButtonText: opciones.botonCancelar || "Cancelar",
+      focusConfirm: false,
+      preConfirm: () => {
+        const seleccion = document.getElementById("opciones").value;
+        const nuevoTexto = document.getElementById("nuevaOpcion").value;
+
+        resolve({
+          seleccion: seleccion !== "" ? seleccion : null,
+          nuevoTexto: seleccion !== "" ? nuevoTexto : null,
+        });
+      },
+    });
+  });
+}
+
+// ----------------------------------------------------------------
 const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
-  console.log("Planilla a editar: " + planillaId);
-  console.log("fechaEmision: " + formatearFecha(fechaEmision));
-  console.log("fechaEmision: " + fechaEmision);
+  encabezadoId = "";
+  editados = [];
   editingStatus = true;
   editPlanillaId = planillaId;
-  fechaEmisionEdit = fechaEmision;
-  editContratoId = contratoId;
-  // Resetea las variables globales del calculo del total final para editPlanilla (ep)
+  console.log("Planilla a editar: " + planillaId);
   descuentoFinal = 0;
   totalFinal = 0.0;
-  subtotalFinal = 0;
   totalConsumo = 0.0;
+  editContratoId = contratoId;
+  fechaEmisionEdit = fechaEmision;
   console.log(
     "LLamando funcion editPlanilla: " + planillaId,
     contratoId,
     fechaEmision
   );
   const planilla = await ipcRenderer.invoke("getPlanillaById", planillaId);
-
+  planillaEdit = planilla[0];
+  editContratoId = contratoId;
+  fechaEmisionEdit = fechaEmision;
   // ----------------------------------------------------------------
   // Datos del encabezado de la planilla a editar
-  tarifaEdit = planilla[0].tarifa;
-  lecturaActual.readOnly = false;
-  tarifaTemporal = planilla[0].tarifa;
   contratoCodigo.textContent = planilla[0].codigo;
+  tarifaTemporal = planilla[0].tarifa;
   planillaEmision.textContent = formatearFecha(planilla[0].fechaEmision);
   planillaCodigo.textContent = planilla[0].planillasCodigo;
   socioNombres.textContent = planilla[0].nombre;
   socioCedula.textContent = planilla[0].cedulaPasaporte;
   socioUbicacion.textContent = planilla[0].ubicacion;
   planillaEstado.textContent = planilla[0].estado;
+  editPlanillaEstado = planilla[0].estado;
+  // Si la planilla esta cancelada buscamos su comprobate
 
   const tieneAgua = await ipcRenderer.invoke(
     "getServicioAgua",
     contratoId,
     fechaEmision
   );
+  //Asignamos accion al boton vistaFactura
+
   // ----------------------------------------------------------------
   if (tieneAgua !== undefined && !Object.keys(tieneAgua).length == 0) {
-    // Si evaluamos con el medidor al momento de cambiar de No a Si se
-    // habilitaran campos con NA(no cuadraran las cuentas)
-    // if (planilla[0].medidorSn !== "No") {
+    // Revisar cambios en planillas.js
     planillaMedidorSn = true;
 
     lecturaActual.value = planilla[0].lecturaActual;
@@ -653,7 +903,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   serviciosFijosList.innerHTML = "";
   otrosServiciosList.innerHTML = "";
   otrosAplazablesList.innerHTML = "";
-  const serviciosFijos = await ipcRenderer.invoke(
+  serviciosFijos = await ipcRenderer.invoke(
     "getDatosServiciosByContratoId",
     contratoId,
     // formatearFecha(fechaEmision),
@@ -665,7 +915,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   } else {
     serviciosFijosList.innerHTML = "";
   }
-  const otrosServicios = await ipcRenderer.invoke(
+  otrosServicios = await ipcRenderer.invoke(
     "getDatosServiciosByContratoId",
     contratoId,
     // formatearFecha(fechaEmision),
@@ -678,59 +928,69 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     otrosServiciosList.innerHTML = "";
   }
   recalcularConsumo();
-  // valorSubtotal.value=consumo;
   valorTotalPagar.value = totalFinal + totalConsumo;
   // valorTotalDescuento.value=0;
   valorTotalDescuento.value = descuentoFinal;
 };
-function renderServicios(servicios, tipo) {
-  let totalPagarEdit = 0;
+
+async function renderServicios(servicios, tipo) {
+  let totalPagarEdit = 0.0;
   let totalDescuentoEdit = 0;
-  let subtotalEdit = 0;
+  encabezadoId = servicios[0].encabezadosId;
+  // if (editPlanillaEstado === "Cancelado") {
+  await buscarComprobante(encabezadoId);
+  // } else {
+  //   console.log("Sin comprobante");
+  //   comprobanteContainer.innerHTML = ``;
+  // }
   console.log("Servicios a renderizard: ", servicios, tipo);
+
+  // console.log("Encabezado desde servicios: " + encabezadoId);
   servicios.forEach((servicio) => {
-    if (servicio.estadoDetalles !== "Anulado") {
-      // Crear el div principal
-      if (servicio.nombre !== "Agua Potable") {
+    // Crear el div principal
+    if (servicio.nombre !== "Agua Potable") {
+      if (
+        servicio.nombre !== "Socio comuna" &&
+        servicio.estadoDetalles !== "Anulado"
+      ) {
+        encabezadoId = servicio.encabezadosId;
+        // console.log("Encabezado desde detalle : " + encabezadoId);
         const tr = document.createElement("tr");
+        tr.id = servicio.id;
         const tdServicio = document.createElement("td");
         tdServicio.textContent = servicio.nombre;
         const tdAplazable = document.createElement("td");
         tdAplazable.textContent = servicio.aplazableSn;
         const tdSubtotal = document.createElement("td");
         tdSubtotal.textContent = parseFloat(
-          servicio.valorIndividual / servicio.numeroPagosIndividual
+          // servicio.valorIndividual / servicio.numeroPagosIndividual
+          servicio.valorIndividual
         ).toFixed(2);
         const tdDescuento = document.createElement("td");
-        tdDescuento.textContent = parseFloat(
-          servicio.descuentoValor / servicio.numeroPagosIndividual
-        ).toFixed(2);
+        tdDescuento.textContent = parseFloat(servicio.descuentoValor).toFixed(
+          2
+        );
         const tdTotal = document.createElement("td");
-        tdTotal.textContent = parseFloat(
-          servicio.total / servicio.numeroPagosIndividual
-        ).toFixed(2);
+        tdTotal.textContent = parseFloat(servicio.total).toFixed(2);
         const tdSaldo = document.createElement("td");
         tdSaldo.textContent = parseFloat(servicio.saldo).toFixed(2);
         const tdAbono = document.createElement("td");
+        tdAbono.className = "valorAbono";
         tdAbono.textContent = parseFloat(servicio.abono).toFixed(2);
-        //----------------------------------------------------------------
-        if (servicios.estadoDetalles !== "Anulado") {
-          if (servicio.aplazableSn === "Si") {
-            totalPagarEdit += servicio.abono;
-          } else {
-            totalPagarEdit += servicio.total;
-          }
+        if (servicio.aplazableSn === "Si") {
+          totalPagarEdit += servicio.abono;
+        } else {
+          totalPagarEdit += servicio.total;
         }
         totalDescuentoEdit +=
           servicio.descuento / servicio.numeroPagosIndividual;
-        subtotalEdit = servicio.subtotal;
         const tdBtnGestionar = document.createElement("td");
-        tdBtnGestionar.style = "text-align:center";
         const btnGestionar = document.createElement("button");
         btnGestionar.className = "btn";
         btnGestionar.type = "button";
         btnGestionar.onclick = () => {
           detallesServiciodg(servicio);
+          valorAbonoEdit = servicio.id;
         };
         const iconGestionar = document.createElement("i");
         iconGestionar.className = "fa-solid fa-ellipsis-vertical";
@@ -746,10 +1006,10 @@ function renderServicios(servicios, tipo) {
         } else {
           if (servicio.aplazableSn === "Si") {
             tr.appendChild(tdServicio);
-            tr.appendChild(tdSaldo);
             tr.appendChild(tdSubtotal);
             tr.appendChild(tdDescuento);
             tr.appendChild(tdTotal);
+            tr.appendChild(tdSaldo);
             tr.appendChild(tdAbono);
             tr.appendChild(tdBtnGestionar);
             otrosAplazablesList.appendChild(tr);
@@ -762,112 +1022,67 @@ function renderServicios(servicios, tipo) {
             otrosServiciosList.appendChild(tr);
           }
         }
-      } else if (servicio.nombre === "Agua Potable") {
-        editDetalleId = servicio.id;
-        console.log("Id del detalle Agua: " + editDetalleId);
       }
+    } else if (servicio.nombre === "Agua Potable") {
+      encabezadoId = servicio.encabezadosId;
+      // console.log("Encabezado desde detalle agua: " + encabezadoId);
+      editDetalleId = servicio.id;
+      // console.log("Id del detalle Agua: " + editDetalleId);
     }
   });
   totalFinal += totalPagarEdit;
   descuentoFinal += totalDescuentoEdit;
-
   console.log("Total de edit: ", totalFinal);
   recalcularConsumo();
+  // if (editPlanillaEstado == "Cancelado") {
+  //   await comprobante(encabezadoId);
+  // }
 }
-anuladosBt.addEventListener("click", async () => {
-  if (fechaEmisionEdit !== "" && editContratoId !== "") {
-    const fijosAnulados = await ipcRenderer.invoke(
-      "getAnuladosByContratoId",
-      fechaEmisionEdit,
-      editContratoId
-    );
-
-    renderAnulados(fijosAnulados);
-  } else {
-    console.log("Any planilla selected :)");
-  }
-});
-function renderAnulados(serviciosAnulados) {
-  fechaEmisionDg.textContent = fechaEmisionEdit;
-  fijosAnulados.innerHTML =
-    '<tr><td class="text-center"' +
-    ' colspan="5">Sin servicios anulados para mostrar ' +
-    "</td></tr>";
-  if (serviciosAnulados.length > 0) {
-    fijosAnulados.innerHTML = "";
-    serviciosAnulados.forEach((anulado) => {
-      const trAnulado = document.createElement("tr");
-      const tdServicio = document.createElement("td");
-      tdServicio.textContent = anulado.nombre;
-      const tdSubtotal = document.createElement("td");
-      tdSubtotal.textContent = anulado.subtotal;
-      const tdDescuento = document.createElement("td");
-      tdDescuento.textContent = anulado.descuentoValor;
-      const tdTotal = document.createElement("td");
-      tdTotal.textContent = anulado.total;
-      const btRestaurar = document.createElement("button");
-      btRestaurar.type = "button";
-      btRestaurar.textContent = "Restaurar";
-      btRestaurar.classList = "btn btn-outline-light";
-      btRestaurar.addEventListener("click", async () => {
-        await restaurarAnulado(anulado.id);
+function verificarEstado() {}
+guardarDg.onclick = function () {
+  let totalRc = totalFinal;
+  console.log("Total Rc: " + totalRc);
+  console.log("Fila a editar: " + valorAbonoEdit);
+  if (abonarStatus) {
+    let nuevoAbono = abonarDg.value;
+    const fila = document.getElementById(valorAbonoEdit);
+    const valorAnterior = fila.querySelector(".valorAbono").textContent;
+    console.log("Valor anterior: " + valorAnterior);
+    if (valorAnterior !== nuevoAbono) {
+      console.log("Compara: " + valorAnterior + " | " + nuevoAbono);
+      fila.querySelector(".valorAbono").textContent = nuevoAbono;
+      editados.push({ id: valorAbonoEdit, valor: nuevoAbono });
+      editados.forEach((editado) => {
+        console.log("Editado: " + editado.id, " | " + editado.valor);
       });
-      trAnulado.appendChild(tdServicio);
-      trAnulado.appendChild(tdSubtotal);
-      trAnulado.appendChild(tdDescuento);
-      trAnulado.appendChild(tdTotal);
-      fijosAnulados.appendChild(trAnulado);
-      trAnulado.appendChild(btRestaurar);
-    });
-  }
-  if (dialogAnulados.close) {
-    dialogAnulados.showModal();
-  }
-}
-cerrarAnuladosBt.addEventListener("click", () => {
-  dialogAnulados.close();
-});
-async function restaurarAnulado(detalleAnuladoId) {
-  dialogAnulados.close();
-  Swal.fire({
-    title: "¿Quieres restaurar este servicio?",
-    text: "El valor se aplicara a la planilla, si esta aún no ha sido cancelada.",
-    icon: "question",
-    iconColor: "#f8c471",
-    showCancelButton: true,
-    confirmButtonColor: "#2874A6",
-    cancelButtonColor: "#EC7063 ",
-    confirmButtonText: "Sí, continuar",
-    cancelButtonText: "Cancelar",
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      const newDetalle = {
-        estado: "Por cancelar",
-      };
-      const result = await ipcRenderer.invoke(
-        "updateDetalle",
-        fechaEmisionEdit,
-        editContratoId,
-        detalleAnuladoId,
-        newDetalle
+      totalRc = totalFinal - valorAnterior;
+      console.log("Total rc: " + totalRc);
+      totalFinal = totalRc + parseFloat(nuevoAbono);
+      console.log("Total final: " + totalFinal);
+      valorTotalPagar.value = aproximarDosDecimales(
+        totalFinal + parseFloat(totalConsumo)
       );
-      console.log(result);
+      CerrarFormServicios();
     } else {
+      CerrarFormServicios();
     }
-  });
-}
-const getPlanillas = async (criterio, criterioContent, estado, anio, mes) => {
-  planillas = await ipcRenderer.invoke(
-    "getDatosPlanillas",
-    criterio,
-    criterioContent,
-    estado,
-    anio,
-    mes
-  );
-  console.log(planillas);
-  renderPlanillas(planillas);
+  }
 };
+
+const getPlanillas = async (criterio, criterioContent, estado, anio, mes) => {
+  //BUscamos todos los contratos
+  planillas = await ipcRenderer
+    .invoke("getDatosPlanillas", criterio, criterioContent, estado, anio, mes)
+    .then(async (planillas) => {
+      // console.log(planillas);
+      await planillas.sort((a, b) => {
+        console.log("ordenado");
+        return a.primerApellido.localeCompare(b.primerApellido);
+      });
+      renderPlanillas(planillas);
+    });
+};
+
 async function init() {
   // let fechaActual = new Date();
   // let anioEnviar = fechaActual.getFullYear();
@@ -913,28 +1128,11 @@ ipcRenderer.on("Notificar", (event, response) => {
     });
   }
 });
+// function resetFormAfterUpdate() {
+//   editPlanilla(editPlanillaId, editContratoId, fechaEmisionEdit);
+//   recalcularConsumo();
+// }
 lecturaActual.addEventListener("input", function () {
-  if (tarifaTemporal == "Sin consumo") {
-    if (tarifaTemporal == "Sin consumo") {
-      Swal.fire({
-        title: "Tarifa Sin consumo",
-        text: "Esta planilla corresponde a una nueva cometida ¿Quieres ingresar lecturas de consumo?",
-        icon: "question",
-        iconColor: "#f8c471",
-        showCancelButton: true,
-        confirmButtonColor: "#2874A6",
-        cancelButtonColor: "#EC7063 ",
-        confirmButtonText: "Sí, continuar",
-        cancelButtonText: "Cancelar",
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          tarifaTemporal = "";
-        } else {
-          lecturaActual.value = 0;
-        }
-      });
-    }
-  }
   recalcularConsumo();
 });
 async function getTarifasDisponibles() {
@@ -989,9 +1187,114 @@ async function calcularConsumo() {
     tarifaAplicada = "Sin consumo";
     valorConsumo.value = (totalConsumo + base).toFixed(2);
 
-    tarifaConsumo.value = "Sin Consumo" + "($" + 0.0 + ")";
+    tarifaConsumo.value = "Siin Consumo" + "($" + 0.0 + ")";
 
-    console.log("Tarifa: " + "Sin Consumo" + "(" + 0.0 + ")");
+    console.log("Tarifa: " + "Siin Consumo" + "(" + 0.0 + ")");
+  }
+}
+const planillasAnteriores = async (contratoId, fechaPlanilla) => {
+  const anterioresCancelar = await ipcRenderer.invoke(
+    "getAnterioresCancelar",
+    contratoId,
+    fechaPlanilla
+  );
+  return anterioresCancelar;
+};
+
+async function vistaFactura(planillaEstado) {
+  let telefonoDf = "9999999999";
+  if (Object.keys(planillaEdit).length > 0 && editPlanillaId !== "") {
+    console.log("Para consulta", editContratoId, fechaEmisionEdit);
+    await planillasAnteriores(editContratoId, fechaEmisionEdit).then(
+      async (planillasAnteriores) => {
+        if (planillasAnteriores.length > 0) {
+          Swal.fire({
+            title: "Existen planillas anteriores",
+            text:
+              "Existen planillas adeudadas anteriores a esta, " +
+              "cancela las planillas anteriores primero.",
+            icon: "info",
+            iconColor: "green",
+            showConfirmButton: true,
+            confirmButtonText: "Aceptar",
+            confirmButtonColor: "green",
+          });
+        } else {
+          let socio = socioNombres.textContent;
+          console.log("Encabezado a enviar: " + socio);
+          const datos = {
+            mensaje: "Hola desde pagina1",
+            otroDato: 12345,
+          };
+          if (
+            planillaEdit.telefonoMovil !== "9999999999" ||
+            planillaEdit.telefonoMovil !== undefined ||
+            planillaEdit.telefonoMovil !== ""
+          ) {
+            telefonoDf = planillaEdit.telefonoMovil;
+          } else {
+            if (
+              planillaEdit.telefonoFijo !== "9999999999" ||
+              planillaEdit.telefonoFijo !== undefined ||
+              planillaEdit.telefonoFijo !== ""
+            ) {
+              telefonoDf = planillaEdit.telefonoFijo;
+            }
+          }
+          const encabezado = {
+            encabezadoId: encabezadoId,
+            socio: planillaEdit.nombre,
+            socioId: planillaEdit.sociosId,
+            fecha: planillaEdit.fechaEmision,
+            cedula: planillaEdit.cedulaPasaporte,
+            contrato: planillaEdit.codigo,
+            planilla: planillaEdit.planillasCodigo,
+            telefono: telefonoDf,
+            direccion: planillaEdit.direccion,
+            ubicacion: planillaEdit.ubicacion,
+          };
+          const datosAgua = {
+            planillaId: editPlanillaId,
+            lecturaAnterior: lecturaAnterior.value,
+            lecturaActual: lecturaActual.value,
+            tarifaConsumo: tarifaConsumo.value,
+            valorConsumo: valorConsumo.value,
+          };
+          const datosTotales = {
+            subtotal: valorSubtotal.value,
+            descuento: valorTotalDescuento.value,
+            totalPagar: valorTotalPagar.value,
+          };
+          console.log("Descuento enviar: " + valorTotalDescuento.value);
+          if (planillaEstado == "Cancelado") {
+            Swal.fire({
+              title: "Planilla cancelada",
+              text:
+                "Esta planilla ya ha sido cancelada " +
+                "revisa el comprobante en la ruta del encabezado.",
+              icon: "info",
+              iconColor: "green",
+              showConfirmButton: true,
+              confirmButtonText: "Aceptar",
+              confirmButtonColor: "green",
+            });
+          } else {
+            await ipcRenderer.send(
+              "datos-a-pagina2",
+              datos,
+              encabezado,
+              serviciosFijos,
+              otrosServicios,
+              datosAgua,
+              datosTotales,
+              editados
+            );
+          }
+        }
+      }
+    );
+  } else {
+    console.log("Not planilla selected...");
   }
 }
 async function recalcularConsumo() {
@@ -1025,29 +1328,12 @@ function formatearFecha(fecha) {
 // Generar Planillas
 async function generarPlanilla() {
   console.log("js");
-  const result = await ipcRenderer.invoke("createPlanilla", fechaCreacion);
+  const result = await ipcRenderer.invoke("createPlanilla");
   console.log(result);
   //getPlanillas();
 }
-function obtenerRangoFecha() {
-  let anioD = parseInt(anioBusqueda.value);
-  let mesD = parseInt(mesBusqueda.value);
-  let fechaDesde = "all";
-  let fechaHasta = "all";
-  let fechaRango = obtenerPrimerYUltimoDiaDeMes(anioD, mesD);
-  return fechaRango;
-}
-function obtenerPrimerYUltimoDiaDeMes(anio, mes) {
-  // Meses en JavaScript se numeran de 0 a 11 (enero es 0, diciembre es 11)
-  const primerDia = new Date(anio, mes, 1);
-  const ultimoDia = new Date(anio, mes + 1, 0);
-  return {
-    primerDia,
-    ultimoDia,
-  };
-}
 function cargarMesActual() {
-  mesBusqueda.innerHTML = '<option value="all" >Todo mes</option>';
+  mesBusqueda.innerHTML = '<option value="all" selected>Todo mes</option>';
   // Obtén el mes actual (0-indexed, enero es 0, diciembre es 11)
   const mesActual = new Date().getMonth();
   // Array de nombres de meses
@@ -1072,7 +1358,7 @@ function cargarMesActual() {
     option.textContent = nombresMeses[i];
     if (i === mesActual) {
       console.log("seleccionando: " + mesActual);
-      option.selected = true;
+      // option.selected = true;
     }
 
     mesBusqueda.appendChild(option);
@@ -1082,7 +1368,7 @@ function cargarMesActual() {
   // mesBusqueda.value = mesActual;
 }
 function cargarAnioBusquedas() {
-  anioBusqueda.innerHTML = '<option value="all" >Todo año</option>';
+  anioBusqueda.innerHTML = '<option value="all" selected>Todo año</option>';
   // Obtener el año actual
   var anioActual = new Date().getFullYear();
   // Crear opciones de años desde el año actual hacia atrás
@@ -1091,7 +1377,7 @@ function cargarAnioBusquedas() {
     option.value = i;
     option.text = i;
     if (i === anioActual) {
-      option.selected = true;
+      // option.selected = true;
     }
     anioBusqueda.appendChild(option);
   }
@@ -1122,22 +1408,14 @@ async function buscarPlanillas() {
     mesBuscar
   );
 }
-const administrarServicios = async (servicioId, tipo) => {
-  if (tipo === "Servicio fijo") {
-    await ipcRenderer.send("datos-a-servicios", servicioId);
-  } else {
-    await ipcRenderer.send("datos-a-ocacionales", servicioId);
-  }
-};
 const detallesServiciodg = async (servicio) => {
+  abonarStatus = true;
   errortextAbono.textContent = "Error";
   errContainer.style.display = "none";
   abonarDg.readOnly = true;
   let aplazable = "No aplazable";
   let cancelados = 0;
-  let pendientes = 0;
   let pendientesCancelar = 0;
-
   let aplicados = 0;
   let valorCancelado = 0;
   let valorAplicado = 0;
@@ -1155,7 +1433,10 @@ const detallesServiciodg = async (servicio) => {
   totalDg.textContent = servicio.total;
   numPagosDg.textContent = servicio.numeroPagosIndividual;
   // if (servicio.estadoDetalle !== "Cancelado") {
-  //   pendientes + 1;
+  //   pendientesCancelar + 1;
+  // } else if (servicio.estadoDetalle == "Cancelado") {
+  //   cancelados + 1;
+  //   valorCancelado += servicio.abono;
   // }
   const pagosAnteriores = await ipcRenderer.invoke(
     "getDetallesByContratadoId",
@@ -1174,19 +1455,11 @@ const detallesServiciodg = async (servicio) => {
     }
     valorAbonar = pagoAnterior.abono;
   });
-  administrarDg.onclick = async () => {
-    const servicioEnviar = {
-      id: servicio.serviciosId,
-    };
-    console.log("Administrar: " + servicioEnviar, servicio.tipo);
-    await administrarServicios(servicioEnviar, servicio.tipo);
-  };
+
   canceladosDg.textContent = cancelados;
   aplicadosDg.textContent = aplicados;
-  // pendientesDg.textContent = pendientes;
   pendientesDg.textContent = pendientesCancelar;
   valorSaldo = servicio.total - valorCancelado - valorAplicado;
-  // saldoDg.textContent = valorSaldo;
   saldoDg.textContent = valorAplicado;
   saldoAplicarDg.textContent = valorSaldo;
   abonadoDg.textContent = valorCancelado;
@@ -1202,23 +1475,7 @@ const detallesServiciodg = async (servicio) => {
   // }
   console.log("Abonar: " + valorAbonar);
   if (servicio.tipo !== "Servicio fijo" && servicio.aplazableSn === "Si") {
-    // abonarDg.readOnly = false;
-    anularDg.style.display = "none";
-    anularDg.disabled = true;
-  } else if (
-    servicio.tipo !== "Servicio fijo" &&
-    servicio.aplazableSn === "No"
-  ) {
-    abonarDg.readOnly = true;
-    anularDg.style.display = "none";
-    anularDg.disabled = true;
-  } else if (servicio.tipo == "Servicio fijo") {
-    abonarDg.readOnly = true;
-    anularDg.style.display = "block";
-    anularDg.disabled = false;
-    anularDg.addEventListener("click", () => {
-      anularFijo(servicio);
-    });
+    abonarDg.readOnly = false;
   }
   abonarDg.value = valorAbonar;
   abonarDg.placeHolder = "" + valorAbonar;
@@ -1226,14 +1483,17 @@ const detallesServiciodg = async (servicio) => {
     let abonoMaximo = valorAbonar + valorSaldo;
     let abonoMinimo = valorAbonar;
     if (abonarDg.value < abonoMinimo) {
+      abonarStatus = false;
       errContainer.style.display = "flex";
       errortextAbono.textContent =
         "El abono no puede ser menor a " + abonoMinimo;
     } else if (abonarDg.value > abonoMaximo) {
+      abonarStatus = false;
       errContainer.style.display = "flex";
       errortextAbono.textContent =
         "El abono no puede ser mayor a " + abonoMaximo;
     } else {
+      abonarStatus = true;
       errortextAbono.textContent = "Error";
       errContainer.style.display = "none";
     }
@@ -1242,41 +1502,11 @@ const detallesServiciodg = async (servicio) => {
     dialogServicios.showModal();
   }
 };
-async function anularFijo(servicio) {
-  CerrarFormServicios();
-  Swal.fire({
-    title: "¿Quieres anular este servicio?",
-    text: "El valor no se vera reflejado en la planilla, no podrás deshacer esta acción.",
-    icon: "question",
-    iconColor: "#f8c471",
-    showCancelButton: true,
-    confirmButtonColor: "#2874A6",
-    cancelButtonColor: "#EC7063 ",
-    confirmButtonText: "Sí, continuar",
-    cancelButtonText: "Cancelar",
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      const newDetalle = {
-        estado: "Anulado",
-      };
-      const reultAnularFijo = await ipcRenderer.invoke(
-        "updateDetalle",
-        fechaEmisionEdit,
-        editContratoId,
-        servicio.id,
-        newDetalle
-      );
-    } else {
-      detallesServiciodg(servicio);
-    }
-  });
-}
 function resetForm() {
   planillaForm.reset();
+  planillaEdit = {};
   lecturaActualEdit = 0;
   lecturaAnteriorEdit = 0;
-  tarifaEdit = "";
-  tarifaTemporal = "";
   valorConsumoEdit = 0;
   totalFinal = 0.0;
   descuentoFinal = 0;
@@ -1302,64 +1532,15 @@ function resetForm() {
   collapse.classList.remove("fa-caret-up");
 }
 function resetFormAfterUpdate() {
+  console.log("resetFormAfterUpdate");
   editPlanilla(editPlanillaId, editContratoId, fechaEmisionEdit);
   recalcularConsumo();
 }
-doBt.addEventListener("click", () => {
-  Hacer();
-});
-async function Hacer() {
-  const result = await ipcRenderer.invoke("ejectContratado");
-  console.log("Hacer: " + result);
-}
-doneBt.addEventListener("click", () => {
-  Hecho();
-});
-async function Hecho() {
-  const result = await ipcRenderer.invoke("ejectContratadoDetalles");
-  console.log("Hecho: " + result);
-}
-// lecturaActual.addEventListener("click", () => {
-//   if (tarifaTemporal == "Sin consumo") {
-//     Swal.fire({
-//       title: "Tarifa Sin consumo",
-//       text: "Esta planilla corresponde a una nueva cometida ¿Quieres ingresar lecturas de consumo?",
-//       icon: "question",
-//       iconColor: "#f8c471",
-//       showCancelButton: true,
-//       confirmButtonColor: "#2874A6",
-//       cancelButtonColor: "#EC7063 ",
-//       confirmButtonText: "Sí, continuar",
-//       cancelButtonText: "Cancelar",
-//     }).then(async (result) => {
-//       if (result.isConfirmed) {
-//         lecturaActual.readOnly = false;
-//       } else {
-//         lecturaActual.readOnly = true;
-//       }
-//     });
-//   }
-// });
 cancelarForm.addEventListener("click", function () {
   console.log("Borrando form");
   resetForm();
 });
-document.getElementById("btnGenerar").addEventListener("click", function () {
-  generarCodigoUnico();
-});
-async function generarCodigoUnico() {
-  // Obtener la marca de tiempo actual en milisegundos
-  const timestamp = Date.now();
 
-  // Puedes agregar un sufijo único, como un número aleatorio, para garantizar la unicidad
-  const sufijoUnico = Math.floor(Math.random() * 1000);
-
-  // Combinar la marca de tiempo y el sufijo único en un código único
-  // const codigoUnico = `${timestamp}-${sufijoUnico}`;
-  const codigoUnico = `${timestamp}`;
-
-  console.log(codigoUnico);
-}
 mostrarLecturas.onclick = () => {
   if (contenedorLecturas.style.display == "none") {
     collapse.classList.remove("fa-caret-down");
@@ -1372,106 +1553,11 @@ mostrarLecturas.onclick = () => {
   }
 };
 calcularConsumoBt.onclick = () => {
-  if (tarifaEdit == "Sin consumo") {
-    tarifaTemporal = "Sin consumo";
-  }
   lecturaActual.value = lecturaActualEdit;
   lecturaAnterior.value = lecturaAnteriorEdit;
   valorConsumo.value = valorConsumoEdit;
-  recalcularConsumo();
+  calcularConsumo();
 };
-sinConsumoBt.addEventListener("click", async () => {
-  console.log("Tarifa edit: ", tarifaEdit);
-  if (tarifaEdit !== "Sin consumo") {
-    if (lecturaAnterior.value <= 0) {
-      if (!editingStatus) {
-        console.log("Can not create planilla");
-      } else {
-        if (!planillaMedidorSn) {
-          console.log("Guardado :) ");
-        } else {
-          lecturaActual.value = 0;
-          tarifaConsumo.value = "Sin consumo($0)";
-          valorConsumo.value = 0.0;
-          const newPlanilla = {
-            valor: valorConsumo.value,
-            lecturaAnterior: lecturaAnterior.value,
-            lecturaActual: lecturaActual.value,
-            // observacion: "NA",
-            tarifa: "Sin consumo",
-            tarifaValor: 0,
-          };
-          const newDetalleServicio = {
-            subtotal: valorConsumo.value,
-            total: valorConsumo.value,
-            saldo: 0.0,
-            abono: valorConsumo.value,
-          };
-          Swal.fire({
-            title: "¿Aplicar tarifa sin consumo?",
-            text: "El valor de esta tarifa es $0.0 y solo se aplica a nuevas cometidas.",
-            icon: "question",
-            iconColor: "#f8c471",
-            showCancelButton: true,
-            confirmButtonColor: "#2874A6",
-            cancelButtonColor: "#EC7063 ",
-            confirmButtonText: "Sí, continuar",
-            cancelButtonText: "Cancelar",
-          }).then(async (result) => {
-            if (result.isConfirmed) {
-              // Aquí puedes realizar la acción que desees cuando el usuario confirme.
-              console.log("Aplicando sin consumo wait...");
-              const result = await ipcRenderer.invoke(
-                "updatePlanilla",
-                editPlanillaId,
-                newPlanilla,
-                editContratoId
-              );
-              if (result !== undefined) {
-                const resultDetalle = await ipcRenderer.invoke(
-                  "updateDetalle",
-                  fechaEmisionEdit,
-                  editContratoId,
-                  editDetalleId,
-                  newDetalleServicio
-                );
-                console.log(result, resultDetalle);
-              }
-            } else {
-              lecturaActual.value = lecturaActualEdit;
-              lecturaAnterior.value = lecturaAnteriorEdit;
-              valorConsumo.value = valorConsumoEdit;
-              calcularConsumo();
-            }
-          });
-        }
-      }
-    } else {
-      Swal.fire({
-        title: "Planilla con lectura anterior",
-        text:
-          "Esta planilla tiene lecturas de consumo " +
-          "no puedes aplicar esta tarifa.",
-        icon: "info",
-        iconColor: "green",
-        showConfirmButton: true,
-        confirmButtonText: "Aceptar",
-        confirmButtonColor: "green",
-      });
-    }
-  } else {
-    Swal.fire({
-      title: "Tarifa aplicada",
-      text:
-        'La tarifa "Sin consumo" ya ha sido aplicada ' + "en esta planilla.",
-      icon: "info",
-      iconColor: "green",
-      showConfirmButton: true,
-      confirmButtonText: "Aceptar",
-      confirmButtonColor: "green",
-    });
-  }
-});
 function mostrarFormServicios() {
   console.log("MostrarFormServicios");
   if (dialogServicios.close) {

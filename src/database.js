@@ -9,19 +9,23 @@ const connection = mysql.createConnection({
   // port: 3306,
 });
 function getConnection() {
+  console.log("Conexion: ", connection);
   return connection;
 }
-function closeConnection() {
-
+async function closeConnection() {
+  const conn = await getConnection();
+  conn
+    .end()
+    .then(() => {
+      console.log("Closed :) ");
+    })
+    .catch((error) => {
+      console.log("No closed :(");
+    });
 }
-function cerrarConnection() {
-  closeConnection().catch((err) => {
-    console.error('Error al cerrar la conexión (fuera de la función):', err);
-  });
-  // The connection is terminated now
-}
 
-module.exports = { getConnection, cerrarConnection };
+
+module.exports = { getConnection, closeConnection };
 //const mysql = require('mysql');
 
 // const connection = mysql.createConnection({

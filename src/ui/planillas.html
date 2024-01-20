@@ -720,9 +720,9 @@
                       id="valorTotalPagar"
                     />
                   </div>
-                  <div class="col-12 d-flex justify-content-end mt-2">
+                  <div class="col-12 d-flex justify-content-end mt-2 ">
                     <button
-                      class="btn btn-danger"
+                      class="btn btn-danger mx-2"
                       type="button"
                       id="cancelarForm"
                     >
@@ -732,6 +732,7 @@
                       Guardar
                     </button>
                     <button
+                    style="display: none;"
                       class="btn bg-secondary"
                       type="button"
                       id="btnGenerar"
@@ -816,28 +817,49 @@
                 <label for="subtotal" class="fs-5">Total:</label>
                 <p id="total-dg">8.75</p>
               </div>
-              <div class="col-4 my-2 item-custom">
+              <div class="col-3 my-2 item-custom">
                 <label for="subtotal" class="fs-5">Numero de Pagos:</label>
                 <p id="numPagos-dg">3</p>
               </div>
-              <div class="col-4 my-2 item-custom">
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Aplicados:</label>
+                <p id="aplicados-dg">1</p>
+              </div>
+              <div class="col-3 my-2 item-custom">
                 <label for="subtotal" class="fs-5">Cancelados:</label>
                 <p id="cancelados-dg">1</p>
               </div>
-              <div class="col-4 my-2 item-custom">
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Por cancelar:</label>
+                <p id="pendientes-dg">2</p>
+              </div>
+
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Saldo aplicar:</label>
+                <p id="saldo-aplicar-dg">2.75</p>
+              </div>
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Saldo cancelar:</label>
+                <p id="saldo-dg">2.75</p>
+              </div>
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Cancelado:</label>
+                <p id="abonado-dg">6.00</p>
+              </div>
+              <div class="col-4 my-2 item-custom" style="display: none;">
                 <label for="subtotal" class="fs-5">Pendientes:</label>
                 <p id="pendientes-dg">2</p>
               </div>
-              <div class="col-4 my-2 item-custom">
+              <div class="col-4 my-2 item-custom" style="display: none;">
                 <label for="subtotal" class="fs-5">Saldo:</label>
                 <p id="saldo-dg">2.75</p>
               </div>
 
-              <div class="col-4 my-2 item-custom">
+              <div class="col-4 my-2 item-custom" style="display: none;">
                 <label for="subtotal" class="fs-5">Abonado:</label>
                 <p id="abonado-dg">6.00</p>
               </div>
-              <div class="col-4 my-1 item-custom">
+              <div class="col-3 my-1 item-custom">
                 <label for="subtotal" class="fs-5">Abonar:</label>
                 <input
                   id="abonar-dg"
