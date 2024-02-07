@@ -1878,8 +1878,7 @@ ipcMain.handle("deleteContratadoDetalle", async (event, descontratar) => {
   }
 });
 ipcMain.handle("updateContratadoDetalle", async (event, detallesActualizar) => {
-  let canceladoSn = false;
-  let cancelados = 0;
+  let contratoId = detallesActualizar.contratosId;
   const newContratado = {
     estado: detallesActualizar.estado,
     valorIndividual: detallesActualizar.valorIndividual,
@@ -1898,7 +1897,7 @@ ipcMain.handle("updateContratadoDetalle", async (event, detallesActualizar) => {
     );
 
     if (detallesServicio.length > 0) {
-      console.log("Array con datos.");
+      console.log("Detalles existentes");
       const canceladoExiste = detallesServicio.find(
         (cancelado) => cancelado.estado === "Cancelado"
       );
@@ -1913,20 +1912,75 @@ ipcMain.handle("updateContratadoDetalle", async (event, detallesActualizar) => {
             "Este servicio ya ha sido cancelado por lo que no puedes actualizarlo.",
         });
       } else {
+        let editFechaEmision = "";
         console.log("Ningún detalle cancelado fue encontrado.");
-        detallesServicio.forEach(async (detalleServicio) => {
-          const resultDetalle = await conn.query(
-            "DELETE FROM detallesServicio WHERE id=" + detalleServicio.id + ";"
-          );
-
-          console.log(resultDetalle);
-        });
+        // detallesServicio.forEach(async (detalleServicio) => {
+        // Guardamos la primera fecha de emision
+        editFechaEmision = detallesServicio[0].fechaEmision;
+        // Borramos los detallesServicio
+        const resultDetalle = await conn.query(
+          "DELETE FROM detallesServicio WHERE serviciosContratadosId=" +
+            detallesActualizar.id +
+            ";"
+        );
+        console.log(resultDetalle);
+        // // Actualiamos los valores del servicio contratado
         const resultContratado = await conn.query(
           "UPDATE serviciosContratados set ? WHERE id=" +
             detallesActualizar.id +
             " ;",
           newContratado
         );
+        // if (detallesActualizar.numeroPagosIndividual > 1) {
+        //   console.log('Entro...')
+        //   // Consulto las fechas de emison que existen despues de la que se ha guardado
+        //   const fechasExistentes = await conn.query(
+        //     "SELECT fechaEmision FROM viewPlanillas WHERE fechaEmision >= ? AND contratosId=? GROUP BY fechaEmision;",
+        //     [formatearFecha(editFechaEmision), contratoId]
+        //   );
+
+        //   // });
+
+        //   // Creamos de nuevo los detalles del servicio por cada fecha que exista
+        //     fechasExistentes.forEach(async (fechaExistente) => {
+        //       await createCuentaServicios(
+        //         contratoId,
+        //         formatearFecha(fechaExistente)
+        //       );
+        //     });
+        //   } else {
+        //     await createCuentaServicios(
+        //       contratoId,
+        //       formatearFecha(editFechaEmision)
+        //     );
+        // }
+        if (detallesActualizar.numeroPagosIndividual > 1) {
+          console.log("Entro...");
+
+          // Consulto las fechas de emision que existen despues de la que se ha guardado
+          const fechasExistentes = await conn.query(
+            "SELECT fechaEmision FROM viewPlanillas WHERE fechaEmision >= ? AND contratosId=? GROUP BY fechaEmision;",
+            [formatearFecha(editFechaEmision), contratoId]
+          );
+
+          // Creamos de nuevo los detalles del servicio por cada fecha que exista
+          const promesasCreacion = fechasExistentes.map(
+            async (fechaExistente) => {
+              await createCuentaServicios(
+                contratoId,
+                formatearFecha(fechaExistente)
+              );
+            }
+          );
+
+          // Esperar a que todas las promesas se resuelvan
+          await Promise.all(promesasCreacion);
+        } else {
+          await createCuentaServicios(
+            contratoId,
+            formatearFecha(editFechaEmision)
+          );
+        }
         event.sender.send("Notificar", {
           success: true,
           title: "Actualizado!",
@@ -1950,52 +2004,6 @@ ipcMain.handle("updateContratadoDetalle", async (event, detallesActualizar) => {
       });
       return resultContratado;
     }
-
-    //   }
-    // }
-    // // const detalleExiste = await conn.query(
-    // //   "SELECT count(id) as existe,estado FROM detallesServicio WHERE " +
-    // //     "id= " +
-    // //     descontratar.id +
-    // //     ";"
-    // // );
-    // // if (!contratadoExiste[0].existe > 0) {
-    // //   if (
-    // //     contratadoExiste[0].estado !== null &&
-    // //     contratadoExiste[0].estado == "Por cancelar"
-    // //   ) {
-    // //     canceladoSn = true;
-    // //     const resultDetalle = await conn.query(
-    // //       "DELETE FROM detallesServicio WHERE id= ",
-    // //       descontratar.id
-    // //     );
-    // //     const resultContratado = await conn.query(
-    // //       "DELETE FROM serviciosContratados WHERE id= ",
-    // //       descontratar.serviciosContratadosId
-    // //     );
-    //     console.log(resultServicio);
-    // event.sender.send("Notificar", {
-    //   success: true,
-    //   title: "Borrado!",
-    //   message: "Se ha eliminado este servicio para este contrato.",
-    // });
-    //     return resultContratado;
-    // } else {
-    //   event.sender.send("Notificar", {
-    //     success: false,
-    //     title: "Error!",
-    //     message:
-    //       "Este servicio ya ha sido cancelado por lo que no puedes eliminarlo.",
-    //   });
-    // }
-    // } else {
-    //   event.sender.send("Notificar", {
-    //     success: false,
-    //     title: "Error!",
-    //     message:
-    //       "El servicio ya ha sido eliminado o no esta registrado en este contrato.",
-    //   });
-    // }
   } catch (error) {
     event.sender.send("Notificar", {
       success: false,
@@ -2682,6 +2690,7 @@ ipcMain.handle(
 // ----------------------------------------------------------------
 ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
   const conn = await getConnection();
+  let numero = 0;
   try {
     // Consultamos cuales son los medidores que se encuentran activos para crear el registro de lecturas
     medidoresActivos = await conn.query(
@@ -2690,7 +2699,7 @@ ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
         "where contratos.estado='Activo'; "
       // "where contratos.medidorSn='Si' AND contratos.estado='Activo'; "
     );
-    //Consultamos el numero de planillas
+
     if (medidoresActivos[0] !== undefined) {
       medidoresActivos.forEach(async (contratoActivo) => {
         console.log("Contrato a buscar: " + contratoActivo.id);
@@ -2733,7 +2742,7 @@ ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
               "SELECT * FROM tarifas where tarifa='Familiar';"
             );
             const numeroPlanillas = await conn.query(
-              "SELECT count(id) as numeroPlanillas FROM planillas"
+              "SELECT count(id) as numeroPlanillas FROM planillas;"
             );
             numero =
               numeroPlanillas[0].numeroPlanillas +
@@ -2800,7 +2809,7 @@ ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
             //   "SELECT * FROM tarifas where tarifa='Familiar';"
             // );
             const numeroPlanillas = await conn.query(
-              "SELECT count(id) as numeroPlanillas FROM planillas"
+              "SELECT count(id) as numeroPlanillas FROM planillas;"
             );
             numero =
               numeroPlanillas[0].numeroPlanillas +
@@ -2887,7 +2896,7 @@ async function createCuentaServicios(contratoId, fechaCreacion) {
         contratoId +
         " AND estado='Activo' AND tipo='Servicio fijo' AND aplazableSn='No';"
     );
-    createDetallesServicios(
+    await createDetallesServicios(
       serviciosContratados,
       encabezadoId,
       fechaCreacion,
@@ -2925,7 +2934,7 @@ async function createCuentaServicios(contratoId, fechaCreacion) {
         " AND NOT tipo='Servicio fijo';"
     );
 
-    createDetallesServicios(
+    await createDetallesServicios(
       otrosValores,
       encabezadoId,
       fechaCreacion,
@@ -2943,9 +2952,9 @@ async function createDetallesServicios(
 ) {
   const conn = await getConnection();
   // Conteo de planillas Adeudadas
-  const planillasAdeudadas =await conn.query(
-    "SELECT * FROM viewPlanillas where contratosId=? and estado='por cobrar';",
-    contratoId
+  const planillasAdeudadas = await conn.query(
+    "SELECT * from viewPlanillas where fechaEmision < ? and contratosId=? and estado='Por cobrar' ;",
+    [fechaCreacion, contratoId]
   );
   serviciosContratados.forEach(async (servicioContratado) => {
     console.log("Servicio contratado a buscar: " + servicioContratado.id);
@@ -2962,7 +2971,16 @@ async function createDetallesServicios(
       // "and  detallesServicio.serviciosContratadosId=" +
       // servicioContratado.id +
       // ";"
-      "SELECT count(detallesServicio.id) as existe from detallesServicio where month" +
+      // "SELECT count(detallesServicio.id) as existe from detallesServicio where month" +
+      //   "(detallesServicio.fechaEmision)=month('" +
+      //   fechaCreacion +
+      //   "') and year(detallesServicio.fechaEmision)=year('" +
+      //   fechaCreacion +
+      //   "') " +
+      //   "and  detallesServicio.serviciosContratadosId=" +
+      //   servicioContratado.id +
+      //   ";"
+      "SELECT * from detallesServicio where month" +
         "(detallesServicio.fechaEmision)=month('" +
         fechaCreacion +
         "') and year(detallesServicio.fechaEmision)=year('" +
@@ -2972,9 +2990,10 @@ async function createDetallesServicios(
         servicioContratado.id +
         ";"
     );
-    console.log("Detalle servicio existe: " + detalleServicioExiste[0].existe);
+    console.log("Detalle servicio existe: ", detalleServicioExiste.length);
     // Si no existen los detalles de servicios correspondiente a la fecha se crean y se añaden al encabezado
-    if (detalleServicioExiste[0].existe == 0) {
+    // if (detalleServicioExiste[0].existe == 0) {
+    if (detalleServicioExiste.length === 0) {
       console.log(
         "Servicio a registrar: " + servicioContratado.valorIndividual,
         servicioContratado.valorPagosIndividual
@@ -3127,23 +3146,48 @@ async function createDetallesServicios(
           //Evaluamos si el servicio corresponde al recargo
           if (servicioContratado.nombre === "Recargo") {
             if (planillasAdeudadas.length >= 2) {
-              abono = servicioContratado.valorPagosIndividual;
-              //total = servicioContratado.valorIndividual;
-              // valorPagos = servicioContratado.valorPagosindividual;
-              newDetalleServicios = {
-                serviciosContratadosId: servicioContratado.id,
-                descuento: servicioContratado.descuentoValor,
-                subtotal: 3,
-                total: 3,
-                // El saldo debe ser calculado
-                saldo: 0,
-                // El abono debe ser calculado
-                abono: 3,
-                encabezadosId: encabezadoId,
-                estado: "Por cancelar",
-                // fechaEmision va comentado
-                fechaEmision: fechaCreacion,
-              };
+              // Consultamos si el recargo ha sido aplicado antes y si ha sido cancelado
+              const recargoAplicado = await conn.query(
+                "SELECT * FROM viewEstadoPagos WHERE nombre='Recargo' and estadoDetalles='Por cancelar' and total>0 and contratosId=? ;",
+                contratoId
+              );
+              if (recargoAplicado.length > 0) {
+                abono = servicioContratado.valorPagosIndividual;
+                //total = servicioContratado.valorIndividual;
+                // valorPagos = servicioContratado.valorPagosindividual;
+                newDetalleServicios = {
+                  serviciosContratadosId: servicioContratado.id,
+                  descuento: servicioContratado.descuentoValor,
+                  subtotal: servicioContratado.valorIndividual,
+                  total: totalPagar,
+                  // El saldo debe ser calculado
+                  saldo: totalPagar - abono,
+                  // El abono debe ser calculado
+                  abono: abono,
+                  encabezadosId: encabezadoId,
+                  estado: "Por cancelar",
+                  // fechaEmision va comentado
+                  fechaEmision: fechaCreacion,
+                };
+              } else {
+                abono = servicioContratado.valorPagosIndividual;
+                //total = servicioContratado.valorIndividual;
+                // valorPagos = servicioContratado.valorPagosindividual;
+                newDetalleServicios = {
+                  serviciosContratadosId: servicioContratado.id,
+                  descuento: servicioContratado.descuentoValor,
+                  subtotal: 3,
+                  total: 3,
+                  // El saldo debe ser calculado
+                  saldo: 0,
+                  // El abono debe ser calculado
+                  abono: 3,
+                  encabezadosId: encabezadoId,
+                  estado: "Por cancelar",
+                  // fechaEmision va comentado
+                  fechaEmision: fechaCreacion,
+                };
+              }
             } else {
               abono = servicioContratado.valorPagosIndividual;
               //total = servicioContratado.valorIndividual;
@@ -3737,17 +3781,22 @@ ipcMain.handle("getDatosCuotasByCodigo", async (event, codigoMedidor) => {
 ipcMain.handle("ejectContratado", async () => {
   try {
     const conn = await getConnection();
+    // Obtengo los datos del servicio a contratar.
+    const servicioRecargo = await conn.query(
+      "SELECT * FROM servicios WHERE servicios.nombre ='Recargo';"
+    );
+    // Obtengo los contratos existentes.
     const existentes = await conn.query("SELECT * FROM contratos;");
     if (existentes.length > 0) {
       existentes.forEach((existente) => {
         const newContratado = {
-          fechaEmision: "2023-10-01",
+          fechaEmision: "2023-12-01",
           estado: "Activo",
           valorIndividual: 0,
           numeroPagosIndividual: 1,
           valorPagosIndividual: 0,
           descuentoValor: 0,
-          serviciosId: 34,
+          serviciosId: servicioRecargo[0].id,
           contratosId: existente.id,
           descuentosId: 1,
         };
@@ -3764,38 +3813,84 @@ ipcMain.handle("ejectContratado", async () => {
 ipcMain.handle("ejectContratadoDetalles", async () => {
   let encabezado = "";
   let estado = "";
+  let fecha = "";
   try {
     const conn = await getConnection();
+    // Obtengo los datos del servicio a contratar.
+    const servicioRecargo = await conn.query(
+      "SELECT * FROM servicios WHERE servicios.nombre ='Recargo';"
+    );
     const contratadosExistentes = await conn.query(
       "SELECT * FROM serviciosContratados WHERE serviciosId=?;",
-      34
+      servicioRecargo[0].id
     );
     if (contratadosExistentes.length > 0) {
       contratadosExistentes.forEach(async (contratadoExistente) => {
         const detallesAnteriores = await conn.query(
-          "SELECT * FROM viewDetallesServicio WHERE contratosId=?;",
+          "SELECT * FROM viewDetallesServicio WHERE contratosId=? order by id desc limit 1;",
           contratadoExistente.contratosId
         );
         if (detallesAnteriores.length > 0) {
           encabezado = detallesAnteriores[0].encabezadosId;
           estado = detallesAnteriores[0].estadoDetalles;
+          fecha = formatearFecha(detallesAnteriores[0].fechaEmision);
           const newDetalleServicio = {
             serviciosContratadosId: contratadoExistente.id,
-
             descuento: 0,
             subtotal: 0,
             total: 0,
             saldo: 0,
             abono: 0,
-            fechaEmision: "2023-10-01",
+            fechaEmision: fecha,
             encabezadosId: encabezado,
             estado: estado,
           };
-          const result = await conn.query(
-            "Insert into detallesServicio set ?;",
-            newDetalleServicio
-          );
-          console.log(result);
+          // Si los detalles de la última planilla ya han sido cancelados el recargo es 0 y cancelado
+          if (estado === "Cancelado") {
+            const result = await conn.query(
+              "Insert into detallesServicio set ?;",
+              newDetalleServicio
+            );
+          } else if (estado === "Por cancelar") {
+            // Consultamos si hay 2 o mas planillas sin cancelar
+            const planillasAnteriores = await conn.query(
+              "SELECT * from viewPlanillas where fechaEmision < ? and contratosId=? and estado='Por cobrar'",
+              [fecha, contratadoExistente.contratosId]
+            );
+            if (planillasAnteriores.length >= 2) {
+              const newDetalleServicio = {
+                serviciosContratadosId: contratadoExistente.id,
+                descuento: 0,
+                subtotal: 3,
+                total: 3,
+                saldo: 0,
+                abono: 3,
+                fechaEmision: fecha,
+                encabezadosId: encabezado,
+                estado: estado,
+              };
+              const result = await conn.query(
+                "Insert into detallesServicio set ?;",
+                newDetalleServicio
+              );
+            } else {
+              const newDetalleServicio = {
+                serviciosContratadosId: contratadoExistente.id,
+                descuento: 0,
+                subtotal: 0,
+                total: 0,
+                saldo: 0,
+                abono: 0,
+                fechaEmision: fecha,
+                encabezadosId: encabezado,
+                estado: estado,
+              };
+              const result = await conn.query(
+                "Insert into detallesServicio set ?;",
+                newDetalleServicio
+              );
+            }
+          }
         }
       });
     }

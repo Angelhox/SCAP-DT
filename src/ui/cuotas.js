@@ -103,7 +103,7 @@ let editServicioId = "";
 let creacionEdit = "";
 let ultimaFechaPago = "";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2024-03-01 00:00:00";
+let fechaCreacion = "2024-02-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {
@@ -875,7 +875,7 @@ servicioAplazableSn.onchange = () => {
 };
 ipcRenderer.on("datos-a-ocacionales", async () => {
   const datos = await ipcRenderer.invoke("pido-datos");
-  console.log("Estos: " + datos.id);
+  console.log("Datos recibidos: " + datos.id);
   mostrarEstadisticas(datos.id);
   mostrarSeccion("seccion2");
   // console.log("Id recibido: " + servicioRv.id);
@@ -1632,12 +1632,12 @@ const actualizarServicioContratado = async (
         // correspondiente a ese mes se la cree asi como tambien nos aseguramos de que el detalle
         // no se aplique dos veces. Los detalles se aplicaran en las planillas vigentes de acuerdo
         // al mes correspondiente.
-        const result = await ipcRenderer.invoke(
-          "createPlanilla",
-          fechaCreacion
-        );
+        // const result = await ipcRenderer.invoke(
+        //   "createPlanilla",
+        //   fechaCreacion
+        // );
         // const resultComprobante = await ipcRenderer.invoke("createComprobante");
-        console.log(result);
+        // console.log(result);
 
         // console.log(resultComprobante);
         mostrarEstadisticas(servicio.id);
