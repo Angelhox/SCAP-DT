@@ -103,7 +103,7 @@ let editServicioId = "";
 let creacionEdit = "";
 let ultimaFechaPago = "";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2024-02-01 00:00:00";
+let fechaCreacion = "2024-01-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {
@@ -1607,48 +1607,57 @@ const actualizarServicioContratado = async (
 ) => {
   CerrarFormOpciones();
   Swal.fire({
-    title: " ¿Quieres guardar los cambios?" + detalleActualizar.id,
-    text: "El servicio y sus valores se actualizarán, si este aún no ha sido cancelado",
-    icon: "question",
-    iconColor: "#f8c471",
-    showCancelButton: true,
-    confirmButtonColor: "#2874A6",
-    cancelButtonColor: "#EC7063 ",
-    confirmButtonText: "Sí, continuar",
-    cancelButtonText: "Cancelar",
-    customClass: "question-contratar",
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      // Aquí puedes realizar la acción que desees cuando el usuario confirme.
-      const contratado = await ipcRenderer.invoke(
-        "updateContratadoDetalle",
-        detalleActualizar
-      );
-      console.log("Resultado de contratar el servicio: " + contratado);
-
-      if (contratado !== undefined) {
-        console.log("Pasamos a crear Planilla o comprobante");
-        // Llamamos a  create planilla asi nos aseguramos de que en caso de no existir la planilla
-        // correspondiente a ese mes se la cree asi como tambien nos aseguramos de que el detalle
-        // no se aplique dos veces. Los detalles se aplicaran en las planillas vigentes de acuerdo
-        // al mes correspondiente.
-        // const result = await ipcRenderer.invoke(
-        //   "createPlanilla",
-        //   fechaCreacion
-        // );
-        // const resultComprobante = await ipcRenderer.invoke("createComprobante");
-        // console.log(result);
-
-        // console.log(resultComprobante);
-        mostrarEstadisticas(servicio.id);
-        // servicioOpcionesdg(usuario, servicio);
-      }
-      // mostrarEstadisticas(servicio.id);
-      // servicioOpcionesdg(usuario, servicio);
-    } else {
-      // servicioOpcionesdg(usuario, servicio);
-    }
+    title: "No disponible",
+    text: "Esta acción no esta disponible aún",
+    icon: "info",
+    iconColor: "green",
+    showConfirmButton: true,
+    confirmButtonText: "Aceptar",
+    confirmButtonColor: "green",
   });
+  // Swal.fire({
+  //   title: " ¿Quieres guardar los cambios?" + detalleActualizar.id,
+  //   text: "El servicio y sus valores se actualizarán, si este aún no ha sido cancelado",
+  //   icon: "question",
+  //   iconColor: "#f8c471",
+  //   showCancelButton: true,
+  //   confirmButtonColor: "#2874A6",
+  //   cancelButtonColor: "#EC7063 ",
+  //   confirmButtonText: "Sí, continuar",
+  //   cancelButtonText: "Cancelar",
+  //   customClass: "question-contratar",
+  // }).then(async (result) => {
+  //   if (result.isConfirmed) {
+  //     // Aquí puedes realizar la acción que desees cuando el usuario confirme.
+  //     const contratado = await ipcRenderer.invoke(
+  //       "updateContratadoDetalle",
+  //       detalleActualizar
+  //     );
+  //     console.log("Resultado de contratar el servicio: " + contratado);
+
+  //     if (contratado !== undefined) {
+  //       console.log("Pasamos a crear Planilla o comprobante");
+  //       // Llamamos a  create planilla asi nos aseguramos de que en caso de no existir la planilla
+  //       // correspondiente a ese mes se la cree asi como tambien nos aseguramos de que el detalle
+  //       // no se aplique dos veces. Los detalles se aplicaran en las planillas vigentes de acuerdo
+  //       // al mes correspondiente.
+  //       // const result = await ipcRenderer.invoke(
+  //       //   "createPlanilla",
+  //       //   fechaCreacion
+  //       // );
+  //       // const resultComprobante = await ipcRenderer.invoke("createComprobante");
+  //       // console.log(result);
+
+  //       // console.log(resultComprobante);
+  //       mostrarEstadisticas(servicio.id);
+  //       // servicioOpcionesdg(usuario, servicio);
+  //     }
+  //     // mostrarEstadisticas(servicio.id);
+  //     // servicioOpcionesdg(usuario, servicio);
+  //   } else {
+  //     // servicioOpcionesdg(usuario, servicio);
+  //   }
+  // });
 };
 const desContratarServicio = async (detalleDescontratar, usuario, servicio) => {
   CerrarFormOpciones();

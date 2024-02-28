@@ -1,7 +1,6 @@
 const { BrowserWindow, Notification, dialog, session } = require("electron");
 const { app, ipcMain } = require("electron");
 const { getConnection, closeConnection } = require("./database");
-const SecureElectronStore = require("secure-electron-store").default;
 const fs = require("fs").promises;
 const { PDFDocument, degrees, rgb } = require("pdf-lib");
 const pdfToPrinter = require("pdf-to-printer");
@@ -12,6 +11,7 @@ const url = require("url");
 const { error } = require("console");
 const { page } = require("pdfkit");
 let window;
+let windowFactura;
 let servicioEnviar = [];
 
 ipcMain.on("hello", () => {
@@ -188,6 +188,7 @@ app.on("ready", () => {
       const conn = await getConnection();
       const user = await conn.query(
         "SELECT usuario,rol FROM viewUsuarios WHERE usuario = ?",
+        // "SELECT * from usuarios;",
         usuario,
         async (error, results) => {
           if (error) {
@@ -195,6 +196,7 @@ app.on("ready", () => {
               success: false,
               message: "Error en la consulta a la base de datos",
             });
+            console.log("Error: ", error);
             return;
           } else if (results.length > 0) {
             console.log("usuario en peticion ");
@@ -261,6 +263,7 @@ app.on("ready", () => {
           }
         }
       );
+      console.log("Usuarios: ", user);
       return user;
     } catch (error) {
       console.log("Error al iniciar session: ", error);
@@ -447,11 +450,24 @@ ipcMain.on(
     editados
   ) => {
     console.log("Datos a enviar: " + datos.mensaje);
-    // pagina2Window = new BrowserWindow({ show: false });
-    await window.loadFile("src/ui/factura.html");
-    // window.send("datos-a-pagina2", datos);
-    await window.show();
-    await window.webContents.send(
+    // await window.loadFile("src/ui/factura.html");
+    // // // window.send("datos-a-pagina2", datos);
+    // await window.show();
+
+    //  windowFactura = new BrowserWindow({ show: true });
+    windowFactura = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    });
+    await windowFactura.loadFile("src/ui/factura.html");
+    // // window.send("datos-a-pagina2", datos);
+    await windowFactura.show();
+
+    await windowFactura.webContents.send(
       "datos-a-pagina2",
       datos,
       encabezado,
@@ -463,6 +479,15 @@ ipcMain.on(
     );
   }
 );
+ipcMain.on("cerrarFactura", async (event) => {
+  console.log("Closing...");
+  await windowFactura.close();
+  windowFactura = null;
+});
+ipcMain.on("recargaComprobantes", async (event) => {
+  console.log("Refrescando...");
+  await window.webContents.send("recargaComprobantes");
+});
 ipcMain.on(
   "datos-a-pagina3",
   async (event, datos, encabezado, recaudaciones, datosTotales) => {
@@ -2702,6 +2727,10 @@ ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
 
     if (medidoresActivos[0] !== undefined) {
       medidoresActivos.forEach(async (contratoActivo) => {
+        const datosContrato = {
+          id: contratoActivo.id,
+          medidorSn: contratoActivo.medidorSn,
+        };
         console.log("Contrato a buscar: " + contratoActivo.id);
         if (contratoActivo.medidorSn == "Si") {
           planillaExiste = await conn.query(
@@ -2837,15 +2866,16 @@ ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
             // return resultadoPlanillas;
           }
         }
-        createCuentaServicios(contratoActivo.contratosId, fechaCreacion);
+        createCuentaServicios(datosContrato, fechaCreacion);
       });
     }
   } catch (error) {
     console.log("Error al crear planillas: " + error);
   }
 });
-async function createCuentaServicios(contratoId, fechaCreacion) {
-  console.log("Consultando encabezado para: " + contratoId);
+async function createCuentaServicios(datosContrato, fechaCreacion) {
+  const contratoId = datosContrato.id;
+  console.log("Consultando encabezado para: " + datosContrato.id);
   const conn = await getConnection();
 
   let encabezadoId;
@@ -2900,7 +2930,7 @@ async function createCuentaServicios(contratoId, fechaCreacion) {
       serviciosContratados,
       encabezadoId,
       fechaCreacion,
-      contratoId
+      datosContrato
     );
     // Consultamos los servicios ocacionales, las cuotas y las multas que no son aplazables para
     // incluirlas en el detalle de servicios y relacionarlos con un encabezado correspondiente a la
@@ -2938,7 +2968,7 @@ async function createCuentaServicios(contratoId, fechaCreacion) {
       otrosValores,
       encabezadoId,
       fechaCreacion,
-      contratoId
+      datosContrato
     );
   } catch (error) {
     console.log("Error al crear cuentaservicios: " + error);
@@ -2948,14 +2978,15 @@ async function createDetallesServicios(
   serviciosContratados,
   encabezadoId,
   fechaCreacion,
-  contratoId
+  datosContrato
 ) {
+  const contratoId = datosContrato.id;
+  let contratoConmedidor = false;
+  if (datosContrato.medidorSn === "Si") {
+    contratoConmedidor = true;
+  }
   const conn = await getConnection();
-  // Conteo de planillas Adeudadas
-  const planillasAdeudadas = await conn.query(
-    "SELECT * from viewPlanillas where fechaEmision < ? and contratosId=? and estado='Por cobrar' ;",
-    [fechaCreacion, contratoId]
-  );
+
   serviciosContratados.forEach(async (servicioContratado) => {
     console.log("Servicio contratado a buscar: " + servicioContratado.id);
     // Mediante la fecha consultamos si ya se ha creado un detalle para el servicio en determinado mes.
@@ -3144,68 +3175,121 @@ async function createDetallesServicios(
         } else {
           console.log("Es no aplazable fijo");
           //Evaluamos si el servicio corresponde al recargo
-          if (servicioContratado.nombre === "Recargo") {
-            if (planillasAdeudadas.length >= 2) {
+          if (servicioContratado.nombre === "Reconexión") {
+            if (contratoConmedidor) {
               // Consultamos si el recargo ha sido aplicado antes y si ha sido cancelado
               const recargoAplicado = await conn.query(
-                "SELECT * FROM viewEstadoPagos WHERE nombre='Recargo' and estadoDetalles='Por cancelar' and total>0 and contratosId=? ;",
+                "SELECT * FROM viewEstadoPagos WHERE nombre='Reconexión' and estadoDetalles='Por cancelar' and total>0 and contratosId=? ;",
                 contratoId
               );
-              if (recargoAplicado.length > 0) {
-                abono = servicioContratado.valorPagosIndividual;
-                //total = servicioContratado.valorIndividual;
-                // valorPagos = servicioContratado.valorPagosindividual;
-                newDetalleServicios = {
-                  serviciosContratadosId: servicioContratado.id,
-                  descuento: servicioContratado.descuentoValor,
-                  subtotal: servicioContratado.valorIndividual,
-                  total: totalPagar,
-                  // El saldo debe ser calculado
-                  saldo: totalPagar - abono,
-                  // El abono debe ser calculado
-                  abono: abono,
-                  encabezadosId: encabezadoId,
-                  estado: "Por cancelar",
-                  // fechaEmision va comentado
-                  fechaEmision: fechaCreacion,
-                };
-              } else {
-                abono = servicioContratado.valorPagosIndividual;
-                //total = servicioContratado.valorIndividual;
-                // valorPagos = servicioContratado.valorPagosindividual;
-                newDetalleServicios = {
-                  serviciosContratadosId: servicioContratado.id,
-                  descuento: servicioContratado.descuentoValor,
-                  subtotal: 3,
-                  total: 3,
-                  // El saldo debe ser calculado
-                  saldo: 0,
-                  // El abono debe ser calculado
-                  abono: 3,
-                  encabezadosId: encabezadoId,
-                  estado: "Por cancelar",
-                  // fechaEmision va comentado
-                  fechaEmision: fechaCreacion,
-                };
+              if (!recargoAplicado.length > 0) {
+                console.log("Conteo de planillas ");
+                // Conteo de planillas Adeudadas
+                const planillasAdeudadas = await conn.query(
+                  "SELECT * from viewPlanillas where fechaEmision < ? and contratosId=? and estado='Por cobrar' order by fechaEmision asc ;",
+                  [fechaCreacion, contratoId]
+                );
+
+                if (planillasAdeudadas.length >= 2) {
+                  console.log(
+                    "Planillas acumuladas: ",
+                    planillasAdeudadas.length
+                  );
+                  let fechaPagoReconexion = formatearFecha(
+                    planillasAdeudadas[0].fechaEmision
+                  );
+                  console.log("Fecha reconexión: " + fechaPagoReconexion);
+                  // Consulto el encabezado de la primera Planilla con el servicio guia.
+                  const primerEncabezado = await conn.query(
+                    "select encabezadosId from " +
+                      "viewEstadoPagos where nombre='Socio comuna' and  month(fechaEmision)=month('" +
+                      fechaPagoReconexion +
+                      "') " +
+                      "and year(fechaEmision)=year('" +
+                      fechaPagoReconexion +
+                      "') and contratosId=? limit 1;",
+                    contratoId
+                  );
+                  console.log("Contrato: " + contratoId);
+                  console.log(
+                    "Primer encabezado: " + primerEncabezado[0].encabezadosId
+                  );
+                  // abono = servicioContratado.valorPagosIndividual;
+                  // //total = servicioContratado.valorIndividual;
+                  // // valorPagos = servicioContratado.valorPagosindividual;
+                  // newDetalleServicios = {
+                  //   serviciosContratadosId: servicioContratado.id,
+                  //   descuento: servicioContratado.descuentoValor,
+                  //   subtotal: servicioContratado.valorIndividual,
+                  //   total: totalPagar,
+                  //   // El saldo debe ser calculado
+                  //   saldo: totalPagar - abono,
+                  //   // El abono debe ser calculado
+                  //   abono: abono,
+                  //   encabezadosId: encabezadoId,
+                  //   estado: "Por cancelar",
+                  //   // fechaEmision va comentado
+                  //   fechaEmision: fechaCreacion,
+                  // };
+                  abono = servicioContratado.valorPagosIndividual;
+                  //total = servicioContratado.valorIndividual;
+                  // valorPagos = servicioContratado.valorPagosindividual;
+                  newDetalleServicios = {
+                    serviciosContratadosId: servicioContratado.id,
+                    descuento: servicioContratado.descuentoValor,
+                    subtotal: 3,
+                    total: 3,
+                    // El saldo debe ser calculado
+                    saldo: 0,
+                    // El abono debe ser calculado
+                    abono: 3,
+                    encabezadosId: primerEncabezado[0].encabezadosId,
+                    estado: "Por cancelar",
+                    // fechaEmision va comentado
+                    fechaEmision: fechaPagoReconexion,
+                  };
+                }
+                // En caso de que la reconexion ya ha sido aplicada no se aplica nuevamente
+                // else {
+                //   abono = servicioContratado.valorPagosIndividual;
+                //   //total = servicioContratado.valorIndividual;
+                //   // valorPagos = servicioContratado.valorPagosindividual;
+                //   newDetalleServicios = {
+                //     serviciosContratadosId: servicioContratado.id,
+                //     descuento: servicioContratado.descuentoValor,
+                //     subtotal: 3,
+                //     total: 3,
+                //     // El saldo debe ser calculado
+                //     saldo: 0,
+                //     // El abono debe ser calculado
+                //     abono: 3,
+                //     encabezadosId: encabezadoId,
+                //     estado: "Por cancelar",
+                //     // fechaEmision va comentado
+                //     fechaEmision: fechaCreacion,
+                //   };
+                // }
               }
-            } else {
-              abono = servicioContratado.valorPagosIndividual;
-              //total = servicioContratado.valorIndividual;
-              // valorPagos = servicioContratado.valorPagosindividual;
-              newDetalleServicios = {
-                serviciosContratadosId: servicioContratado.id,
-                descuento: servicioContratado.descuentoValor,
-                subtotal: servicioContratado.valorIndividual,
-                total: totalPagar,
-                // El saldo debe ser calculado
-                saldo: totalPagar - abono,
-                // El abono debe ser calculado
-                abono: abono,
-                encabezadosId: encabezadoId,
-                estado: "Por cancelar",
-                // fechaEmision va comentado
-                fechaEmision: fechaCreacion,
-              };
+              //  En caso de no adeudar mas de dos planillas no se carga la reconexión
+              // else {
+              //   abono = servicioContratado.valorPagosIndividual;
+              //   //total = servicioContratado.valorIndividual;
+              //   // valorPagos = servicioContratado.valorPagosindividual;
+              //   newDetalleServicios = {
+              //     serviciosContratadosId: servicioContratado.id,
+              //     descuento: servicioContratado.descuentoValor,
+              //     subtotal: servicioContratado.valorIndividual,
+              //     total: totalPagar,
+              //     // El saldo debe ser calculado
+              //     saldo: totalPagar - abono,
+              //     // El abono debe ser calculado
+              //     abono: abono,
+              //     encabezadosId: encabezadoId,
+              //     estado: "Por cancelar",
+              //     // fechaEmision va comentado
+              //     fechaEmision: fechaCreacion,
+              //   };
+              // }
             }
           } else {
             abono = servicioContratado.valorPagosIndividual;
@@ -3595,6 +3679,38 @@ ipcMain.handle(
   }
 );
 
+ipcMain.handle("getAllPlanillas", async (event, estado) => {
+  try {
+    const conn = await getConnection();
+    if (estado) {
+      const results = await conn.query(
+        "SELECT * from viewPlanillas WHERE estado=? ;",
+        estado
+      );
+      return results;
+    } else {
+      const results = await conn.query(
+        "SELECT * from viewPlanillas WHERE estado='Por cobrar';"
+      );
+      return results;
+    }
+  } catch (error) {
+    console.log("Error en la busqueda de planillas: " + error);
+  }
+});
+ipcMain.handle("getAllServicios", async (event, fechaEmision, contratoId) => {
+  try {
+    //Usar month() y year()
+    const conn = await getConnection();
+    const results = await conn.query(
+      "SELECT * FROM viewEstadoPagos WHERE fechaEmision=? and contratosId=? ;",
+      [fechaEmision, contratoId]
+    );
+    return results;
+  } catch (error) {
+    console.log("Error en la busqueda de servicios: " + error);
+  }
+});
 // Funcion que carga los datos de la planilla para editarlos
 ipcMain.handle("getPlanillaById", async (event, planillaId) => {
   const conn = await getConnection();
@@ -3778,12 +3894,46 @@ ipcMain.handle("getDatosCuotasByCodigo", async (event, codigoMedidor) => {
 // ----------------------------------------------------------------
 // Funcion de relacion servicio-contratos;
 // Buscamos todos los contratos.
+ipcMain.handle("ejectSocioComuna", async () => {
+  try {
+    const conn = await getConnection();
+    // Obtengo los datos del servicio a contratar.
+    const servicioGuia = await conn.query(
+      "SELECT * FROM servicios WHERE servicios.nombre ='Socio comuna';"
+    );
+    // Obtengo los contratos existentes.
+    const existentes = await conn.query("SELECT * FROM contratos;");
+    if (existentes.length > 0) {
+      existentes.forEach((existente) => {
+        // Consulto los detalles anteriores;
+
+        const newContratado = {
+          fechaEmision: "2023-12-01",
+          estado: "Activo",
+          valorIndividual: 0,
+          numeroPagosIndividual: 1,
+          valorPagosIndividual: 0,
+          descuentoValor: 0,
+          serviciosId: servicioRecargo[0].id,
+          contratosId: existente.id,
+          descuentosId: 1,
+        };
+        const result = conn.query(
+          "Insert into serviciosContratados set ?;",
+          newContratado
+        );
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
 ipcMain.handle("ejectContratado", async () => {
   try {
     const conn = await getConnection();
     // Obtengo los datos del servicio a contratar.
     const servicioRecargo = await conn.query(
-      "SELECT * FROM servicios WHERE servicios.nombre ='Recargo';"
+      "SELECT * FROM servicios WHERE servicios.nombre ='Reconexión';"
     );
     // Obtengo los contratos existentes.
     const existentes = await conn.query("SELECT * FROM contratos;");
@@ -3811,79 +3961,72 @@ ipcMain.handle("ejectContratado", async () => {
   }
 });
 ipcMain.handle("ejectContratadoDetalles", async () => {
-  let encabezado = "";
-  let estado = "";
+  // let encabezado = "";
+  // let estado = "";
   let fecha = "";
   try {
     const conn = await getConnection();
     // Obtengo los datos del servicio a contratar.
     const servicioRecargo = await conn.query(
-      "SELECT * FROM servicios WHERE servicios.nombre ='Recargo';"
+      "SELECT * FROM servicios WHERE servicios.nombre ='Reconexión';"
     );
     const contratadosExistentes = await conn.query(
-      "SELECT * FROM serviciosContratados WHERE serviciosId=?;",
+      "SELECT * FROM viewservicioscontratados WHERE serviciosId=?;",
       servicioRecargo[0].id
     );
     if (contratadosExistentes.length > 0) {
       contratadosExistentes.forEach(async (contratadoExistente) => {
-        const detallesAnteriores = await conn.query(
-          "SELECT * FROM viewDetallesServicio WHERE contratosId=? order by id desc limit 1;",
-          contratadoExistente.contratosId
-        );
-        if (detallesAnteriores.length > 0) {
-          encabezado = detallesAnteriores[0].encabezadosId;
-          estado = detallesAnteriores[0].estadoDetalles;
-          fecha = formatearFecha(detallesAnteriores[0].fechaEmision);
-          const newDetalleServicio = {
-            serviciosContratadosId: contratadoExistente.id,
-            descuento: 0,
-            subtotal: 0,
-            total: 0,
-            saldo: 0,
-            abono: 0,
-            fechaEmision: fecha,
-            encabezadosId: encabezado,
-            estado: estado,
-          };
-          // Si los detalles de la última planilla ya han sido cancelados el recargo es 0 y cancelado
-          if (estado === "Cancelado") {
-            const result = await conn.query(
-              "Insert into detallesServicio set ?;",
-              newDetalleServicio
+        console.log("MedidorSn: ", contratadoExistente.medidorSn);
+        if (contratadoExistente.medidorSn === "Si") {
+          console.log("Aplicando recargo");
+          // Consultamos si el recargo ha sido aplicado antes y si ha sido cancelado
+          const recargoAplicado = await conn.query(
+            "SELECT * FROM viewEstadoPagos WHERE nombre='Reconexión' and estadoDetalles='Por cancelar' and total>0 and contratosId=? ;",
+            contratadoExistente.id
+          );
+          if (!recargoAplicado.length > 0) {
+            const detallesAnteriores = await conn.query(
+              "SELECT * FROM viewDetallesServicio WHERE contratosId=? order by id desc limit 1;",
+              contratadoExistente.id
             );
-          } else if (estado === "Por cancelar") {
-            // Consultamos si hay 2 o mas planillas sin cancelar
+            fecha = formatearFecha(detallesAnteriores[0].fechaEmision);
+            // Conteo de planillas Adeudadas
+
             const planillasAnteriores = await conn.query(
-              "SELECT * from viewPlanillas where fechaEmision < ? and contratosId=? and estado='Por cobrar'",
-              [fecha, contratadoExistente.contratosId]
+              "SELECT * from viewPlanillas where fechaEmision < ? and contratosId=? and estado='Por cobrar' order by fechaEmision ASC ;",
+              [fecha, contratadoExistente.id]
             );
+
             if (planillasAnteriores.length >= 2) {
+              let fechaPagoReconexion = formatearFecha(
+                planillasAnteriores[0].fechaEmision
+              );
+              //               const detallesAnteriores = await conn.query(
+              //   "SELECT * FROM viewDetallesServicio WHERE contratosId=? order by id asc limit 1;",
+              //   contratadoExistente.id
+              // );
+              // Consulto el encabezado de la primera Planilla con el servicio guia.
+              const primerEncabezado = await conn.query(
+                "select * from " +
+                  "viewEstadoPagos where nombre='Socio comuna' and  month(fechaEmision)=month(?) " +
+                  "and year(fechaEmision)=year(?) and contratosId=? limit 1;",
+                [
+                  fechaPagoReconexion,
+                  fechaPagoReconexion,
+                  contratadoExistente.id,
+                ]
+              );
               const newDetalleServicio = {
-                serviciosContratadosId: contratadoExistente.id,
+                serviciosContratadosId:
+                  contratadoExistente.serviciosContratadosId,
                 descuento: 0,
                 subtotal: 3,
                 total: 3,
                 saldo: 0,
                 abono: 3,
-                fechaEmision: fecha,
-                encabezadosId: encabezado,
-                estado: estado,
-              };
-              const result = await conn.query(
-                "Insert into detallesServicio set ?;",
-                newDetalleServicio
-              );
-            } else {
-              const newDetalleServicio = {
-                serviciosContratadosId: contratadoExistente.id,
-                descuento: 0,
-                subtotal: 0,
-                total: 0,
-                saldo: 0,
-                abono: 0,
-                fechaEmision: fecha,
-                encabezadosId: encabezado,
-                estado: estado,
+                fechaEmision: fechaPagoReconexion,
+                encabezadosId: primerEncabezado[0].encabezadosId,
+                estado: primerEncabezado[0].estadoDetalles,
               };
               const result = await conn.query(
                 "Insert into detallesServicio set ?;",
@@ -3891,6 +4034,8 @@ ipcMain.handle("ejectContratadoDetalles", async () => {
               );
             }
           }
+
+          // Si el contrato no tiene medidor no aplicamos Recargo
         }
       });
     }

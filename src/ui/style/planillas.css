@@ -475,3 +475,7 @@ button:hover .fa-caret-down {
     color: white;
     /* Cambia el color de fondo al pasar el ratón por encima */
 }
+.header-lecturas{
+    color: green;
+    background-color: #F1948A;
+}

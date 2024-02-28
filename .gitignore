@@ -1,4 +1,5 @@
 node_modules/
+mysql/
 release-builds/
 documentos/
 dist/

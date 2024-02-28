@@ -6,7 +6,7 @@ const printer = require("pdf-to-printer");
 // const html2pdf = require("html2pdf.js");
 
 const path = require("path");
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, ipcMain } = require("electron");
 const socioNombres = document.getElementById("socioNombres");
 const socioCedula = document.getElementById("socioCedula");
 const socioTelefono = document.getElementById("socioTelefono");
@@ -161,8 +161,8 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
               await ipcRenderer.send(
                 "Dos",
                 [pdfOptions.path, pdfOptions.path],
-                // "C:/Users/Usuario/Documents/dos.pdf",
-                "C:/Users/USE/Documents/dos.pdf",
+                "C:/Users/Usuario/Documents/dos.pdf",
+                // "C:/Users/USE/Documents/dos.pdf",
                 2.5,
                 1
               );
@@ -179,6 +179,7 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
           await browser.close();
           //await window.print();
           console.log("PDF generado y guardado correctamente.");
+          await cerrarFactura();
         } catch (error) {
           console.error("Error al generar el PDF:", error);
         }
@@ -192,7 +193,10 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
     console.error("Error al generar el comprobante:", error);
   }
 }
-
+async function cerrarFactura(){
+  await ipcRenderer.send("cerrarFactura");
+  await ipcRenderer.send("recargaComprobantes");
+}
 document.addEventListener("DOMContentLoaded", () => {
   boton.addEventListener("click", async () => {
     // Configura las opciones para la generación de PDF
@@ -263,20 +267,25 @@ ipcRenderer.on(
     const codigoComprobanteNode = document.createTextNode(codigoGenerado);
     codigoComprobante.appendChild(codigoComprobanteNode);
     fechaImpresion.appendChild(fechaImpresionNode);
-    const socioNode = document.createTextNode(encabezado.socio);
+    let nombres = encabezado.socio.replace(/NA|SN/gi, "");
+    const socioNode = document.createTextNode(nombres);
     socioNombres.appendChild(socioNode);
     const cedulaNode = document.createTextNode(encabezado.cedula);
     socioCedula.appendChild(cedulaNode);
-    const telefonoNode = document.createTextNode(encabezado.telefono);
+    let numero = agregarCeroAlPrincipio(encabezado.telefono);
+    const telefonoNode = document.createTextNode(numero);
     socioTelefono.appendChild(telefonoNode);
-    const direccionNode = document.createTextNode(encabezado.direccion);
+    let direccion = encabezado.direccion.replace(/NA|SN/gi, "");
+
+    const direccionNode = document.createTextNode(direccion);
     socioDireccion.appendChild(direccionNode);
     // Datos de la planilla
     const planillaNode = document.createTextNode(encabezado.planilla);
     planilla.appendChild(planillaNode);
     const contratoNode = document.createTextNode(encabezado.contrato);
     contrato.appendChild(contratoNode);
-    const ubicacionNode = document.createTextNode(encabezado.ubicacion);
+    let ubic = encabezado.ubicacion.replace(/SN|,/gi, "");
+    const ubicacionNode = document.createTextNode(ubic);
     contratoUbicacion.appendChild(ubicacionNode);
     const fechaNode = document.createTextNode(formatearFecha(encabezado.fecha));
     fechaEmisionPlanilla.appendChild(fechaNode);
@@ -549,8 +558,11 @@ function renderDetalles(servicio) {
   console.log("Servicios a cancelar: " + serviciosCancelar);
   // contratosList.innerHTML = "";
   // datosContratos.forEach((contrato) => {
-if(servicio.nombre!=='Socio comuna' && servicio.estadoDetalles !== 'Anulado'){
-  detailsList.innerHTML += `
+  if (
+    servicio.nombre !== "Socio comuna" &&
+    servicio.estadoDetalles !== "Anulado"
+  ) {
+    detailsList.innerHTML += `
   <tr>
   <td>${servicio.nombre}</td>
     <td>${servicio.descripcion}</td>
@@ -580,7 +592,7 @@ if(servicio.nombre!=='Socio comuna' && servicio.estadoDetalles !== 'Anulado'){
   ">${parseFloat(servicio.abono).toFixed(2)}</td>
  </tr>
     `;
-}
+  }
   // });
   if (!aguaSn) {
     dataAgua.style.display = "none";
@@ -636,7 +648,7 @@ ipcRenderer.on("ResultadoPago", async (event, response) => {
   console.log("Response: " + response);
   if (response.success) {
     // Configura las opciones para la generación de PDF
-    const scale = 0.7;
+    const scale = 0.9;
     const scaleX = 0.9; // Escala en el eje X (80%)
     const scaleY = 0.9; // Escala en el eje Y (120%)
 
@@ -672,6 +684,15 @@ ipcRenderer.on("ResultadoPago", async (event, response) => {
   // });
   //}
 });
+// Función para agregar cero al principio si no está presente
+function agregarCeroAlPrincipio(numero) {
+  // Verificar si el número comienza con cero
+  if (!/^0/.test(numero)) {
+    // Si no comienza con cero, agregarlo
+    numero = "0" + numero;
+  }
+  return numero;
+}
 
 function formatearFecha(fecha) {
   const fechaOriginal = new Date(fecha);
@@ -681,7 +702,9 @@ function formatearFecha(fecha) {
   const fechaFormateada = `${year}-${month}-${day}`;
   return fechaFormateada;
 }
-
+async function cancelarFactura(){
+  await ipcRenderer.send("cerrarFactura");
+}
 const abrirPagos = async () => {
   const acceso = sessionStorage.getItem("acceso");
   const url = "Pagos";

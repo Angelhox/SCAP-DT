@@ -839,8 +839,6 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   socioUbicacion.textContent = planilla[0].ubicacion;
   planillaEstado.textContent = planilla[0].estado;
   editPlanillaEstado = planilla[0].estado;
-  // Si la planilla esta cancelada buscamos su comprobate
-
   const tieneAgua = await ipcRenderer.invoke(
     "getServicioAgua",
     contratoId,
@@ -928,7 +926,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     otrosServiciosList.innerHTML = "";
   }
   recalcularConsumo();
-  valorTotalPagar.value = totalFinal + totalConsumo;
+  valorTotalPagar.value = (totalFinal + totalConsumo).toFixed(2);
   // valorTotalDescuento.value=0;
   valorTotalDescuento.value = descuentoFinal;
 };
@@ -938,7 +936,7 @@ async function renderServicios(servicios, tipo) {
   let totalDescuentoEdit = 0;
   encabezadoId = servicios[0].encabezadosId;
   // if (editPlanillaEstado === "Cancelado") {
-  await buscarComprobante(encabezadoId);
+  // await buscarComprobante(encabezadoId);
   // } else {
   //   console.log("Sin comprobante");
   //   comprobanteContainer.innerHTML = ``;
@@ -1033,7 +1031,8 @@ async function renderServicios(servicios, tipo) {
   totalFinal += totalPagarEdit;
   descuentoFinal += totalDescuentoEdit;
   console.log("Total de edit: ", totalFinal);
-  recalcularConsumo();
+  await recalcularConsumo();
+  await buscarComprobante(encabezadoId);
   // if (editPlanillaEstado == "Cancelado") {
   //   await comprobante(encabezadoId);
   // }
@@ -1187,7 +1186,7 @@ async function calcularConsumo() {
     tarifaAplicada = "Sin consumo";
     valorConsumo.value = (totalConsumo + base).toFixed(2);
 
-    tarifaConsumo.value = "Siin Consumo" + "($" + 0.0 + ")";
+    tarifaConsumo.value = "Sin Consumo" + "($" + 0.0 + ")";
 
     console.log("Tarifa: " + "Siin Consumo" + "(" + 0.0 + ")");
   }
@@ -1593,6 +1592,11 @@ btnSeccion2.addEventListener("click", function () {
 function cerrarSesion() {
   ipcRenderer.send("cerrarSesion");
 }
+ipcRenderer.on("recargaComprobantes", async (event) => {
+  console.log("Refrescar");
+  await buscarPlanillas();
+  resetForm();
+});
 ipcRenderer.on("sesionCerrada", async () => {
   const acceso = sessionStorage.getItem("acceso");
   const url = "Login";
