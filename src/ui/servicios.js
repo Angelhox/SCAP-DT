@@ -30,7 +30,6 @@ const btnVolver = document.getElementById("btn-volver");
 // ----------------------------------------------------------------
 // Variables para mostrar el estado de recaudacion.
 // ----------------------------------------------------------------
-
 const valorRecaudado = document.getElementById("valorRecaudado");
 const valorPendiente = document.getElementById("valorPendiente");
 const valorTotal = document.getElementById("valorTotal");
@@ -42,13 +41,22 @@ const mesRecaudacion = document.getElementById("mesRecaudacion");
 const anioLimite = document.getElementById("anioLimite");
 const mesLimite = document.getElementById("mesLimite");
 const btnReporte = document.getElementById("btnReporte");
+const btnContratarTodos = document.getElementById("contratar-todos");
+const btnContratarPrincipales = document.getElementById(
+  "contratar-principales"
+);
 // ----------------------------------------------------------------
 // Elementos del formulario.
 // ----------------------------------------------------------------
+const reporteBeneficiarios = document.getElementById("reporte_beneficiarios");
 const filtrarMes = document.getElementById("filtrar-mes");
 const diasPagos = document.getElementById("dias-pagos");
 const mesPagos = document.getElementById("mes-pagos");
+const mesEmision = document.getElementById("mes-emision");
 const recaudadoFiltrado = document.getElementById("valor-recaudado-filtrado");
+const recaudadoFiltradoCargo = document.getElementById("valor-recaudado-cargo");
+const pendienteFiltrado = document.getElementById("valor-pendiente-cargo");
+const totalesFiltrado = document.getElementById("valor-total-cargo");
 const filtroCancelados = document.getElementById("filtrar-cancelados");
 const mesBusqueda = document.getElementById("mesBusqueda");
 const anioBusqueda = document.getElementById("anioBusqueda");
@@ -56,15 +64,15 @@ let recaudaciones = [];
 let recaudacionesAgrupadas = [];
 let recaudacionesFiltradas = [];
 let valorFiltrado = 0;
-
 let servicios = [];
 let usuarios = [];
 let contratados = [];
 let editingStatus = false;
 let creacionEdit = "";
 let editServicioId = "";
+let contratandoId = "";
 let ultimaFechaPago = "";
-
+let fechaCreacion = "2024-04-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   let individualSnDf = "Si";
   e.preventDefault();
@@ -455,29 +463,6 @@ async function renderUsuarios(usuarios, servicioId) {
   });
 }
 
-// function renderServicios(servicios) {
-//   serviciosList.innerHTML = "";
-//   servicios.forEach((servicio) => {
-//     serviciosList.innerHTML += `
-//        <tr>
-//       <td>${servicio.nombre}</td>
-//       <td>${servicio.descripcion}</td>
-
-//       <td>${servicio.valor}</td>
-//       <td>
-//       <button onclick="deleteServicio('${servicio.id}')" class="btn ">
-//       <i class="fa-solid fa-user-minus"></i>
-//       </button>
-//       </td>
-//       <td>
-//       <button onclick="editServicio('${servicio.id}')" class="btn ">
-//       <i class="fa-solid fa-user-pen"></i>
-//       </button>
-//       </td>
-//    </tr>
-//       `;
-//   });
-// }
 const editServicio = async (id) => {
   const servicio = await ipcRenderer.invoke("getServiciosFijosById", id);
   servicioCreacion.value = formatearFecha(servicio.fechaCreacion);
@@ -523,6 +508,7 @@ const deleteServicio = async (id) => {
 // ----------------------------------------------------------------
 const mostrarEstadisticas = async (servicioId) => {
   // await getContratados(servicioId);
+  contratandoId = servicioId;
   const servicio = await ipcRenderer.invoke(
     "getServiciosFijosById",
     servicioId
@@ -549,6 +535,90 @@ const mostrarEstadisticas = async (servicioId) => {
 // ----------------------------------------------------------------
 // Funcion que muestra los estados de recaudacion de un servic.
 // ----------------------------------------------------------------
+btnContratarTodos.addEventListener("click", () => {
+  contratarTodos();
+});
+btnContratarPrincipales.addEventListener("click", () => {
+  // Solicitar confirmacion al usuario !!
+  Swal.fire({
+    title:
+      "¿Quieres aplicar este servicio unicamente a los contratos principales activos?",
+    text: "Los cambios se aplicaran en las planillas vigentes.",
+    icon: "question",
+    iconColor: "#f8c471",
+    showCancelButton: true,
+    confirmButtonColor: "#2874A6",
+    cancelButtonColor: "#EC7063 ",
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      await contratarPrincipales(contratandoId, "Servicio fijo");
+    }
+  });
+});
+async function contratarPrincipales(servicioId, tipo) {
+  const result = await ipcRenderer.invoke(
+    "contratarEnPrincipalesFijos",
+    servicioId,
+    tipo
+  );
+  console.log("Resultado de contratar en contratos principales: " + result);
+}
+async function contratarTodos() {
+  try {
+    for (const usuario of usuarios) {
+      await contratarServicioTodos(contratandoId, usuario.contratosId);
+    }
+    // Llamamos a  create planilla asi nos aseguramos de que en caso de no existir la planilla
+    // correspondiente a ese mes se la cree asi como tambien nos aseguramos de que el detalle
+    // no se aplique dos veces. Los detalles se aplicaran en las planillas vigentes de acuerdo
+    // al mes correspondiente.
+    await ipcRenderer.invoke("createPlanilla", fechaCreacion).then(() => {
+      Swal.fire({
+        title: "Contratado para todos",
+        icon: "success",
+        iconColor: "green",
+
+        confirmButtonColor: "#2874A6",
+
+        confirmButtonText: "Aceptar",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          mostrarEstadisticas(contratandoId);
+        } else {
+          mostrarEstadisticas(contratandoId);
+        }
+      });
+    });
+  } catch (error) {
+    console.log("Error al contratar todos:", error);
+    Swal.fire({
+      title: "Error al contratar todos!",
+      icon: "error",
+      confirmButtonColor: "#f8c471",
+    });
+    console.log("Error al contratar todos:", error);
+  }
+}
+const contratarServicioTodos = async (servicioId, contratoId) => {
+  let adquiridoSnTemporal = "Activo";
+  let idDescuentoTemporal = 1;
+
+  const resultServiciosContratados = await ipcRenderer.invoke(
+    "createServicioFijoContratadoMultiple",
+    servicioId,
+    contratoId,
+
+    idDescuentoTemporal,
+    adquiridoSnTemporal
+  );
+
+  console.log(
+    "Resultado de contratar el servicio: " + resultServiciosContratados
+  );
+};
+
 const getRecaudaciones = async () => {
   let valoresRecaudados = 0.0;
   let valoresPendientes = 0.0;
@@ -556,6 +626,8 @@ const getRecaudaciones = async () => {
   let fechaDesde = "all";
   let fechaHasta = "all";
   let fechasPagoAgrupadas = [];
+  let fechasEmisionAgrupadas = [];
+  let fechasEmision = [];
   let fechasPagos = [];
   let anioD = parseInt(anioRecaudacion.value);
   let mesD = parseInt(mesRecaudacion.value);
@@ -591,12 +663,19 @@ const getRecaudaciones = async () => {
       recaudacionesAgrupadas.forEach(async (recaudacion) => {
         recaudacion.objetos.forEach((objeto) => {
           if (objeto.fechaPago !== null && objeto.fechaPago !== undefined) {
-            fechasPagos.push({ fechaPago: formatearFecha(objeto.fechaPago) });
+            fechasPagos.push({ fecha: formatearFecha(objeto.fechaPago) });
+          }
+          if (
+            objeto.fechaEmision !== null &&
+            objeto.fechaEmision !== undefined
+          ) {
+            fechasEmision.push({
+              fecha: formatearFecha(objeto.fechaEmision),
+            });
           }
         });
         valoresRecaudados += recaudacion.abono;
         valoresTotales += recaudacion.total;
-
         let saldo = recaudacion.total - recaudacion.abono;
         valoresPendientes += saldo;
       });
@@ -605,11 +684,16 @@ const getRecaudaciones = async () => {
       valorRecaudado.textContent = valoresRecaudados.toFixed(2);
       valorTotal.textContent = valoresTotales.toFixed(2);
       console.log("Dias de pago: ", fechasPagos);
+      console.log("Dias de emision: ", fechasEmision);
       fechasPagoAgrupadas = await agruparFechasPago(fechasPagos);
+      fechasEmisionAgrupadas = await agruparFechasPago(fechasEmision);
       console.log("Dias de pago reducido: ", fechasPagoAgrupadas);
+      console.log("Dias de emision reducido: ", fechasEmisionAgrupadas);
 
       await cargarFechasPago(fechasPagoAgrupadas);
+      await cargarFechasEmision(fechasEmisionAgrupadas);
       filtrarRecaudados();
+      filtrarRecaudadosCargos();
       preRenderRecaudados(recaudacionesAgrupadas);
     });
 };
@@ -622,13 +706,13 @@ async function cargarFechasPago(fechasPago) {
 
     fechasPago.forEach((fechaPago) => {
       const option = document.createElement("option");
-      option.value = fechaPago.fechaPago;
+      option.value = fechaPago.fecha;
       option.textContent =
-        obtenerDia(fechaPago.fechaPago) +
+        obtenerDia(fechaPago.fecha) +
         " de " +
-        obtenerNombreMes(fechaPago.fechaPago) +
+        obtenerNombreMes(fechaPago.fecha) +
         " (" +
-        obtenerAnio(fechaPago.fechaPago) +
+        obtenerAnio(fechaPago.fecha) +
         ")";
       diasPagos.appendChild(option);
     });
@@ -638,17 +722,31 @@ async function cargarFechasPago(fechasPago) {
     meses = await agruparMesesPago(fechasPago);
     meses.forEach((mes) => {
       const optionMeses = document.createElement("option");
-      optionMeses.value = mes.fechaPago;
+      optionMeses.value = mes.fecha;
       optionMeses.textContent =
-        obtenerNombreMes(mes.fechaPago) +
-        " (" +
-        obtenerAnio(mes.fechaPago) +
-        ")";
+        obtenerNombreMes(mes.fecha) + " (" + obtenerAnio(mes.fecha) + ")";
       mesPagos.appendChild(optionMeses);
     });
     mesPagos[0].selected = true;
   }
 }
+async function cargarFechasEmision(fechasEmision) {
+  if (fechasEmision.length > 0) {
+    await fechasEmision.sort(compararFechas);
+    let meses = [];
+    mesEmision.innerHTML = "";
+    meses = await agruparMesesPago(fechasEmision);
+    meses.forEach((mes) => {
+      const optionMeses = document.createElement("option");
+      optionMeses.value = mes.fecha + 2;
+      optionMeses.textContent =
+        obtenerNombreMes(mes.fecha + 1) + " (" + obtenerAnio(mes.fecha) + ")";
+      mesEmision.appendChild(optionMeses);
+    });
+    mesEmision[0].selected = true;
+  }
+}
+
 function filtrarRecaudados() {
   if (recaudacionesAgrupadas.length > 0) {
     let fechaFiltro = "";
@@ -661,12 +759,13 @@ function filtrarRecaudados() {
             if (objeto.fechaPago !== null && objeto.fechaPago !== undefined) {
               let fechaObjeto = formatearFecha(objeto.fechaPago);
               if (
-                objeto.estadoDetalles === "Cancelado" &&
                 obtenerNombreMes(fechaObjeto) ===
                   obtenerNombreMes(fechaFiltro) &&
                 obtenerAnio(fechaObjeto) === obtenerAnio(fechaFiltro)
               ) {
-                totalRecaudadoFiltrado += objeto.abono;
+                if (objeto.estadoDetalles === "Cancelado") {
+                  totalRecaudadoFiltrado += objeto.abono;
+                }
               }
             }
           });
@@ -679,11 +778,10 @@ function filtrarRecaudados() {
           recaudacion.objetos.forEach((objeto) => {
             if (objeto.fechaPago !== null && objeto.fechaPago !== undefined) {
               let fechaObjeto = formatearFecha(objeto.fechaPago);
-              if (
-                objeto.estadoDetalles === "Cancelado" &&
-                fechaObjeto === fechaFiltro
-              ) {
-                totalRecaudadoFiltrado += objeto.abono;
+              if (fechaObjeto === fechaFiltro) {
+                if (objeto.estadoDetalles === "Cancelado") {
+                  totalRecaudadoFiltrado += objeto.abono;
+                }
               }
             }
           });
@@ -692,6 +790,43 @@ function filtrarRecaudados() {
     }
     valorFiltrado = totalRecaudadoFiltrado;
     recaudadoFiltrado.textContent = valorFiltrado.toFixed(2);
+  }
+  preRenderRecaudados();
+}
+function filtrarRecaudadosCargos() {
+  if (recaudacionesAgrupadas.length > 0) {
+    let fechaFiltro = "";
+    let totalRecaudadoCargo = 0;
+    let totalFiltrado = 0;
+    let totalPendienteFiltrado = 0;
+    fechaFiltro = mesEmision.value;
+    if (fechaFiltro !== "Sin fecha") {
+      recaudacionesAgrupadas.forEach((recaudacion) => {
+        recaudacion.objetos.forEach((objeto) => {
+          console.log(
+            "Comparar: ",
+            new Date(objeto.fechaEmision).getMonth() + 1,
+            " | ",
+            new Date(fechaFiltro).getMonth()
+          );
+          if (
+            objeto.fechaEmision.getMonth() + 1 ===
+              new Date(fechaFiltro).getMonth() &&
+            objeto.fechaEmision.getFullYear() ===
+              new Date(fechaFiltro).getFullYear()
+          ) {
+            totalFiltrado += objeto.total;
+            if (objeto.estadoDetalles === "Cancelado") {
+              totalRecaudadoCargo += objeto.abono;
+            }
+          }
+        });
+      });
+    }
+    totalPendienteFiltrado = totalFiltrado - totalRecaudadoCargo;
+    recaudadoFiltradoCargo.textContent = totalRecaudadoCargo.toFixed(2);
+    pendienteFiltrado.textContent = totalPendienteFiltrado.toFixed();
+    totalesFiltrado.textContent = totalFiltrado.toFixed(2);
   }
   preRenderRecaudados();
 }
@@ -704,6 +839,9 @@ async function preRenderRecaudados() {
     renderRecaudados(recaudacionesAgrupadas);
   }
 }
+mesEmision.addEventListener("change", () => {
+  filtrarRecaudadosCargos();
+});
 diasPagos.addEventListener("change", () => {
   filtrarRecaudados();
 });
@@ -726,8 +864,8 @@ filtroCancelados.addEventListener("change", async () => {
 });
 function compararFechas(objetoA, objetoB) {
   // Obtén las fechas de los objetos y compáralas
-  var fechaA = objetoA.fechaPago;
-  var fechaB = objetoB.fechaPago;
+  var fechaA = objetoA.fecha;
+  var fechaB = objetoB.fecha;
 
   // Ordena las fechas en orden descendente (de mayor a menor)
   if (fechaA < fechaB) {
@@ -788,15 +926,14 @@ const agruparMesesPago = async (fechasGeneral) => {
     // Verificar si ya hay un grupo con el mismo nombre
     let grupoExistente = acumulador.find(
       (fechaPago) =>
-        obtenerNombreMes(fechaPago.fechaPago) ===
-        obtenerNombreMes(objeto.fechaPago)
+        obtenerNombreMes(fechaPago.fecha) === obtenerNombreMes(objeto.fecha)
     );
     // Si el grupo existe, agregar el valor al grupo
     if (grupoExistente) {
     } else {
       // Si el grupo no existe, crear uno nuevo con el valor
       acumulador.push({
-        fechaPago: objeto.fechaPago,
+        fecha: objeto.fecha,
       });
     }
 
@@ -810,14 +947,14 @@ const agruparFechasPago = async (fechasGeneral) => {
   let fechasAgrupadas = await fechasGeneral.reduce((acumulador, objeto) => {
     // Verificar si ya hay un grupo con el mismo nombre
     let grupoExistente = acumulador.find(
-      (fechaPago) => fechaPago.fechaPago === objeto.fechaPago
+      (fecha) => fecha.fecha === objeto.fecha
     );
     // Si el grupo existe, agregar el valor al grupo
     if (grupoExistente) {
     } else {
       // Si el grupo no existe, crear uno nuevo con el valor
       acumulador.push({
-        fechaPago: objeto.fechaPago,
+        fecha: objeto.fecha,
       });
     }
 
@@ -1087,6 +1224,8 @@ ipcRenderer.on("Notificar", (event, response) => {
   } else if (response.title === "Usuario eliminado!") {
     resetFormAfterSave();
   }
+  // else if (response.title === "Contratado para Todos!") {
+  // }
   console.log("Response: " + response);
   if (response.success) {
     Swal.fire({
@@ -1255,74 +1394,11 @@ btnReporte.onclick = async () => {
     Swal.fire(`Seleccionaste: ${tipo}`);
     vistaFactura(tipo);
   }
-  // Swal.fire({
-  //   title: "Elije el tipo de reporte",
-  //   icon: "info",
-  //   html: `
-  //     <button class="swal2-confirm swal2-styled" id="reporteGeneral" onclick="vistaFactura('general')">General</button>
-  //     <button class="swal2-confirm swal2-styled" id="reporteCancelados" onclick="vistaFactura('cancelados')">Cancelados</button>
-  //     <button class="swal2-confirm swal2-styled" id="reporteSinCancelar" onclick="vistaFactura('sinCancelar')">Sin cancelar</button>
-  //     <button class="swal2-confirm swal2-styled" id="reporteFiltrado" onclick="vistaFactura('filtros')">Filtrado</button>
-
-  //   `,
-  //   showCloseButton: true,
-  //   allowOutsideClick: false,
-  //   showConfirmButton: false,
-  // }).then((result) => {
-  //   if (result.isConfirmed) {
-  //     // if (result.dismiss === Swal.DismissReason.close) {
-  //     //   // El botón de cierre (X) fue presionado
-  //     //   Swal.fire("Operación cancelada", "", "error");
-  //     // } else if (result.target.id === "accion1") {
-  //     //   // El botón "Acción 1" fue presionado
-  //     //   Swal.fire("Acción 1 realizada", "", "success");
-  //     // } else if (result.target.id === "accion2") {
-  //     //   // El botón "Acción 2" fue presionado
-  //     //   Swal.fire("Acción 2 realizada", "", "success");
-  //     // } else if (result.target.id === "accion3") {
-  //     //   // El botón "Acción 3" fue presionado
-  //     //   Swal.fire("Acción 3 realizada", "", "success");
-  //     // }
-  //   } else {
-  //     // El botón "Cancelar" fue presionado
-  //     Swal.fire("Reporte cancelado", "", "success");
-  //   }
-  // });
 };
-// btnReporte.onclick = () => {
-//   Swal.fire({
-//     title: "Selecciona una acción",
-//     icon: "info",
-//     html: `
-//       <button class="swal2-confirm swal2-styled" id="reporteGeneral" onclick="vistaFactura('general')">General</button>
-//       <button class="swal2-confirm swal2-styled" id="reporteCancelados" onclick="vistaFactura('cancelados')">Cancelados</button>
-//       <button class="swal2-confirm swal2-styled" id="reporteSinCancelar" onclick="vistaFactura('sinCancelar')">Sin cancelar</button>
+reporteBeneficiarios.addEventListener("click", () => {
+  vistaFactura("beneficiarios");
+});
 
-//     `,
-//     showCloseButton: true,
-//     allowOutsideClick: false,
-//     showConfirmButton: false,
-//   }).then((result) => {
-//     if (result.isConfirmed) {
-//       // if (result.dismiss === Swal.DismissReason.close) {
-//       //   // El botón de cierre (X) fue presionado
-//       //   Swal.fire("Operación cancelada", "", "error");
-//       // } else if (result.target.id === "accion1") {
-//       //   // El botón "Acción 1" fue presionado
-//       //   Swal.fire("Acción 1 realizada", "", "success");
-//       // } else if (result.target.id === "accion2") {
-//       //   // El botón "Acción 2" fue presionado
-//       //   Swal.fire("Acción 2 realizada", "", "success");
-//       // } else if (result.target.id === "accion3") {
-//       //   // El botón "Acción 3" fue presionado
-//       //   Swal.fire("Acción 3 realizada", "", "success");
-//       // }
-//     } else {
-//       // El botón "Cancelar" fue presionado
-//       Swal.fire("Reporte cancelado", "", "success");
-//     }
-//   });
-// };
 // Ejemplo: Obtener el primer y último día de septiembre de 2023
 const resultado = obtenerPrimerYUltimoDiaDeMes("2023", 1); // 8 representa septiembre (0-indexed)
 console.log("Primer día:", formatearFecha(resultado.primerDia));
@@ -1467,9 +1543,6 @@ function cargarAnioBusquedas() {
 // }
 async function vistaFactura(tipo) {
   let recaudacionesReporte = [];
-  // Supongamos que tienes un arreglo de objetos
-  // Define la condición de filtro (por ejemplo, objetos con id mayor que 2)
-
   const datos = {
     mensaje: "Hola desde pagina1",
     otroDato: 12345,
@@ -1477,7 +1550,7 @@ async function vistaFactura(tipo) {
   const encabezado = {
     servicio: servicioTit.textContent,
     creacion: creacionEdit,
-    tipo: "Servicios Ocacionales",
+    tipo: "Servicios Fijos",
     fechaD: creacionEdit,
     fechaH: ultimaFechaPago,
     tipoReporte: tipo,
@@ -1489,8 +1562,11 @@ async function vistaFactura(tipo) {
     totalFinal: valorTotal.textContent,
     totalFiltrado: valorFiltrado,
   };
-
-  if (tipo == "cancelados") {
+  if (tipo === "beneficiarios") {
+    recaudacionesReporte = [];
+    recaudacionesReporte = recaudacionesAgrupadas;
+    console.log("rp beneficiarios: ", recaudacionesReporte);
+  } else if (tipo == "cancelados") {
     recaudacionesReporte = [];
     recaudacionesReporte = recaudacionesAgrupadas.filter(
       (recaudacion) => recaudacion.abono > 0

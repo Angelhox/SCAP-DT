@@ -116,6 +116,10 @@ let editContratoId = "";
 let planillaEdit = {};
 let encabezadoId = "";
 let editPlanillaEstado = "";
+const totalAcumuladoInput = document.getElementById("valorTotalAcumulado");
+const quitarTodos = document.getElementById("quitar-todos");
+let totalesSumados = [];
+let totalSumado = 0;
 planillaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const newPlanilla = {
@@ -175,7 +179,7 @@ function renderPlanillas(datosPlanillas) {
     cardDiv.style.maxHeight = "30em";
     // Crear el elemento div para el encabezado de la tarjeta con la clase y el estilo
     const headerDiv = document.createElement("div");
-    headerDiv.className = "card-header d-flex ";
+    headerDiv.className = "clase-h card-header d-flex ";
     headerDiv.style.backgroundColor = "#85c1e9";
 
     // Crear el elemento div para la información del contrato
@@ -463,7 +467,7 @@ function renderPlanillas(datosPlanillas) {
     footerDiv.style.border = "none";
     // Crear elemento para el total
     const totalDiv = document.createElement("div");
-    totalDiv.className = "col-6 titulo-detalles d-flex";
+    totalDiv.className = "col-5 titulo-detalles d-flex";
     const totalP = document.createElement("p");
     totalP.textContent = "Total:$";
     const totalSp = document.createElement("p");
@@ -479,18 +483,23 @@ function renderPlanillas(datosPlanillas) {
 
     // Crear el botón con la clase y el ícono
     const button = document.createElement("button");
-    button.className = "btn-planilla-positive col-6";
+    button.className = "btn-planilla-positive col-5";
     // Añadir un evento onclick
     button.onclick = function () {
-      // Elimina la clase "selected" de todos los elementos
+      // Verificar si headerDiv ya tiene la clase bg-success
+      // var tieneClaseSuccess = headerDiv.classList.contains("bg-success");
+      // Elimina la clase "secondary" de todos los elementos
       const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
+
       elementos.forEach((elemento) => {
         elemento.classList.remove("bg-secondary");
       });
 
-      // Agrega la clase "selected" al elemento que se hizo clic
+      // Borra la clase "bg-success" de headerDiv si ya la tiene
+      // if (tieneClaseSuccess) {
+      // Agrega la clase "bg-secondary" al elemento que se hizo clic
       cardDiv.classList.add("bg-secondary");
-      // detallesContratos(datosContrato.contratosId);
+      // headerDiv.classList.remove("bg-success");
       editPlanilla(
         datosPlanilla.planillasId,
         datosPlanilla.contratosId,
@@ -502,8 +511,131 @@ function renderPlanillas(datosPlanillas) {
         datosPlanilla.contratosId,
         formatearFecha(datosPlanilla.fechaEmision)
       );
+      // } else {
+      // Agrega la clase "bg-secondary" al elemento que se hizo clic
+      // cardDiv.classList.add("bg-secondary");
+      // // // Agrega la clase "bg-success" a headerDiv solo si no tiene la clase
+      // // headerDiv.classList.add("bg-success");
+      // editPlanilla(
+      //   datosPlanilla.planillasId,
+      //   datosPlanilla.contratosId,
+      //   formatearFecha(datosPlanilla.fechaEmision)
+      // );
+      // console.log(
+      //   "¡Hiciste clic en el botón!",
+      //   datosPlanilla.planillasId,
+      //   datosPlanilla.contratosId,
+      //   formatearFecha(datosPlanilla.fechaEmision)
+      // );
+      // }
     };
+    const agree = document.createElement("button");
+    agree.className = "clase-a btn";
+    agree.style.width = "fit-content";
+    const agreeIcon = document.createElement("i");
+    agreeIcon.className = "fs-5 fa-solid fa-circle-plus";
+    agree.appendChild(agreeIcon);
+    // Agree
+    agree.onclick = function () {
+      // Verificar si headerDiv ya tiene la clase bg-success
+      var tieneClaseSuccess = headerDiv.classList.contains("bg-success");
+      // Elimina la clase "secondary" de todos los elementos
+      const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
 
+      elementos.forEach((elemento) => {
+        elemento.classList.remove("bg-secondary");
+      });
+
+      // Borra la clase "bg-success" de headerDiv si ya la tiene
+      if (tieneClaseSuccess) {
+        // Agrega la clase "bg-secondary" al elemento que se hizo clic
+        cardDiv.classList.add("bg-secondary");
+        headerDiv.classList.remove("bg-success");
+        editPlanilla(
+          datosPlanilla.planillasId,
+          datosPlanilla.contratosId,
+          formatearFecha(datosPlanilla.fechaEmision)
+        );
+        console.log(
+          "¡Hiciste clic en el botón!",
+          datosPlanilla.planillasId,
+          datosPlanilla.contratosId,
+          formatearFecha(datosPlanilla.fechaEmision)
+        );
+      } else {
+        // Agrega la clase "bg-secondary" al elemento que se hizo clic
+        cardDiv.classList.add("bg-secondary");
+        // Agrega la clase "bg-success" a headerDiv solo si no tiene la clase
+        headerDiv.classList.add("bg-success");
+        editPlanilla(
+          datosPlanilla.planillasId,
+          datosPlanilla.contratosId,
+          formatearFecha(datosPlanilla.fechaEmision)
+        );
+        console.log(
+          "¡Hiciste clic en el botón!",
+          datosPlanilla.planillasId,
+          datosPlanilla.contratosId,
+          formatearFecha(datosPlanilla.fechaEmision)
+        );
+      }
+      quit.style.display = "block";
+      agree.style.display = "none";
+    };
+    const quit = document.createElement("button");
+    quit.style.width = "fit-content";
+    quit.className = "clase-q btn";
+    const quitIcon = document.createElement("i");
+    quitIcon.className = "fs-5 fa-solid fa-circle-xmark";
+    quit.style.display = "none";
+    quit.appendChild(quitIcon);
+    // Quit
+    quit.onclick = function () {
+      // Verificar si headerDiv ya tiene la clase bg-success
+      var tieneClaseSuccess = headerDiv.classList.contains("bg-success");
+      // Elimina la clase "secondary" de todos los elementos
+      const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
+
+      elementos.forEach((elemento) => {
+        elemento.classList.remove("bg-secondary");
+      });
+
+      // Borra la clase "bg-success" de headerDiv si ya la tiene
+      if (tieneClaseSuccess) {
+        // Agrega la clase "bg-secondary" al elemento que se hizo clic
+        cardDiv.classList.add("bg-secondary");
+        headerDiv.classList.remove("bg-success");
+        editPlanilla(
+          datosPlanilla.planillasId,
+          datosPlanilla.contratosId,
+          formatearFecha(datosPlanilla.fechaEmision)
+        );
+        console.log(
+          "¡Hiciste clic en el botón!",
+          datosPlanilla.planillasId,
+          datosPlanilla.contratosId,
+          formatearFecha(datosPlanilla.fechaEmision)
+        );
+      } else {
+        // Agrega la clase "bg-secondary" al elemento que se hizo clic
+        cardDiv.classList.add("bg-secondary");
+        // Agrega la clase "bg-success" a headerDiv solo si no tiene la clase
+        headerDiv.classList.add("bg-success");
+        editPlanilla(
+          datosPlanilla.planillasId,
+          datosPlanilla.contratosId,
+          formatearFecha(datosPlanilla.fechaEmision)
+        );
+        console.log(
+          "¡Hiciste clic en el botón!",
+          datosPlanilla.planillasId,
+          datosPlanilla.contratosId,
+          formatearFecha(datosPlanilla.fechaEmision)
+        );
+      }
+      agree.style.display = "block";
+      quit.style.display = "none";
+    };
     const buttonIcon = document.createElement("i");
     buttonIcon.className = "fa-solid fa-file-pen";
     button.appendChild(buttonIcon);
@@ -511,6 +643,8 @@ function renderPlanillas(datosPlanillas) {
     // Agregar elementos al pie de la tarjeta
     footerDiv.appendChild(totalDiv);
     footerDiv.appendChild(button);
+    footerDiv.appendChild(agree);
+    footerDiv.appendChild(quit);
 
     // Agregar todos los elementos a la tarjeta principal
     cardDiv.appendChild(headerDiv);
@@ -525,6 +659,29 @@ function renderPlanillas(datosPlanillas) {
     planillasList.appendChild(divContainer);
   });
 }
+quitarTodos.addEventListener("click", () => {
+  totalesSumados = [];
+  totalSumado = 0;
+  totalAcumuladoInput.value = "";
+  const elementos = document.querySelectorAll(".clase"); // Reemplaza con la clase real de tus elementos
+  elementos.forEach((elemento) => {
+    elemento.classList.remove("bg-secondary");
+  });
+  const elementosHeader = document.querySelectorAll(".clase-h"); // Reemplaza con la clase real de tus elementos
+  elementosHeader.forEach((elementoHeader) => {
+    elementoHeader.classList.remove("bg-success");
+  });
+  const quitElement = document.querySelectorAll(".clase-q");
+  quitElement.forEach((quitElemen) => {
+    quitElemen.style.display = "none";
+  });
+  const agreeElement = document.querySelectorAll(".clase-a");
+  agreeElement.forEach((agreeElemen) => {
+    agreeElemen.style.display = "block";
+  });
+
+  resetForm();
+});
 const getDatosLecturas = async (contratoId, fechaEmision) => {
   // console.log("Parámetros de busqueda: " + contratoId, fechaEmision);
   const lectura = await ipcRenderer.invoke(
@@ -559,9 +716,14 @@ async function buscarComprobante(encabezadoId) {
   // console.log("Comprobantes 1: ", comprobantesGeneral);
   const comprobanteAcceso = document.createElement("button");
   comprobanteAcceso.className = "btn-comprobante";
-  comprobanteAcceso.innerHTML = `<i class="fs-5 mx-1 fa-regular fa-folder-open"> </i>
-      Ver Comprobante`;
-  comprobanteContainer.append(comprobanteAcceso);
+  const iconComprobante = document.createElement("i");
+  iconComprobante.className = "fs-5 mx-1 fa-regular fa-folder-open";
+  // comprobanteAcceso.innerHTML = `<i class="fs-5 mx-1 fa-regular fa-folder-open"> </i>
+  //     Ver Comprobantes`;
+  comprobanteAcceso.textContent = "Ver comprobante";
+  comprobanteAcceso.appendChild(iconComprobante);
+  comprobanteContainer.innerHTML = "";
+  comprobanteContainer.appendChild(comprobanteAcceso);
   renderComprobantes(comprobantesGeneral);
   comprobanteAcceso.addEventListener("click", () => {
     comprobantesDg();
@@ -813,6 +975,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   editados = [];
   editingStatus = true;
   editPlanillaId = planillaId;
+
   console.log("Planilla a editar: " + planillaId);
   descuentoFinal = 0;
   totalFinal = 0.0;
@@ -927,12 +1090,21 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   }
   recalcularConsumo();
   valorTotalPagar.value = (totalFinal + totalConsumo).toFixed(2);
+  if (!totalesSumados.includes(editPlanillaId)) {
+    totalesSumados.push(editPlanillaId);
+    totalSumado += totalFinal + totalConsumo;
+  } else {
+    let index = totalesSumados.indexOf(editPlanillaId);
+    totalesSumados.splice(index, 1);
+    totalSumado -= totalFinal + totalConsumo;
+  }
+  totalAcumuladoInput.value = totalSumado.toFixed(2);
   // valorTotalDescuento.value=0;
   valorTotalDescuento.value = descuentoFinal;
 };
 
 async function renderServicios(servicios, tipo) {
-  let totalPagarEdit = 0.0;
+  let totalPagarEdit = 0;
   let totalDescuentoEdit = 0;
   encabezadoId = servicios[0].encabezadosId;
   // if (editPlanillaEstado === "Cancelado") {

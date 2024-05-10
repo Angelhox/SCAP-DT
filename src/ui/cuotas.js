@@ -50,6 +50,10 @@ const mesRecaudacion = document.getElementById("mesRecaudacion");
 const anioLimite = document.getElementById("anioLimite");
 const mesLimite = document.getElementById("mesLimite");
 const btnReporte = document.getElementById("btnReporte");
+const btnContratarTodos = document.getElementById("contratar-todos");
+const btnContratarPrincipales = document.getElementById(
+  "contratar-principales"
+);
 // ----------------------------------------------------------------
 // Variables del diálogo de opciones de las cuotas.
 // ----------------------------------------------------------------
@@ -79,6 +83,7 @@ const contratarDg = document.getElementById("btnContratar-dg");
 // ----------------------------------------------------------------
 // Elementos del formulario.
 // ----------------------------------------------------------------
+const reporteBeneficiarios = document.getElementById("reporte_beneficiarios");
 const containerOpciones = document.getElementById("container-opciones");
 const sectionOpciones = document.getElementById("section-opciones");
 const filtrarMes = document.getElementById("filtrar-mes");
@@ -100,10 +105,11 @@ let usuarios = [];
 let valorIndividual = 0.0;
 let editingStatus = false;
 let editServicioId = "";
+let contratandoServicio = "";
 let creacionEdit = "";
 let ultimaFechaPago = "";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2024-01-01 00:00:00";
+let fechaCreacion = "2024-04-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {
@@ -578,6 +584,7 @@ const deleteServicio = async (id, servicioNombre) => {
 const mostrarEstadisticas = async (servicioId) => {
   // await getContratados(servicioId);
   const servicio = await ipcRenderer.invoke("getCuotasById", servicioId);
+  contratandoServicio = servicio;
   console.log("Estadisticas: " + servicio);
   servicioTit.textContent = servicio.nombre;
   servicioDesc.textContent = "(" + servicio.descripcion + ")";
@@ -730,7 +737,99 @@ async function renderRecaudados(recaudacionesFiltrados) {
           `;
   });
 }
+btnContratarTodos.addEventListener("click", () => {
+  // Solicitar confirmacion al usuario !!
+  Swal.fire({
+    title: "¿Quieres aplicar este servicio a todos los contratos activos?",
+    text: "El valor del servicio se aplicara en la planilla vigente.",
+    icon: "question",
+    iconColor: "#f8c471",
+    showCancelButton: true,
+    confirmButtonColor: "#2874A6",
+    cancelButtonColor: "#EC7063 ",
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+     await contratarTodos(usuarios, contratandoServicio);
+    }
+  });
+});
+btnContratarPrincipales.addEventListener("click", () => {
+  // Solicitar confirmacion al usuario !!
+  Swal.fire({
+    title:
+      "¿Quieres aplicar este servicio unicamente a los contratos principales activos?",
+    text: "Los cambios se aplicaran en las planillas vigentes.",
+    icon: "question",
+    iconColor: "#f8c471",
+    showCancelButton: true,
+    confirmButtonColor: "#2874A6",
+    cancelButtonColor: "#EC7063 ",
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      await contratarPrincipales(contratandoServicio.id, contratandoServicio.tipo);
+    }
+  });
+});
+async function contratarPrincipales(servicioId, tipo) {
+  const result = await ipcRenderer.invoke(
+    "contratarEnPrincipales",
+    servicioId,
+    tipo
+  );
+  console.log("Resultado de contratar en contratos principales: " + result);
+}
+async function contratarTodos(usuarios, servicio) {
+  let descuentoTemporal = 0;
+  let idDescuentoTemporal = 1;
+  try {
+    const newServicioContratado = {
+      fechaEmision: formatearFecha(new Date()),
+      estado: "Sin aplicar",
+      valorIndividual: servicio.valor,
+      numeroPagosIndividual: servicio.numeroPagos,
+      valorPagosIndividual: servicio.valorPagos,
+      descuentoValor: descuentoTemporal,
+      descuentosId: idDescuentoTemporal,
+      serviciosId: servicio.id,
+    };
+    for (const usuario of usuarios) {
+      (newServicioContratado.contratosId = usuario.contratosId),
+        await contratarServicioTodos(newServicioContratado, usuario, servicio);
+    }
 
+    // Llamamos a  create planilla asi nos aseguramos de que en caso de no existir la planilla
+    // correspondiente a ese mes se la cree asi como tambien nos aseguramos de que el detalle
+    // no se aplique dos veces. Los detalles se aplicaran en las planillas vigentes de acuerdo
+    // al mes correspondiente.
+    await ipcRenderer.invoke("createPlanilla", fechaCreacion).then(() => {
+      Swal.fire({
+        title: "Contratado para todos",
+        icon: "success",
+        iconColor: "green",
+
+        confirmButtonColor: "#2874A6",
+        confirmButtonText: "Aceptar",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          mostrarEstadisticas(contratandoServicio.id);
+        } else {
+          mostrarEstadisticas(contratandoServicio.id);
+        }
+      });
+    });
+  } catch (error) {
+    console.log("Error al contratar todos:", error);
+    Swal.fire({
+      title: "Error al contratar todos!",
+      icon: "error",
+      confirmButtonColor: "#f8c471",
+    });
+  }
+}
 const getBeneficiarios = async (servicio) => {
   console.log("Busqueda: " + servicio);
   let criterioBuscar = criterioBn.value;
@@ -890,6 +989,9 @@ ipcRenderer.on("Notificar", (event, response) => {
   } else if (response.title === "Guardado!") {
     resetFormAfterSave();
   }
+  //  else if (response.title === "Contratado para todos!") {
+  //   resetFormAfterSave();
+  // }
   console.log("Response: " + response);
   if (response.success) {
     Swal.fire({
@@ -1085,40 +1187,11 @@ btnReporte.onclick = async () => {
     Swal.fire(`Seleccionaste: ${tipo}`);
     vistaFactura(tipo);
   }
-  // Swal.fire({
-  //   title: "Elije el tipo de reporte",
-  //   icon: "info",
-  //   html: `
-  //     <button class="swal2-confirm swal2-styled" id="reporteGeneral" onclick="vistaFactura('general')">General</button>
-  //     <button class="swal2-confirm swal2-styled" id="reporteCancelados" onclick="vistaFactura('cancelados')">Cancelados</button>
-  //     <button class="swal2-confirm swal2-styled" id="reporteSinCancelar" onclick="vistaFactura('sinCancelar')">Sin cancelar</button>
-  //     <button class="swal2-confirm swal2-styled" id="reporteFiltrado" onclick="vistaFactura('filtros')">Filtrado</button>
-
-  //   `,
-  //   showCloseButton: true,
-  //   allowOutsideClick: false,
-  //   showConfirmButton: false,
-  // }).then((result) => {
-  //   if (result.isConfirmed) {
-  //     // if (result.dismiss === Swal.DismissReason.close) {
-  //     //   // El botón de cierre (X) fue presionado
-  //     //   Swal.fire("Operación cancelada", "", "error");
-  //     // } else if (result.target.id === "accion1") {
-  //     //   // El botón "Acción 1" fue presionado
-  //     //   Swal.fire("Acción 1 realizada", "", "success");
-  //     // } else if (result.target.id === "accion2") {
-  //     //   // El botón "Acción 2" fue presionado
-  //     //   Swal.fire("Acción 2 realizada", "", "success");
-  //     // } else if (result.target.id === "accion3") {
-  //     //   // El botón "Acción 3" fue presionado
-  //     //   Swal.fire("Acción 3 realizada", "", "success");
-  //     // }
-  //   } else {
-  //     // El botón "Cancelar" fue presionado
-  //     Swal.fire("Reporte cancelado", "", "success");
-  //   }
-  // });
 };
+reporteBeneficiarios.addEventListener("click", () => {
+  vistaFactura("beneficiarios");
+});
+
 async function vistaFactura(tipo) {
   let recaudacionesReporte = [];
   // Supongamos que tienes un arreglo de objetos
@@ -1143,8 +1216,11 @@ async function vistaFactura(tipo) {
     totalFinal: valorTotal.textContent,
     totalFiltrado: valorFiltrado,
   };
-
-  if (tipo == "cancelados") {
+  if (tipo === "beneficiarios") {
+    recaudacionesReporte = [];
+    recaudacionesReporte = recaudacionesAgrupadas;
+    console.log("rp beneficiarios: ", recaudacionesReporte);
+  } else if (tipo == "cancelados") {
     recaudacionesReporte = [];
     recaudacionesReporte = recaudacionesAgrupadas.filter(
       (recaudacion) => recaudacion.abono > 0
@@ -1969,10 +2045,19 @@ function cargarAnioBusquedas() {
     anioBusqueda.appendChild(option);
   }
 }
+const contratarServicioTodos = async (servicioContratar, usuario, servicio) => {
+  const contratado = await ipcRenderer.invoke(
+    "createServicioContratadoMultiple",
+    servicioContratar,
+    usuario.sociosId,
+    servicio.IndividualSn
+  );
+  console.log("Resultado de contratar el servicio: " + contratado);
+};
 const contratarServicio = async (servicioContratar, usuario, servicio) => {
   CerrarFormOpciones();
   Swal.fire({
-    title: "¿Quieres aplicar este contrato a este servicio?",
+    title: "¿Quieres aplicar este servicio a este contrato?",
     text: "El valor del servicio se aplicara en la planilla vigente.",
     icon: "question",
     iconColor: "#f8c471",

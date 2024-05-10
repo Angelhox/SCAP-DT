@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="./principal.css" />
-    <link rel="stylesheet" href="../ui/style/planillas.css" />
+    <link rel="stylesheet" href="../ui/Pagos/pagos.css" />
     <link
       rel="stylesheet"
       href="../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
@@ -386,21 +386,22 @@
           <div class="col-12 d-flex justify-content-center">
             <div class="row encabezado-planillas">
               <div class="col-12 d-flex mb-1">
-                <div class="col-4 d-flex mp-0">
-                  <label for="cedula" class="fs-6 mp-0">Contrato:</label>
-                  <p class="trans mp-0">-</p>
-                  <p class="mp-0" id="contratoCodigo">
-                    <small class="px-1">waiting...</small>
-                  </p>
-                </div>
-                <div class="col-4 d-flex mp-0">
+                <div class="col-7 d-flex mp-0">
                   <label for="cedula" class="fs-6 mp-0">Emisión:</label>
                   <p class="trans mp-0">-</p>
                   <p class="mp-0" id="planillaEmision">
-                    <small class="px-1">waiting...</small>
+                    <small class="px-1"></small>
                   </p>
                 </div>
-                <div class="col-4 d-flex mp-0">
+                <div class="col-5 d-flex mp-0">
+                  <label for="cedula" class="fs-6 mp-0">Contrato:</label>
+                  <p class="trans mp-0">-</p>
+                  <p class="mp-0" id="contratoCodigo">
+                    <small class="px-1"></small>
+                  </p>
+                </div>
+
+                <div class="col-4 mp-0" style="display: none">
                   <label for="cedula" class="fs-6 mp-0">Código:</label>
                   <p class="trans mp-0">-</p>
                   <p class="mp-0" id="planillaCodigo">
@@ -410,12 +411,12 @@
               </div>
 
               <div class="col-12 d-flex mb-1">
-                <div class="col-8 d-flex mp-0">
+                <div class="col-7 d-flex mp-0">
                   <label for="cedula" class="fs-6 mp-0">Socio:</label>
                   <p class="trans mp-0">-</p>
                   <p class="mp-0" id="socioNombres"></p>
                 </div>
-                <div class="col-8 d-flex mp-0">
+                <div class="col-5 d-flex mp-0">
                   <label for="cedula" class="fs-6 mp-0">CI:</label>
                   <p class="trans mp-0">-</p>
                   <p class="mp-0" id="socioCedula"></p>
@@ -432,12 +433,12 @@
                   <p class="trans mp-0">-</p>
                   <p class="mp-0" id="planillaEstado"></p>
                 </div>
-                <div class="col-3 d-flex mp-0">
+                <div style="display: none" class="col-3 mp-0">
                   <label for="cedula" class="fs-6 mp-0">Recargo:</label>
                   <p class="trans mp-0">-</p>
                   <p class="text-white mp-0" id="planillaRecargo"></p>
                 </div>
-                <div class="col-6 d-flex mp-0">
+                <div style="display: none" class="col-6 mp-0">
                   <label for="cedula" class="fs-6 mp-0">Comprobante:</label>
                   <p class="trans mp-0">-</p>
                   <p class="text-white mp-0" id="comprobante"></p>
@@ -467,16 +468,17 @@
                   ></i>
                 </button>
               </div>
-              <div class="flex px-1 mt-2">
+              <div class="tabla-consumos flex mt-2">
                 <table class="table table-hover">
                   <thead class="">
                     <tr>
-                      <th style="margin: 0; padding: 0">Fecha</th>
-                      <th style="margin: 0; padding: 0">Anterior</th>
-                      <th style="margin: 0; padding: 0">Actual</th>
-                      <th style="margin: 0; padding: 0">Consumo</th>
-                      <th style="margin: 0; padding: 0">Tarifa</th>
-                      <th style="margin: 0; padding: 0">Total</th>
+                      <th>Fecha</th>
+                      <th>Anterior</th>
+                      <th>Actual</th>
+                      <th>Consumo</th>
+                      <th>Tarifa</th>
+                      <th>Total</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody id="lecturasList"></tbody>
@@ -542,8 +544,8 @@
               <div class="rows col-12" style="margin-top: 0.5em">
                 <div class="col-12">
                   <div style="height: 15vh; max-height: 15vh; overflow-y: auto">
-                    <table class="table table-hover">
-                      <thead class="table-dark">
+                    <table class="tabla-fijos table table-hover">
+                      <thead class="">
                         <tr>
                           <th>Servicios Fijos</th>
                           <th>Subtotal</th>
@@ -784,7 +786,14 @@
                         <button
                           type="button"
                           class="btn btn-danger mx-1"
+                          id="encabezado-comprobante"
+                          style="width: 45%"
+                        >
+                          Encabezado/Comprobantes
+                        </button>
+                        <button
                           type="button"
+                          class="btn btn-danger mx-1"
                           id="vista-factura"
                           style="width: 45%"
                         >
@@ -1045,5 +1054,5 @@
   <script src="../../node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
   <script src="./bootstrap/js/bootstrap.min.js"></script>
 
-  <script src="./pagos1.js" defer></script>
+  <script src="./pagos.js" defer></script>
 </html>

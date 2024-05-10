@@ -437,13 +437,36 @@
                 Beneficiarios
                 <i class="fs-1 fa-solid fa-hands-holding-child mx-2 my-2"></i>
               </p>
-              <button
-                class="btn btn-outline-light"
-                type="button"
-                id="btn-volver"
-              >
-                Volver
-              </button>
+              <div>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="reporte_beneficiarios"
+                >
+                  Reporte
+                </button>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="contratar-todos"
+                >
+                  Contratar para todos
+                </button>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="contratar-principales"
+                >
+                 Contratar Principales
+                </button>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="btn-volver"
+                >
+                  Volver
+                </button>
+              </div>
             </div>
             <div class="col-12">
               <div class="row">
@@ -454,10 +477,12 @@
                     class="form-select btn-rd"
                     aria-label="Default select example"
                   >
-                    <option value="all" >Todas</option>
+                    <option value="all">Todas</option>
                     <option value="codigo">Contrato</option>
                     <option value="nombres">Nombres del socio</option>
-                    <option value="apellidos" selected>Apellidos del socio</option>
+                    <option value="apellidos" selected>
+                      Apellidos del socio
+                    </option>
                     <option value="cedulaPasaporte">Cédula del socio</option>
                     <!-- <option value="estado-bn">Beneficiarios</option>
                     <option value="estado-nbn">No beneficiarios</option> -->
@@ -699,8 +724,11 @@
                 <hr class="mp-0" />
               </div>
 
-              <div class="col-12 mb-2">
-                <div class="form-check form-check-reverse">
+              <div class="col-12 d-flex mb-2 justify-content-between">
+                <div
+                  class="col-6 form-check form-check-reverse"
+                  style="width: fit-content"
+                >
                   <input
                     class="form-check-input"
                     type="checkbox"
@@ -711,44 +739,94 @@
                     Filtrar por meses
                   </label>
                 </div>
-              </div>
-              <div class="col-12 pb-2">
-                <select id="dias-pagos" class="form-select">
-                  <option value="Sin fecha" selected>Sin fechas aún...</option>
-                </select>
-                <select
-                  id="mes-pagos"
-                  class="form-select"
-                  style="display: none"
+                <div
+                  class="col-6 form-check form-check-reverse"
+                  style="width: fit-content"
                 >
-                  <option value="Sin fecha" selected>Sin fechas aún...</option>
-                </select>
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    value=""
+                    id="filtrar-cancelados"
+                  />
+                  <label class="form-check-label" for="filtrar-cancelados">
+                    Filtrar cancelados
+                  </label>
+                </div>
               </div>
-
-              <div class="col-12 mb-2">
-                <div class="d-flex">
-                  <div class="col-6 d-flex">
-                    <h6>Recaudado:</h6>
-                    <p class="trans">-</p>
-                    <p id="valor-recaudado-filtrado"></p>
+              <div class="row justify-content-between mp-0">
+                <div class="col-12 d-flex justify-content-between">
+                  <div class="col-7 pb-2">
+                    <select id="dias-pagos" class="form-select">
+                      <option value="Sin fecha" selected>
+                        Sin fechas aún...
+                      </option>
+                    </select>
+                    <select
+                      id="mes-pagos"
+                      class="form-select"
+                      style="display: none"
+                    >
+                      <option value="Sin fecha" selected>
+                        Sin fechas aún...
+                      </option>
+                    </select>
                   </div>
-                  <div class="col-6 form-check form-check-reverse">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      value=""
-                      id="filtrar-cancelados"
-                    />
-                    <label class="form-check-label" for="filtrar-cancelados">
-                      Filtrar cancelados
-                    </label>
+                  <div class="col-3 ps-2">
+                    <div class="d-flex">
+                      <h6>Recaudado:</h6>
+                      <p class="trans">-</p>
+                      <p id="valor-recaudado-filtrado"></p>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              <div class="col-12 justify-content-between mp-0">
+                <div class="col-12">
+                  <p class="mp-0">Mes de cargo</p>
+                  <hr class="mp-0" />
+                </div>
+                <div class="row">
+                  <div class="col-7 py-2">
+                    <select id="mes-emision" class="form-select">
+                      <option value="Sin fecha" selected>
+                        Sin fechas aún...
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row justify-content-between mp-0">
+                  <div class="col-3 d-flex">
+                    <h6>Recaudado:</h6>
+                    <p class="trans">-</p>
+                    <p id="valor-recaudado-cargo"></p>
+                  </div>
+                  <div class="col-3 d-flex">
+                    <h6>Pendiente:</h6>
+                    <p class="trans">-</p>
+                    <p id="valor-pendiente-cargo"></p>
+                  </div>
+                  <div class="col-3 d-flex">
+                    <h6>Total:</h6>
+                    <p class="trans">-</p>
+                    <p id="valor-total-cargo"></p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-7 d-flex">
+                <button
+                  id="btnReporte"
+                  class="mb-2 btn-gtc"
+                  style="width: 100%"
+                >
+                  <i class="fs-4 fa-solid fa-print mx-1"></i>Reporte
+                </button>
+              </div>
             </div>
-            <div class="col-12 table-st-container mt-2">
+            <div class="col-12 table-st-container">
               <table class="table mp-0" style="width: 100%; margin-bottom: 0">
-                <thead class="table-dark" style="position: sticky">
+                <thead class="table-dark" style="position: sticky; top: 0">
                   <tr>
                     <th>Contrato</th>
                     <th>Socio</th>
@@ -898,11 +976,6 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
-            <div class="col-12 d-flex justify-content-end">
-              <button id="btnReporte" class="mb-2 btn-gtc" style="width: 50%">
-                <i class="fs-4 fa-solid fa-print mx-1"></i>Reporte
-              </button>
             </div>
           </div>
         </div>

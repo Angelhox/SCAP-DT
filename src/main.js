@@ -10,8 +10,11 @@ const path = require("path");
 const url = require("url");
 const { error } = require("console");
 const { page } = require("pdfkit");
+const { cancelarServiciosMultiples } = require("./ui/Pagos/pagos.api");
+const { contratarPrincipales } = require("./ui/Cuotas/cuotas.api");
 let window;
 let windowFactura;
+let windowFacturaMultiple;
 let servicioEnviar = [];
 
 ipcMain.on("hello", () => {
@@ -172,6 +175,7 @@ function createWindow() {
   window = new BrowserWindow({
     width: 800,
     height: 600,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -180,6 +184,7 @@ function createWindow() {
 
   window.loadFile("src/ui/login.html");
 }
+
 app.on("ready", () => {
   //Funciones de inicio de sesion
   ipcMain.on("validarUsuarios", async (event, { usuario, clave }) => {
@@ -218,7 +223,7 @@ app.on("ready", () => {
                   notification.show();
                   return;
                 } else if (results.length > 0) {
-                  console.log("Credenciales corerctas! ");
+                  console.log("Credenciales correctas! ");
                   event.sender.send("loginResponse", {
                     success: true,
                     message: "Credenciales correctas",
@@ -282,6 +287,7 @@ ipcMain.on("datos-a-servicios", async (event, servicio) => {
   await window.show();
   await window.webContents.send("datos-a-servicios");
 });
+
 ipcMain.on("datos-a-ocacionales", async (event, servicio) => {
   console.log("Datos a enviar: " + servicio.id);
   servicioEnviar = servicio;
@@ -435,6 +441,68 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
 // ----------------------------------------------------------------
 // Funciones de las facturas
 // ----------------------------------------------------------------
+ipcMain.on(
+  "generateFacturaMultiple",
+  async (
+    event,
+    datos,
+    encabezado,
+    serviciosFijos,
+    otrosServicios,
+    datosAgua,
+    datosTotales,
+    planilla
+  ) => {
+    console.log("Datos a enviar: " + datos.mensaje);
+    console.log("planillaCancelar desde main: ", planilla);
+    if (!windowFacturaMultiple) {
+      windowFacturaMultiple = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+        },
+      });
+      await windowFacturaMultiple.loadFile(
+        "src/ui/FacturaMultiple/facturaMultiple.html"
+      );
+      // // window.send("datos-a-pagina2", datos);
+      await windowFacturaMultiple.show();
+
+      await windowFacturaMultiple.webContents.send(
+        "generateFacturaMultiple",
+        datos,
+        encabezado,
+        serviciosFijos,
+        otrosServicios,
+        datosAgua,
+        datosTotales,
+        planilla
+      );
+      windowFacturaMultiple.on("closed", () => {
+        windowFacturaMultiple = null;
+        window.setEnabled(true);
+        window.focus();
+      });
+      window.setEnabled(false);
+      // Manejar clics en la ventana principal inhabilitada
+      // window.on("blur", () => {
+      // if (windowFacturaMultiple && !windowFacturaMultiple.isFocused()) {
+      if (!windowFacturaMultiple.isFocused()) {
+        // Reproducir sonido de notificación
+        window.webContents.send("play-notification-sound");
+        // Enfocar la ventana secundaria
+        windowFacturaMultiple.focus();
+      }
+      // });
+      window.on("closed", () => {
+        windowFactura = null;
+        windowFacturaMultiple = null;
+      });
+    }
+  }
+);
 
 // Define una función para enviar datos a pagina2
 ipcMain.on(
@@ -483,6 +551,11 @@ ipcMain.on("cerrarFactura", async (event) => {
   console.log("Closing...");
   await windowFactura.close();
   windowFactura = null;
+});
+ipcMain.on("cerrarFacturaMultiple", async (event) => {
+  console.log("Closing...");
+  await windowFacturaMultiple.close();
+  windowFacturaMultiple = null;
 });
 ipcMain.on("recargaComprobantes", async (event) => {
   console.log("Refrescando...");
@@ -1242,6 +1315,13 @@ ipcMain.handle("updateServiciosFijos", async (event, id, servicio) => {
       [servicio, id]
     );
 
+    if (resultServicio) {
+      const resultServicioContratado = await conn.query(
+        "Update serviciosContratados set valorIndividual=?, valorPagosIndividual=? where serviciosId=? ;",
+        [servicio.valor, servicio.valor, id]
+      );
+    }
+
     new Notification({
       title: "SCAP Santo Domingo No.1",
       body: servicio.nombre + " se ha actualizado :)",
@@ -1694,6 +1774,98 @@ ipcMain.handle("createCuotas", async (event, cuota) => {
     console.log(error);
   }
 });
+ipcMain.handle(
+  "createServicioContratadoMultiple",
+  async (event, contratar, socioId, individualSn) => {
+    try {
+      const conn = await getConnection();
+      console.log("Recibido: ", contratar, " ", individualSn);
+
+      if (individualSn == "No") {
+        console.log("No es individual ");
+        // consultamos si ya existe un contrato con el id del socio que presente este valor
+        const socioContratanteExiste = await conn.query(
+          "SELECT * FROM viewServiciosContratados WHERE serviciosId=" +
+            contratar.serviciosId +
+            " AND sociosId=" +
+            socioId +
+            " ;"
+        );
+        if (!socioContratanteExiste.length > 0) {
+          console.log("No lo encontro");
+          const contratadoExiste = await conn.query(
+            "SELECT count(id) as existe FROM serviciosContratados WHERE " +
+              "serviciosId= " +
+              contratar.serviciosId +
+              " AND " +
+              "contratosId= " +
+              contratar.contratosId +
+              ";"
+          );
+          if (!contratadoExiste[0].existe > 0) {
+            const resultServicio = await conn.query(
+              "INSERT INTO serviciosContratados set ?;",
+              contratar
+            );
+            console.log(resultServicio);
+            event.sender.send("Notificar", {
+              success: true,
+              title: "Contratado para todos!",
+              message: "Contratado.",
+            });
+            contratar.id = resultServicio.insertId;
+            return resultServicio;
+          } else {
+            event.sender.send("Notificacion", {
+              success: false,
+              title: "Error al contratar todos!",
+              message: "El servicio ya ha sido registrado en este contrato.",
+            });
+          }
+        }
+      } else {
+        console.log("Es individual");
+
+        const contratadoExiste = await conn.query(
+          "SELECT count(id) as existe FROM serviciosContratados WHERE " +
+            "serviciosId= " +
+            contratar.serviciosId +
+            " AND " +
+            "contratosId= " +
+            contratar.contratosId +
+            ";"
+        );
+        if (!contratadoExiste[0].existe > 0) {
+          const resultServicio = await conn.query(
+            "INSERT INTO serviciosContratados set ?;",
+            contratar
+          );
+          console.log(resultServicio);
+          event.sender.send("Notificacion", {
+            success: true,
+            title: "Guardado!",
+            message: "Contratado.",
+          });
+          contratar.id = resultServicio.insertId;
+          return resultServicio;
+        } else {
+          event.sender.send("Notificacion", {
+            success: false,
+            title: "Error!",
+            message: "El servicio ya ha sido registrado en este contrato.",
+          });
+        }
+      }
+    } catch (error) {
+      event.sender.send("Notificar", {
+        success: false,
+        title: "Error!",
+        message: "Ha ocurrido un error al contratar.",
+      });
+      console.log(error);
+    }
+  }
+);
 ipcMain.handle(
   "createServicioContratado",
   async (event, contratar, socioId, individualSn) => {
@@ -2600,6 +2772,96 @@ ipcMain.handle(
   }
 );
 ipcMain.handle(
+  "createServicioFijoContratadoMultiple",
+  async (event, servicioId, contratoId, descuentosId, adquiridoSn) => {
+    let servicioValorPagos = 0;
+    let servicioValor = 0;
+    let servicioNumPagos = 1;
+    let valorDescuento = 0;
+    try {
+      const conn = await getConnection();
+      console.log("Recibido: ", servicioId);
+      // Verificamos si existe el servicio en servicios contratados del contrato.
+      const datosServicio = await conn.query(
+        "SELECT * from servicios WHERE id=" + servicioId + ";"
+      );
+      const datosDescuento = await conn.query(
+        "SELECT * FROM tiposDescuento WHERE id=" + descuentosId + ";"
+      );
+      if (datosServicio[0] !== undefined) {
+        console.log("Si hay datos: " + datosServicio[0].id);
+        servicioValorPagos = datosServicio[0].valorPagos;
+        servicioValor = datosServicio[0].valor;
+        servicioNumPagos = datosServicio[0].numeroPagos;
+      }
+      if (datosDescuento[0] !== undefined) {
+        console.log("Si hay descuento: " + datosDescuento[0].valor);
+        valorDescuento = datosDescuento[0].valor;
+      }
+      const contratadoExiste = await conn.query(
+        "SELECT * from serviciosContratados WHERE serviciosId=" +
+          servicioId +
+          " AND contratosId=" +
+          contratoId +
+          ";"
+      );
+      const newContratado = {
+        estado: adquiridoSn,
+        descuentosId: descuentosId,
+        valorPagosindividual: servicioValorPagos,
+        valorIndividual: servicioValor,
+        numeroPagosindividual: servicioNumPagos,
+        descuentoValor: valorDescuento,
+      };
+      if (contratadoExiste[0] !== undefined) {
+        // Si existe el servicio contratado
+        // if (contratadoExiste[0].estado !== adquiridoSn) {
+        // Realizar la actualizacion solo si los valores son distintos
+        // averiguar el uso de librerias para comparar objetos.
+        const resultServicioContratado = await conn.query(
+          "UPDATE serviciosContratados SET ?" +
+            " WHERE " +
+            "serviciosId=? AND contratosId=? ;",
+          [newContratado, servicioId, contratoId]
+        );
+        event.sender.send("Notificacion", {
+          success: true,
+          title: "Contratado para todos!",
+          message: "Se han actualizado los servicios contratados.",
+          contratoId: contratoId,
+        });
+        console.log("Contratado actualizado: " + resultServicioContratado);
+        return resultServicioContratado;
+
+        // }
+      } else {
+        newContratado.fechaEmision = formatearFecha(new Date());
+        newContratado.serviciosId = servicioId;
+        newContratado.contratosId = contratoId;
+        const resultServicioContratado = await conn.query(
+          "INSERT INTO serviciosContratados SET ?" + ";",
+          newContratado
+        );
+        event.sender.send("Notificacion", {
+          success: true,
+          title: "Contratado para todos",
+          message: "Se han actualizado los servicios contratados.",
+          contratoId: contratoId,
+        });
+        console.log("Contratado creado: " + resultServicioContratado);
+        return resultServicioContratado;
+      }
+    } catch (error) {
+      event.sender.send("Notificacion", {
+        success: false,
+        title: "Error al contratar todos!",
+        message: "Ha ocurrido un error al registrar los servicios contratados.",
+      });
+      console.log(error);
+    }
+  }
+);
+ipcMain.handle(
   "createServicioFijoContratado",
   async (event, servicioId, contratoId, descuentosId, adquiridoSn) => {
     let servicioValorPagos = 0;
@@ -2725,10 +2987,12 @@ ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
       // "where contratos.medidorSn='Si' AND contratos.estado='Activo'; "
     );
 
-    if (medidoresActivos[0] !== undefined) {
+    // if (medidoresActivos[0] !== undefined) {
+    if (medidoresActivos.length > 0) {
       medidoresActivos.forEach(async (contratoActivo) => {
         const datosContrato = {
-          id: contratoActivo.id,
+          id: contratoActivo.contratosId,
+          medidorId: contratoActivo.id,
           medidorSn: contratoActivo.medidorSn,
         };
         console.log("Contrato a buscar: " + contratoActivo.id);
@@ -3679,13 +3943,36 @@ ipcMain.handle(
   }
 );
 
-ipcMain.handle("getAllPlanillas", async (event, estado) => {
+ipcMain.handle("getAllPlanillasFuncionando", async (event, estado) => {
   try {
     const conn = await getConnection();
     if (estado) {
       const results = await conn.query(
         "SELECT * from viewPlanillas WHERE estado=? ;",
         estado
+      );
+      return results;
+    } else {
+      const results = await conn.query(
+        "SELECT * from viewPlanillas WHERE estado='Por cobrar';"
+      );
+      return results;
+    }
+  } catch (error) {
+    console.log("Error en la busqueda de planillas: " + error);
+  }
+});
+ipcMain.handle("getAllPlanillas", async (event, criterio, criterioContent) => {
+  try {
+    const conn = await getConnection();
+    if (criterio && criterio !== "" && criterio !== "all") {
+      console.log("Criterio: ", criterio, " | ", criterioContent);
+      const results = await conn.query(
+        "SELECT * from viewPlanillas WHERE estado='Por cobrar' and " +
+          criterio +
+          " like '%" +
+          criterioContent +
+          "%' ;"
       );
       return results;
     } else {
@@ -4260,6 +4547,100 @@ ipcMain.handle(
     }
   }
 );
+// ipcMain.handle(
+//   "cancelarServiciosMultiples",
+//   async (event, planillaCancelar, comprobante) => {
+//     console.log("Here: ", planillaCancelar);
+//     try {
+//       const conn = await getConnection();
+//       console.log("Actualizando detalle: ", planillaCancelar);
+//       planillaCancelar.servicios.forEach(async (servicio) => {
+//         const resultComprobante = await conn.query(
+//           "INSERT INTO comprobantes set ? ;",
+//           comprobante
+//         );
+//         servicio.objetos.forEach(async (servicioCancelar) => {
+//           comprobante.encabezadosId = servicio.encabezadosIds;
+//           await conn.query(
+//             "UPDATE encabezado set estado='Cancelado',fechaPago=Now() WHERE id = ? ;",
+//             servicioCancelar.encabezadosId
+//           );
+//           let abono = 0;
+//           let saldo = 0;
+//           if (servicioCancelar.abono !== null) {
+//             abono = parseFloat(servicioCancelar.abono).toFixed(2);
+//           }
+//           if (servicioCancelar.saldo !== null) {
+//             saldo = parseFloat(servicioCancelar.saldo).toFixed(2);
+//           }
+//           await conn.query(
+//             "UPDATE detallesServicio set estado='Cancelado',abono=" +
+//               abono +
+//               ", saldo=" +
+//               saldo +
+//               " WHERE id = ? ;",
+//             servicioCancelar.id
+//           );
+//         });
+//       });
+//       planillaCancelar.objetos.forEach(async (planillaCancelarId) => {
+//         await conn.query(
+//           "UPDATE planillas set estado='Cancelado' WHERE id = ? ;",
+//           planillaCancelarId.planillasId
+//         );
+//       });
+//       event.sender.send("Notificar", {
+//         success: true,
+//         title: "Actualizado!",
+//         message: "Se ha cancelado la planilla.",
+//       });
+//     } catch (error) {
+//       event.sender.send("Notificar", {
+//         success: false,
+//         title: "Error!",
+//         message: "Ha ocurrido un error al cancelar la planilla.",
+//       });
+//       console.log("Error al cancelar: ", error);
+//     }
+//   }
+// );
+ipcMain.handle(
+  "cancelarServiciosMultiples",
+  async (event, planillaCancelar, comprobante) => {
+    console.log("Here: ", planillaCancelar);
+    try {
+      cancelarServiciosMultiples(planillaCancelar, comprobante);
+      event.sender.send("Notificar", {
+        success: true,
+        title: "Actualizado!",
+        message: "Se ha cancelado la planilla.",
+      });
+    } catch (error) {
+      event.sender.send("Notificar", {
+        success: false,
+        title: "Error!",
+        message: "Ha ocurrido un error al cancelar la planilla.",
+      });
+      console.log("Error al cancelar: ", error);
+    }
+  }
+);
+ipcMain.handle("contratarEnPrincipales", async (event, servicioId, tipo) => {
+  console.log("Recibido contratarPrincipales: ", servicioId, " ", tipo);
+  try {
+    contratarPrincipales(servicioId, tipo);
+  } catch (error) {
+    console.log(error);
+  }
+});
+ipcMain.handle("contratarEnPrincipalesFijos", async (event, servicioId, tipo) => {
+  console.log("Recibido contratarPrincipales: ", servicioId, " ", tipo);
+  try {
+    contratarPrincipales(servicioId, tipo);
+  } catch (error) {
+    console.log(error);
+  }
+});
 ipcMain.handle("getComprobantes", async (event, encabezadoId) => {
   try {
     const conn = await getConnection();

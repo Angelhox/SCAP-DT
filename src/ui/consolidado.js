@@ -3,36 +3,19 @@ const Swal = require("sweetalert2");
 // const pdf = require("html-pdf");
 const printer = require("pdf-to-printer");
 const fs = require("fs");
-
 const path = require("path");
-
 // const html2pdf = require("html2pdf.js");
 const { ipcRenderer } = require("electron");
-// const socioNombres = document.getElementById("socioNombres");
-// const socioCedula = document.getElementById("socioCedula");
-// const socioTelefono = document.getElementById("socioTelefono");
-// const contrato = document.getElementById("contrato");
-// const planilla = document.getElementById("planilla");
-// const fechaEmision = document.getElementById("fechaEmision");
-// const dataAgua = document.getElementById("data-agua");
-// const dataServicios = document.getElementById("data-servicios");
-// const lecturaAnterior = document.getElementById("lecturaAnterior");
-// const lecturaActual = document.getElementById("lecturaActual");
-// const consumo = document.getElementById("consumo");
-// const tarifa = document.getElementById("tarifa");
-// const total = document.getElementById("total");
-// const subtotal = document.getElementById("subtotal");
-// const descuento = document.getElementById("descuento");
-// const totalPagar = document.getElementById("total-pagar");
-// const detailsList = document.getElementById("servicios-details");
 const fechaEmision = document.getElementById("fechaEmision");
 const fechaImpresion = document.getElementById("fechaImpresion");
 const nombreServicio = document.getElementById("nombreServicio");
 const fechaDesde = document.getElementById("fechaDesde");
 const fechaHasta = document.getElementById("fechaHasta");
+const indexColumn = document.getElementById("index");
 const contrato = document.getElementById("contrato");
 const socio = document.getElementById("socio");
-const estado = document.getElementById("estado");
+const valoresTotales = document.getElementById("valores-totales");
+const estadoServicio = document.getElementById("estado");
 const total = document.getElementById("total");
 const abonado = document.getElementById("abonado");
 const saldo = document.getElementById("saldo");
@@ -42,9 +25,11 @@ const totalFinal = document.getElementById("totalFinal");
 const filtrado = document.getElementById("totalFiltrado");
 const filtradoTitle = document.getElementById("filtradoTitle");
 const recaudacionesList = document.getElementById("recaudaciones");
+const cancelarReporte = document.getElementById("cancelar-reporte");
 let aguaSn = false;
 let planillaCancelarId = "";
 let encabezadoCancelarId = "";
+let tipoServicio = "fijos";
 let serviciosCancelar = [];
 let carpetaRuta = "";
 let cuotaRuta = "";
@@ -54,17 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // async function imprimirYGuardarPDF() {
   const boton = document.getElementById("boton");
   boton.addEventListener("click", async () => {
-    // await cancelarServicios(
-    //   planillaCancelarId,
-    //   serviciosCancelar,
-    //   encabezadoCancelarId
-    // );
-    // Configura las opciones para la generación de PDF
     const content = document.querySelector(".invoice");
     const scale = 0.9;
-    const scaleX = 0.9; // Escala en el eje X (80%)
-    const scaleY = 0.9; // Escala en el eje Y (120%)
-
+    const scaleX = 0.9;
+    const scaleY = 0.9;
     const pdfOptions = {
       path: "X:/FacturasSCAP/recaudaciones.pdf", // Nombre del archivo PDF de salida
       format: "A4", // Formato de página
@@ -79,33 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     };
     await guardarEnDirectorioSeleccionado(pdfOptions);
-    // const content = document.querySelector(".invoice");
-    // const timestamp = new Date().getTime(); // Obtener el timestamp actual
-    // const fileName = `documento_${timestamp}.pdf`;
-    // const filePath = "X:/FacturasSCAP/" + fileName;
-    // await pdf.create(content.outerHTML).toFile(filePath, (err, res) => {
-    //   if (err) {
-    //     console.error(err);
-    //     return;
-    //   }
-    //   console.log("Archivo PDF creado: ", res.filename);
-    //   // Enviamos el archivo a la cola de impresion
-    //   printer
-    //     .print(filePath)
-    //     // window
-    //     //   .print()
-    //     .then(() => {
-    //       printer.print(filePath);
-    //       // Impresión exitosa
-    //       abrirPagos();
-    //       console.log("El PDF se ha enviado a la cola de impresión.");
-    //     })
-    //     .catch((error) => {
-    //       // Error de impresión
-    //       abrirPagos();
-    //       console.error("Error al imprimir el PDF:", error);
-    //     });
-    // });
   });
 });
 async function guardarEnDirectorioSeleccionado(pdfOptions) {
@@ -214,7 +165,7 @@ const generarCodigoComprobante = async () => {
   console.log("Codigo generado: ", codigoGenerado);
   return codigoGenerado;
 };
-function caragarEncabezado(reporte, encabezado) {
+function cargarEncabezado(reporte, encabezado) {
   let tipoReporte = "Reporte general";
   switch (reporte) {
     case "cancelados":
@@ -243,6 +194,11 @@ function caragarEncabezado(reporte, encabezado) {
       fechaDesde.textContent = "Desde:" + " " + encabezado.fechaD;
       fechaHasta.textContent = "Hasta:" + " " + encabezado.fechaH;
       break;
+    case "beneficiarios":
+      tipoReporte = "Reporte servicios contratados";
+      fechaDesde.textContent = "Desde:" + " " + encabezado.fechaD;
+      fechaHasta.textContent = "Hasta:" + " " + encabezado.fechaH;
+      break;
   }
   const fe = document.createTextNode(formatearFecha(new Date()));
   const fi = document.createTextNode(formatearFecha(new Date()));
@@ -255,12 +211,15 @@ ipcRenderer.on(
   async (event, datos, encabezado, recaudaciones, datosTotales) => {
     let reporte = encabezado.tipoReporte;
     console.log("Llego Petición: ", recaudaciones);
-    await caragarEncabezado(reporte, encabezado);
+    await cargarEncabezado(reporte, encabezado);
     let carpetaRutaDf = "Servicios Fijos";
     // Al recibir los datos
     console.log(datos, encabezado);
     if (encabezado.tipo !== undefined) {
       carpetaRuta = encabezado.tipo;
+      if (encabezado.tipo === "Servicios Ocacionales") {
+        tipoServicio = "ocacionales";
+      }
     }
 
     cuotaRuta = encabezado.creacion + encabezado.servicio;
@@ -268,29 +227,43 @@ ipcRenderer.on(
     await generarCodigoComprobante();
 
     recaudacionesList.innerHTML = "";
+    let index = 0;
     recaudaciones.forEach((recaudacion) => {
+      index++;
       let abonoRp = recaudacion.abono;
       let estado = "Sin cancelar";
-      if (abonoRp == recaudacion.total) {
-        estado = "Cancelado";
-      } else if (abonoRp < recaudacion.total && abonoRp > 0) {
-        estado = "Abonado";
-      } else if (abonoRp <= 0) {
-        estado = "Sin cancelar";
+      if (reporte !== "beneficiarios") {
+        if (abonoRp == recaudacion.total) {
+          estado = "Cancelado";
+        } else if (abonoRp < recaudacion.total && abonoRp > 0) {
+          estado = "Abonado";
+        } else if (abonoRp <= 0) {
+          estado = "Sin cancelar";
+        }
+        if (reporte == "Por dias") {
+          filtradoTitle.style.display = "block";
+          filtrado.style.display = "block";
+          abonoRp = recaudacion.abonoFiltrado;
+          filtradoTitle.textContent = "Recaudado por día";
+          filtrado.textContent = datosTotales.totalFiltrado;
+        } else if (reporte == "Por mes") {
+          filtradoTitle.style.display = "block";
+          filtrado.style.display = "block";
+          abonoRp = recaudacion.abonoFiltrado;
+          filtradoTitle.textContent = "Recaudado por mes";
+          filtrado.textContent = datosTotales.totalFiltrado;
+        }
+      } else {
+        indexColumn.style.textAlign = "left";
+        socio.style.textAlign = "left";
+        contrato.style.textAlign = "left";
+        estadoServicio.style.display = "none";
+        total.style.display = "none";
+        abonado.style.display = "none";
+        saldo.style.display = "none";
+        valoresTotales.style.display = "none";
       }
-      if (reporte == "Por dias") {
-        filtradoTitle.style.display = "block";
-        filtrado.style.display = "block";
-        abonoRp = recaudacion.abonoFiltrado;
-        filtradoTitle.textContent = "Recaudado por día";
-        filtrado.textContent = datosTotales.totalFiltrado;
-      } else if (reporte == "Por mes") {
-        filtradoTitle.style.display = "block";
-        filtrado.style.display = "block";
-        abonoRp = recaudacion.abonoFiltrado;
-        filtradoTitle.textContent = "Recaudado por mes";
-        filtrado.textContent = datosTotales.totalFiltrado;
-      }
+
       recaudacionesList.innerHTML += `
       <tr>
       <td style="
@@ -298,23 +271,34 @@ ipcRenderer.on(
       padding: 5px;
       
       font-size: 15px;
-    ">${recaudacion.codigo}</td>
+    ">${index}</td>
       <td style="
       text-align: left;
       padding: 5px;
       
       font-size: 15px;
-    ">${recaudacion.nombres + " " + recaudacion.apellidos}</td>
+    "
+    >${recaudacion.codigo}</td>
       <td style="
       text-align: left;
       padding: 5px;
+      
       font-size: 15px;
-    ">${estado}</td>
+    " 
+    >${recaudacion.apellidos + " " + recaudacion.nombres}</td>
+      <td style="
+      ${reporte === "beneficiarios" ? "display:none" : ""};
+      text-align: left;
+      padding: 5px;
+      font-size: 15px;
+    " 
+    >${estado}</td>
 
     <td style="
     text-align: center;
     padding: 5px;
-    
+    ${reporte === "beneficiarios" ? "display:none" : ""};
+
     font-size: 15px;
   ">${parseFloat(recaudacion.total).toFixed(2)}</td>
 
@@ -322,12 +306,16 @@ ipcRenderer.on(
       <td style="
       text-align: center;
       padding: 5px;
+      ${reporte === "beneficiarios" ? "display:none" : ""};
+
       font-size: 15px;
     ">${parseFloat(abonoRp).toFixed(2)}</td>
 
       <td style="
       text-align: center;
       padding: 5px;
+      ${reporte === "beneficiarios" ? "display:none" : ""};
+
       font-size: 15px;
     ">${parseFloat(recaudacion.total - recaudacion.abono).toFixed(
       2
@@ -341,6 +329,13 @@ ipcRenderer.on(
     totalFinal.textContent = datosTotales.totalFinal;
   }
 );
+cancelarReporte.addEventListener("click", () => {
+  if (tipoServicio === "fijos") {
+    abrirServicios();
+  } else {
+    abrirCuotas();
+  }
+});
 function renderDetalles(servicio) {
   serviciosCancelar.push(servicio);
   console.log("Servicios a cancelar: " + serviciosCancelar);
@@ -378,21 +373,6 @@ function renderDetalles(servicio) {
         `;
   // });
 }
-// const cancelarServicios = async (
-//   planillaCancelarId,
-//   servicios,
-//   encabezadoCancelarId
-// ) => {
-//   console.log(
-//     "Enviar a cancelar: " + encabezadoCancelarId + " " + planillaCancelarId
-//   );
-//   await ipcRenderer.invoke(
-//     "cancelarServicios",
-//     planillaCancelarId,
-//     encabezadoCancelarId,
-//     serviciosCancelar
-//   );
-// };
 ipcRenderer.on("Notificar", (event, response) => {
   console.log("Response: " + response);
   if (response.success) {
@@ -411,34 +391,6 @@ ipcRenderer.on("Notificar", (event, response) => {
     });
   }
 });
-// ipcRenderer.on("Notificar", (event, response) => {
-//   console.log("Response: " + response);
-
-//   const swalOptions = {
-//     title: response.title,
-//     text: response.message,
-//     icon: response.success ? "success" : "error",
-//     confirmButtonColor: "#f8c471",
-//     showCancelButton: true, // Mostrar botón de cancelar
-//     confirmButtonText: "Confirmar",
-//     cancelButtonText: "Cancelar",
-//   };
-
-//   // Registra un evento de clic en el botón "Confirm"
-//   swalOptions.onBeforeOpen = () => {
-//     const confirmButton = document.querySelector(".swal2-confirm");
-//     if (confirmButton) {
-//       confirmButton.addEventListener("click", () => {
-//         // Aquí puedes colocar la acción que deseas realizar al hacer clic en "Confirm"
-//         console.log("Se hizo clic en Confirm");
-//         // Realiza tu acción aquí
-//       });
-//     }
-//   };
-
-//   Swal.fire(swalOptions);
-// });
-
 async function imprimirYGuardarPDFfinal() {
   const elemento = document.body;
   html2pdf()
@@ -473,7 +425,12 @@ function formatearFecha(fecha) {
   const fechaFormateada = `${year}-${month}-${day}`;
   return fechaFormateada;
 }
-const abrirPagos = async () => {
+const abrirServicios = async () => {
+  const acceso = sessionStorage.getItem("acceso");
+  const url = "Servicios fijos";
+  await ipcRenderer.send("abrirInterface", url, acceso);
+};
+const abrirCuotas = async () => {
   const acceso = sessionStorage.getItem("acceso");
   const url = "Servicios ocacionales";
   await ipcRenderer.send("abrirInterface", url, acceso);

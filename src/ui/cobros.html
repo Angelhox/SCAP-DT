@@ -443,10 +443,10 @@
                   class="col-3 d-flex mp-0 justify-content-start"
                   id="comprobante"
                 >
-                  <button class="btn-comprobante" onclick="comprobantesDg()">
+                  <!-- <button class="btn-comprobante btn-success" onclick="comprobantesDg()">
                     <i class="fs-5 mx-1 fa-regular fa-folder-open"> </i>
                     Comprobante
-                  </button>
+                  </button> -->
 
                   <!-- <label for="cedula" class="fs-6 mp-0">Comprobante:</label>
                   <p class="trans mp-0">-</p>
@@ -802,6 +802,29 @@
                       </div>
                     </div>
                   </div>
+                  <div class="row col-12 justify-content-start mt-2">
+                    <label for="lecturaActual" class="text-danger"
+                      >Total acumulado (Opcional)</label
+                    >
+                    <div class="col-9 text-danger d-flex">
+                      <input
+                        type="number"
+                        class="form-control"
+                        placeholder="$0.0"
+                        id="valorTotalAcumulado"
+                      />
+
+                      <button
+                        type="button"
+                        class="btn btn-secondary mx-1"
+                        type="button"
+                        id="quitar-todos"
+                        style="width: 45%"
+                      >
+                        Quitar todos
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </form>
@@ -945,7 +968,6 @@
           <div
             class="col-12 d-flex justify-content-start align-items-center encabezado-bt"
           >
-   
             <i class="fs-4 fa-solid fa-sliders mx-1"></i>
             <div class="input-group w-50 d-flex justify-content-end">
               <span class="input-group-text" id="basic-addon1">

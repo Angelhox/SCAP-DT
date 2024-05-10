@@ -464,13 +464,36 @@
                 Beneficiarios
                 <i class="fs-1 fa-solid fa-hands-holding-child mx-2 my-2"></i>
               </p>
-              <button
-                class="btn btn-outline-light"
-                type="button"
-                id="btn-volver"
-              >
-                Volver
-              </button>
+              <div>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="reporte_beneficiarios"
+                >
+                  Reporte
+                </button>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="contratar-todos"
+                >
+                  Contratar para todos
+                </button>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="contratar-principales"
+                >
+                  Contratar principales
+                </button>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="btn-volver"
+                >
+                  Volver
+                </button>
+              </div>
             </div>
             <div class="col-12">
               <div class="row">
@@ -482,10 +505,12 @@
                     class="form-select btn-rd"
                     aria-label="Default select example"
                   >
-                    <option value="all" >Todas</option>
+                    <option value="all">Todas</option>
                     <option value="codigo">Contrato</option>
                     <option value="nombres">Nombres del socio</option>
-                    <option value="apellidos" selected>Apellidos del socio</option>
+                    <option value="apellidos" selected>
+                      Apellidos del socio
+                    </option>
                     <option value="cedulaPasaporte">Cédula del socio</option>
                     <!-- <option value="estado-bn">Beneficiarios</option>
                     <option value="estado-nbn">No beneficiarios</option> -->
@@ -756,7 +781,7 @@
               </div>
 
               <div class="col-12 mb-2">
-                <div class="d-flex " >
+                <div class="d-flex">
                   <div class="col-6 d-flex">
                     <h6>Recaudado:</h6>
                     <p class="trans">-</p>

@@ -146,7 +146,12 @@
         <button class="btn-print-custom" id="boton" type="button">
           Imprimir<i class="ico-btn fa-solid fa-print"></i>
         </button>
-        <button type=" button" class="btn-cancel-custom" onclick="abrirPagos()">
+        <button
+          type=" button"
+          class="btn-cancel-custom"
+          id="cancelar-reporte"
+         
+        >
           Cancelar<i class="ico-btn fa-solid fa-ban"></i>
         </button>
         <!-- <p>Here:</p>
@@ -299,7 +304,7 @@
 
       <table id="data-agua" style="width: 100%">
         <thead>
-          <tr style="margin: 0; padding: 0.5em 0">
+          <tr style="margin: 0; padding: 0.5em 0; width: 100%">
             <th
               id="nombreServicio"
               colspan="2"
@@ -316,12 +321,11 @@
             </th>
             <th
               id="fechaDesde"
-              colspan="2"
+              colspan="3"
               class="titles"
               style="
                 text-align: left;
                 padding: 0.5em 0.5em 1em 0.5em;
-
                 margin: 0;
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
@@ -342,7 +346,11 @@
               "
             ></th>
           </tr>
-          <tr>
+        </thead>
+      </table>
+      <table style="width: 100%">
+        <thead>
+          <tr style="width: 100%">
             <th
               style="
                 text-align: center;
@@ -351,6 +359,19 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
+              id="index"
+            >
+              #
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 0;
+                margin: 0;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="contrato"
             >
               Contrato
             </th>
@@ -361,6 +382,7 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
+              id="socio"
             >
               Socio
             </th>
@@ -371,6 +393,7 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
+              id="estado"
             >
               Estado
             </th>
@@ -381,6 +404,7 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
+              id="total"
             >
               Total
             </th>
@@ -391,6 +415,7 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
+              id="abonado"
             >
               Abonado
             </th>
@@ -401,174 +426,16 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
-            >
-              Saldo
-            </th>
-          </tr>
-        </thead>
-        <tbody id="recaudaciones">
-          <tr>
-            <td
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-              id="contrato"
-            >
-              000000075
-            </td>
-            <td
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-              id="socio"
-            >
-              000000175
-            </td>
-            <td
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-              id="estado"
-            >
-              100
-            </td>
-            <td
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-              id="total"
-            >
-              Industrial
-            </td>
-            <td
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-              id="abonado"
-            >
-              $20
-            </td>
-            <td
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
               id="saldo"
             >
-              $20
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- <table id="data-servicios" style="width: 100%; margin-bottom: 10px">
-        <thead>
-          <tr>
-            <th
-              colspan="6"
-              style="
-                text-align: left;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-            >
-              Servicios
-            </th>
-          </tr>
-          <tr>
-            <th
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-            >
-              Servicios
-            </th>
-            <th
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-            >
-              Descripcion
-            </th>
-            <th
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-            >
-              Total
-            </th>
-            <th
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-            >
-              Descuento
-            </th>
-            <th
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-            >
               Saldo
-            </th>
-            <th
-              style="
-                text-align: center;
-                padding: 5px;
-                border-bottom: 1px solid #ccc;
-                font-size: 15px;
-              "
-            >
-              Abono
             </th>
           </tr>
         </thead>
-        <tbody id="servicios-details">-->
-      <!-- <tr>
-            <td>Desechos</td>
-            <td>Recoleccion semanal de desechos</td>
-            <td>$1.00</td>
-          </tr>
-          <tr>
-            <td>Fiestas</td>
-            <td>Fiesta de San Pedro</td>
-            <td>$10</td>
-          </tr> -->
-      <!--</tbody>
-      </table> -->
-      <table style="width: 100%; margin-bottom: 10px">
+        <tbody id="recaudaciones"></tbody>
+      </table>
+
+      <table style="width: 100%; margin-bottom: 10px" id="valores-totales">
         <thead>
           <tr>
             <th
