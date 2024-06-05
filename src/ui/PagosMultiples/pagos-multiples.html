@@ -3,32 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="./principal.css" />
-    <link rel="stylesheet" href="../ui/Pagos/pagos.css" />
+    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../principal.css" />
+    <link rel="stylesheet" href="../PagosMultiples/pagos-multiples.css" />
     <link
       rel="stylesheet"
-      href="../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
+      href="../../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
     />
     <link
       rel="stylesheet"
-      href="../../node_modules/@fortawesome/fontawesome-free/css/solid.css"
+      href="../../../node_modules/@fortawesome/fontawesome-free/css/solid.css"
     />
     <link
       rel="stylesheet"
-      href="../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
+      href="../../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
     />
     <link
       rel="stylesheet"
-      href="../../node_modules/select2/dist/css/select2.min.css"
+      href="../../../node_modules/select2/dist/css/select2.min.css"
     />
     <link
       rel="stylesheet"
-      href="../../node_modules/select2/dist/css/select2.css"
+      href="../../../node_modules/select2/dist/css/select2.css"
     />
     <link
       rel="stylesheet"
-      href="../../node_modules/bootstrap/dist/css/bootstrap.min.css"
+      href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css"
     />
 
     <title>Pagos Multiples</title>
@@ -40,10 +40,6 @@
         <div class="container-fluid">
           <!-- Logo -->
           <a class="navbar-brand fs-1" href="#">SCAP </a>
-
-          <!-- <img src="../assets/fonts/logo.png" alt="logo not-found">
-        <a class="navbar-brand fs-4" href="#">SCAP STDO </a> -->
-          <!-- Toggle button -->
           <button
             class="navbar-toggler shadow-none border-0"
             type="button"
@@ -206,9 +202,9 @@
                     class="form-select"
                     aria-label="Default select example"
                   >
-                    <option value="all" selected>Todas</option>
+                    <option value="all">Todas</option>
                     <option value="cedulaPasaporte">Cédula del socio</option>
-                    <option value="nombre">Nombres/Apellidos</option>
+                    <option value="nombre" selected>Nombres/Apellidos</option>
                     <option value="codigo">Código</option>
                   </select>
                 </div>
@@ -1061,11 +1057,12 @@
     </dialog>
   </body>
 
-  <script src="../../node_modules/jquery/dist/jquery.min.js"></script>
-  <script src="../../node_modules/select2/dist/js/select2.min.js"></script>
-  <script src="../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script src="../../node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
-  <script src="./bootstrap/js/bootstrap.min.js"></script>
+  <script src="../../../node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="../../../node_modules/select2/dist/js/select2.min.js"></script>
+  <script src="../../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="../../../node_modules/@popperjs/core/dist/umd/popper.min.js"></script>
+  <script src="../bootstrap/js/bootstrap.min.js"></script>
 
-  <script src="./pagos.js" defer></script>
+  <script src="./pagos-multiples.js" defer></script>
+  <script src="../commons/redirect.functions.js" defer></script>
 </html>

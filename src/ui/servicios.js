@@ -72,7 +72,7 @@ let creacionEdit = "";
 let editServicioId = "";
 let contratandoId = "";
 let ultimaFechaPago = "";
-let fechaCreacion = "2024-04-01 00:00:00";
+let fechaCreacion = "2024-05-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   let individualSnDf = "Si";
   e.preventDefault();
@@ -536,7 +536,23 @@ const mostrarEstadisticas = async (servicioId) => {
 // Funcion que muestra los estados de recaudacion de un servic.
 // ----------------------------------------------------------------
 btnContratarTodos.addEventListener("click", () => {
-  contratarTodos();
+   // Solicitar confirmacion al usuario !!
+   Swal.fire({
+    title: "¿Quieres aplicar este servicio a todos los contratos activos?",
+    text: "El valor del servicio se aplicara en la planilla vigente.",
+    icon: "question",
+    iconColor: "#f8c471",
+    showCancelButton: true,
+    confirmButtonColor: "#2874A6",
+    cancelButtonColor: "#EC7063 ",
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+     await contratarTodos();
+    }
+  });
+
 });
 btnContratarPrincipales.addEventListener("click", () => {
   // Solicitar confirmacion al usuario !!
@@ -1648,6 +1664,11 @@ const abrirUsuarios = async () => {
 const abrirPagos = async () => {
   const acceso = sessionStorage.getItem("acceso");
   const url = "Pagos";
+  await ipcRenderer.send("abrirInterface", url, acceso);
+};
+const abrirPagosII = async () => {
+  const acceso = sessionStorage.getItem("acceso");
+  const url = "PagosII";
   await ipcRenderer.send("abrirInterface", url, acceso);
 };
 const abrirPlanillas = async () => {

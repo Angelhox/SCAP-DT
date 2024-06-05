@@ -4,8 +4,14 @@ const Swal = require("sweetalert2");
 const {
   createEncabezadoComprobante,
   verificarEncabezadoComprobantes,
-} = require("./Comprobantes/comprobantes.api");
-const { formatearFecha } = require("./commons/fechas.functions");
+} = require("../Comprobantes/comprobantes.api");
+const { formatearFecha } = require("../commons/fechas.functions");
+const {
+  agruparPlanillas,
+  agruparEncabezados,
+  agruparServicios,
+} = require("./group-data");
+const { aproximarDosDecimales } = require("../commons/calculate.functions");
 // ----------------------------------------------------------------
 // Varibles de las planillas
 // ----------------------------------------------------------------
@@ -93,9 +99,7 @@ const cancelarForm = document.getElementById("cancelarForm");
 const btEncabezadoComprobante = document.getElementById(
   "encabezado-comprobante"
 );
-const btnVerificar = document.getElementById(
-  "verificar"
-);
+const btnVerificar = document.getElementById("verificar");
 // ----------------------------------------------------------------
 // Variables contenedoras
 let tarifasDisponibles = [];
@@ -180,56 +184,11 @@ let idsPlanillas = [];
 btEncabezadoComprobante.addEventListener("click", async () => {
   const resultCreate = await createEncabezadoComprobante();
   console.log("Encabezado comprobante: ", resultCreate);
-
 });
 btnVerificar.addEventListener("click", async () => {
   const result = await verificarEncabezadoComprobantes();
   console.log("Verificado: ", result);
 });
-
-const agruparPlanillas = async (allPlanillas) => {
-  console.log("Grupos sin suma:", allPlanillas);
-
-  let planillasAgrupadas = await allPlanillas.reduce((acumulador, objeto) => {
-    // Verificar si ya hay un grupo con el mismo nombre
-    let grupoExistente = acumulador.find(
-      (contratosId) => contratosId.contratosId === objeto.contratosId
-    );
-    // Si el grupo existe, agregar el valor al grupo
-
-    if (grupoExistente) {
-      grupoExistente.valor += objeto.valor;
-      grupoExistente.objetos.push(objeto);
-      grupoExistente.ids.push(objeto.planillasId);
-      grupoExistente.fechasEmision.push(
-        formatearFecha(new Date(objeto.fechaEmision))
-      );
-    } else {
-      // Si el grupo no existe, crear uno nuevo con el valor
-      acumulador.push({
-        contratosId: objeto.contratosId,
-        fechasEmision: [formatearFecha(new Date(objeto.fechaEmision))],
-        codigo: objeto.codigo,
-        contratoId: objeto.contratosId,
-        sociosId: objeto.sociosId,
-        nombre: objeto.nombre,
-        cedula: objeto.cedulaPasaporte,
-        telefono: objeto.telefonoMovil,
-        direccion: objeto.direccion,
-        ubicacion: objeto.ubicacion,
-        estado: objeto.estado,
-        valor: objeto.valor,
-        objetos: [objeto],
-        servicios: [],
-        encabezados: [],
-        ids: [objeto.planillasId],
-      });
-    }
-
-    return acumulador;
-  }, []);
-  return planillasAgrupadas;
-};
 
 vistaFacturaBt.addEventListener("click", () => {
   if (editablePlanillas.objetos.length > 0) {
@@ -278,7 +237,7 @@ async function renderServiciosAgrupados(servicios) {
         const tr = document.createElement("tr");
         tr.id = servicio.id;
         const tdServicio = document.createElement("td");
-        tdServicio.textContent = servicio.nombre;
+        tdServicio.textContent = "("+servicio.index +") "+ servicio.nombre;
         const tdAplazable = document.createElement("td");
         tdAplazable.textContent = servicio.aplazableSn;
         const tdSubtotal = document.createElement("td");
@@ -358,149 +317,9 @@ async function renderServiciosAgrupados(servicios) {
 }
 
 async function comprobante(encabezadoId) {
-  // let rutaLocal = "";
-  // const comprobantes = await ipcRenderer.invoke(
-  //   "getComprobanteById",
-  //   encabezadoId
-  // );
-  // console.log("Comprobante: ", comprobantes);
-  // const ruta = document.createElement("p");
-  // // ruta.href = "#";
-  // ruta.textContent = "Sin comprobante";
-  // if (!Object.keys(comprobantes).length == 0) {
-  //   // ruta.href = comprobantes.rutaLocal;
-  //   ruta.textContent = "Ver comprobante";
-  //   rutaLocal = comprobantes.rutaLocal;
-  //   ruta.addEventListener("click", () => {
-  //     console.log.log("Buscando Ruta: ", rutaLocal);
-  //     // Ruta al archivo PDF en el sistema de archivos
-  //     const pdfPath = rutaLocal;
-
-  //     // Obtén el elemento contenedor del visor
-  //     const container = document.getElementById("pdf-viewer");
-
-  //     // Cargar y mostrar el archivo PDF
-  //     pdfjsLib.getDocument({ url: pdfPath }).promise.then((pdfDoc) => {
-  //       // Número de la primera página que se mostrará
-  //       const pageNumber = 1;
-
-  //       // Obtén la página
-  //       pdfDoc.getPage(pageNumber).then((page) => {
-  //         const canvas = document.createElement("canvas");
-  //         container.appendChild(canvas);
-
-  //         // Configura el contexto de renderizado
-  //         const context = canvas.getContext("2d");
-
-  //         // Configura el tamaño del lienzo según el tamaño de la página
-  //         const viewport = page.getViewport({ scale: 1.5 });
-  //         canvas.width = viewport.width;
-  //         canvas.height = viewport.height;
-
-  //         // Renderiza la página en el lienzo
-  //         const renderContext = {
-  //           canvasContext: context,
-  //           viewport: viewport,
-  //         };
-  //         page.render(renderContext);
-  //       });
-  //     });
-  //     dialogComprobantes.showModal();
-  //   });
-  // }
-  // comprobanteCancelado.append(ruta);
   console.log("sin programar");
 }
-// async function renderServicios(servicios, tipo) {
-//   let totalPagarEdit = 0.0;
-//   let totalDescuentoEdit = 0;
-//   // let encabezadoId = "";
-//   console.log("Servicios a renderizard: ", servicios, tipo);
 
-//   servicios.forEach((servicio) => {
-//     // Crear el div principal
-//     if (servicio.nombre !== "Agua Potable") {
-//       encabezadoId = servicio.encabezadosId;
-//       console.log("Encabezado desde detalle : " + encabezadoId);
-//       const tr = document.createElement("tr");
-//       tr.id = servicio.id;
-//       const tdServicio = document.createElement("td");
-//       tdServicio.textContent = servicio.nombre;
-//       const tdAplazable = document.createElement("td");
-//       tdAplazable.textContent = servicio.aplazableSn;
-//       const tdSubtotal = document.createElement("td");
-//       tdSubtotal.textContent = parseFloat(
-//         // servicio.valorIndividual / servicio.numeroPagosIndividual
-//         servicio.valorIndividual
-//       ).toFixed(2);
-//       const tdDescuento = document.createElement("td");
-//       tdDescuento.textContent = parseFloat(servicio.descuentoValor).toFixed(2);
-//       const tdTotal = document.createElement("td");
-//       tdTotal.textContent = parseFloat(servicio.total).toFixed(2);
-//       const tdSaldo = document.createElement("td");
-//       tdSaldo.textContent = parseFloat(servicio.saldo).toFixed(2);
-//       const tdAbono = document.createElement("td");
-//       tdAbono.className = "valorAbono";
-//       tdAbono.textContent = parseFloat(servicio.abono).toFixed(2);
-//       if (servicio.aplazableSn === "Si") {
-//         totalPagarEdit += servicio.abono;
-//       } else {
-//         totalPagarEdit += servicio.total;
-//       }
-//       totalDescuentoEdit += servicio.descuento / servicio.numeroPagosIndividual;
-//       const tdBtnGestionar = document.createElement("td");
-//       const btnGestionar = document.createElement("button");
-//       btnGestionar.className = "btn";
-//       btnGestionar.type = "button";
-//       btnGestionar.onclick = () => {
-//         detallesServiciodg(servicio);
-//         valorAbonoEdit = servicio.id;
-//       };
-//       const iconGestionar = document.createElement("i");
-//       iconGestionar.className = "fa-solid fa-ellipsis-vertical";
-//       btnGestionar.appendChild(iconGestionar);
-//       tdBtnGestionar.appendChild(btnGestionar);
-//       if (tipo == "fijos") {
-//         tr.appendChild(tdServicio);
-//         tr.appendChild(tdSubtotal);
-//         tr.appendChild(tdDescuento);
-//         tr.appendChild(tdTotal);
-//         tr.appendChild(tdBtnGestionar);
-//         serviciosFijosList.appendChild(tr);
-//       } else {
-//         if (servicio.aplazableSn === "Si") {
-//           tr.appendChild(tdServicio);
-//           tr.appendChild(tdSubtotal);
-//           tr.appendChild(tdDescuento);
-//           tr.appendChild(tdTotal);
-//           tr.appendChild(tdSaldo);
-//           tr.appendChild(tdAbono);
-//           tr.appendChild(tdBtnGestionar);
-//           otrosAplazablesList.appendChild(tr);
-//         } else {
-//           tr.appendChild(tdServicio);
-//           tr.appendChild(tdSubtotal);
-//           tr.appendChild(tdDescuento);
-//           tr.appendChild(tdTotal);
-//           tr.appendChild(tdBtnGestionar);
-//           otrosServiciosList.appendChild(tr);
-//         }
-//       }
-//     } else if (servicio.nombre === "Agua Potable") {
-//       encabezadoId = servicio.encabezadosId;
-//       console.log("Encabezado desde detalle agua: " + encabezadoId);
-//       editDetalleId = servicio.id;
-//       console.log("Id del detalle Agua: " + editDetalleId);
-//     }
-//   });
-//   totalFinal += totalPagarEdit;
-//   descuentoFinal += totalDescuentoEdit;
-//   console.log("Total de edit: ", totalFinal);
-//   recalcularConsumo();
-//   // if (editPlanillaEstado == "Cancelado") {
-//   //   await comprobante(encabezadoId);
-//   // }
-// }
 function verificarEstado() {}
 guardarDg.onclick = function () {
   let totalRc = totalFinal;
@@ -540,9 +359,12 @@ guardarDg.onclick = function () {
       // Cambio
       totalFinal = totalRc;
       console.log("Total final: " + totalFinal);
-      valorTotalPagar.value = aproximarDosDecimales(
-        totalFinal + parseFloat(totalConsumo)
+      valorTotalPagar.value = (totalFinal + parseFloat(totalConsumo)).toFixed(
+        2
       );
+      // valorTotalPagar.value = aproximarDosDecimales(
+      //   totalFinal + parseFloat(totalConsumo)
+
       CerrarFormServicios();
     } else {
       CerrarFormServicios();
@@ -550,17 +372,6 @@ guardarDg.onclick = function () {
   }
 };
 
-// const getPlanillas = async (criterio, criterioContent, estado, anio, mes) => {
-//   allPlanillas = await ipcRenderer.invoke("getAllPlanillas");
-//   console.log("Planillas", allPlanillas);
-//   // Agrupamos las planillas
-//   planillasAgrupadas = await agruparPlanillas(allPlanillas);
-//   console.log("Agrupadas: ", planillasAgrupadas);
-//   await getAllServicios(planillasAgrupadas);
-//   await planillasAgrupadas.forEach(async (planilla) => {
-//     let srv = await agruparServicios(planilla.servicios.flat());
-//   });
-// };
 const getPlanillas = async (criterio, content) => {
   allPlanillas = await ipcRenderer.invoke("getAllPlanillas", criterio, content);
   console.log("Planillas", allPlanillas);
@@ -596,62 +407,7 @@ const getServiciosx = async (fechaEmision, contratoId) => {
 
   return results;
 };
-async function agruparEncabezados(allServicios) {
-  let encabezadosUnicos = await allServicios.reduce((lista, objeto) => {
-    // Verificamos si el encabezadoId del objeto ya está en la lista
-    if (!lista.includes(objeto.encabezadosId)) {
-      // Si no está en la lista, lo añadimos
-      lista.push(objeto.encabezadosId);
-    }
-    return lista;
-  }, []);
-  return encabezadosUnicos;
-}
-async function agruparServicios(allServicios) {
-  let serviciosAgrupados = await allServicios.reduce((acumulador, objeto) => {
-    // Verificar si ya hay un grupo con el mismo nombre
-    let grupoExistente = acumulador.find(
-      (contratadosId) => contratadosId.contratadosId === objeto.contratadosId
-    );
-    // Si el grupo existe, agregar el valor al grupo
-    if (grupoExistente) {
-      grupoExistente.index += 1;
-      grupoExistente.abono += objeto.abono;
-      if (objeto.aplazableSn === "No") {
-        grupoExistente.total += objeto.total;
-        grupoExistente.subtotal += objeto.subtotal;
-      }
-      grupoExistente.descuentoValor += objeto.descuento;
-      // Recorriendo hasta quedarse con el ultimo saldo
-      grupoExistente.saldo = objeto.saldo;
-      grupoExistente.objetos.push(objeto);
-      grupoExistente.detallesIds.push(objeto.detallesId);
-      grupoExistente.encabezadosIds.push(objeto.encabezadosId);
-    } else {
-      // Si el grupo no existe, crear uno nuevo con el valor
-      acumulador.push({
-        id: objeto.serviciosId,
-        index: 1,
-        contratadosId: objeto.contratadosId,
-        tipo: objeto.tipo,
-        aplazableSn: objeto.aplazableSn,
-        nombre: objeto.nombre,
-        subtotal: objeto.subtotal,
-        descuento: objeto.descuentoValor,
-        total: objeto.total,
-        abono: objeto.abono,
-        saldo: objeto.saldo,
-        descripcion: objeto.servicioDescripcion,
-        objetos: [objeto],
-        detallesIds: [objeto.detallesId],
-        encabezadosIds: [objeto.encabezadosId],
-      });
-    }
 
-    return acumulador;
-  }, []);
-  return serviciosAgrupados;
-}
 async function renderPlanillas(allPlanillas) {
   planillasList.innerHTML = ``;
   for (const planilla of allPlanillas) {
@@ -1236,10 +992,6 @@ ipcRenderer.on("Notificar", (event, response) => {
     });
   }
 });
-// function resetFormAfterUpdate() {
-//   editPlanilla(editPlanillaId, editContratoId, fechaEmisionEdit);
-//   recalcularConsumo();
-// }
 lecturaActual.addEventListener("input", function () {
   recalcularConsumo();
 });
@@ -1536,8 +1288,8 @@ async function vistaFactura() {
     await ipcRenderer.send(
       // "generateFacturaMultiple",
       "generateFacturaMultipleBaucher",
-      datos,
-      encabezado,
+      // datos,
+      // encabezado,
       serviciosFijos,
       otrosServicios,
       datosAgua,
@@ -1823,110 +1575,24 @@ function mostrarFormServicios() {
 function CerrarFormServicios() {
   dialogServicios.close();
 }
-function aproximarDosDecimales(numero) {
-  // Redondea el número hacia arriba
-  const numeroRedondeado = Math.ceil(numero * 100) / 100;
-  return numeroRedondeado.toFixed(2);
-}
+
 // Transicion entre las secciones de la vista
 var btnSeccion1 = document.getElementById("btnSeccion1");
 var btnSeccion2 = document.getElementById("btnSeccion2");
 var seccion1 = document.getElementById("seccion1");
 var seccion2 = document.getElementById("seccion2");
 
-// btnSeccion1.addEventListener("click", function () {
-//   console.log("btn1");
-//   seccion1.classList.remove("active");
-//   seccion2.classList.add("active");
-// });
-
-btnSeccion2.addEventListener("click", function () {
-  console.log("btn2");
-  seccion2.classList.remove("active");
-  seccion1.classList.add("active");
-});
-// funciones del navbar
-function cerrarSesion() {
-  ipcRenderer.send("cerrarSesion");
-}
 ipcRenderer.on("sesionCerrada", async () => {
   const acceso = sessionStorage.getItem("acceso");
   const url = "Login";
   await ipcRenderer.send("abrirInterface", url, acceso);
 });
-const abrirInicio = async () => {
-  const acceso = sessionStorage.getItem("acceso");
-  const url = "Inicio";
-  await ipcRenderer.send("abrirInterface", url, acceso);
-};
-const abrirSocios = async () => {
-  const acceso = sessionStorage.getItem("acceso");
-  const url = "Socios";
-  await ipcRenderer.send("abrirInterface", url, acceso);
-};
-const abrirUsuarios = async () => {
-  const acceso = sessionStorage.getItem("acceso");
-  const url = "Usuarios";
-  await ipcRenderer.send("abrirInterface", url, acceso);
-};
-const abrirPagos = async () => {
-  const acceso = sessionStorage.getItem("acceso");
-  const url = "Pagos";
-  await ipcRenderer.send("abrirInterface", url, acceso);
-};
-const abrirPagosII = async () => {
-  const acceso = sessionStorage.getItem("acceso");
-  const url = "PagosII";
-  await ipcRenderer.send("abrirInterface", url, acceso);
-};
-const abrirPlanillas = async () => {
-  const acceso = sessionStorage.getItem("acceso");
-  const url = "Planillas";
-  await ipcRenderer.send("abrirInterface", url, acceso);
-};
-const abrirContratos = async () => {
-  const acceso = sessionStorage.getItem("acceso");
-  const url = "Contratos";
-  await ipcRenderer.send("abrirInterface", url, acceso);
-};
-const abrirServicios = async () => {
-  const acceso = sessionStorage.getItem("acceso");
-  const url = "Servicios fijos";
-  await ipcRenderer.send("abrirInterface", url, acceso);
-};
-const abrirCuotas = async () => {
-  const acceso = sessionStorage.getItem("acceso");
-  const url = "Servicios ocacionales";
-  await ipcRenderer.send("abrirInterface", url, acceso);
-};
+btnSeccion2.addEventListener("click", function () {
+  console.log("btn2");
+  seccion2.classList.remove("active");
+  seccion1.classList.add("active");
+});
 init();
-function obtenerNombreMes(fecha) {
-  const meses = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-  ];
-
-  const fechaDate = new Date(fecha);
-  console.log("Fecha 1: ", fecha);
-  console.log("Fecha: " + fechaDate);
-  // Obtener el nombre del mes
-  let numeroMes = fechaDate.getMonth();
-  // if (numeroMes > 11) {
-  //   numeroMes = 11;
-  // }
-  console.log("Mes: ", meses[numeroMes]);
-  return meses[numeroMes];
-}
 // Rercarga comprobantes
 ipcRenderer.on("recargaComprobantes", async (event) => {
   console.log("Refrescar");

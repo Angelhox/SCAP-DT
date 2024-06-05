@@ -10,8 +10,11 @@ const path = require("path");
 const url = require("url");
 const { error } = require("console");
 const { page } = require("pdfkit");
-const { cancelarServiciosMultiples } = require("./ui/Pagos/pagos.api");
+const {
+  cancelarServiciosMultiples,
+} = require("./ui/PagosMultiples/pagos-multiples.api");
 const { contratarPrincipales } = require("./ui/Cuotas/cuotas.api");
+const { cancelarServicios } = require("./ui/Pagos/pagos-individual.api");
 let window;
 let windowFactura;
 let windowFacturaMultiple;
@@ -91,6 +94,18 @@ ipcMain.on("printPDFNot valid", async (event, filePath) => {
 // });
 
 // --------------------------------
+ipcMain.on("PrintBaucher", async (event, outputPath) => {
+  try {
+    const options = {
+      scale: "fit",
+    };
+    await pdfToPrinter.print(outputPath, options);
+    await fs.unlink(outputPath);
+    console.log("PDF impreso con éxito.");
+  } catch (error) {
+    console.error("Error al imprimir PDF:", error);
+  }
+});
 ipcMain.on(
   "Dos",
   async (event, pdfPaths, outputPath, scaleWidth, scaleHeight) => {
@@ -403,13 +418,13 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
     switch (acceso) {
       case "Auditor":
         console.log("Auditor");
-        url = "src/ui/cobros.html";
+        url = "src/ui/Pagos/pagos.html";
         break;
       case "Cajero":
-        url = "src/ui/cobros.html";
+        url = "src/ui/Pagos/pagos.html";
         break;
       case "Digitador":
-        url = "src/ui/cobros.html";
+        url = "src/ui/Pagos/pagos.html";
         break;
       default:
     }
@@ -417,13 +432,13 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
     switch (acceso) {
       case "Auditor":
         console.log("Auditor");
-        url = "src/ui/pagos.html";
+        url = "src/ui/PagosMultiples/pagos-multiples.html";
         break;
       case "Cajero":
-        url = "src/ui/pagos.html";
+        url = "src/ui/PagosMultiples/pagos-multiples.html";
         break;
       case "Digitador":
-        url = "src/ui/pagos.html";
+        url = "src/ui/PagosMultiples/pagos-multiples.html";
         break;
       default:
     }
@@ -442,6 +457,67 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
 // Funciones de las facturas
 // ----------------------------------------------------------------
 ipcMain.on(
+  "generateFacturaMultipleBaucher",
+  async (
+    event,
+
+    serviciosFijos,
+    otrosServicios,
+    datosAgua,
+    datosTotales,
+    planilla,
+    // Cambio
+    editados
+  ) => {
+    console.log("planillaCancelar desde main: ", planilla);
+    if (!windowFacturaMultiple) {
+      windowFacturaMultiple = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+        },
+      });
+      await windowFacturaMultiple.loadFile(
+        "src/ui/FacturaMultipleBaucher/facturaMultipleBaucher.html"
+      );
+      // // window.send("datos-a-pagina2", datos);
+      await windowFacturaMultiple.show();
+
+      await windowFacturaMultiple.webContents.send(
+        "generateFacturaMultiple",
+        serviciosFijos,
+        otrosServicios,
+        datosAgua,
+        datosTotales,
+        planilla,
+        editados
+      );
+      windowFacturaMultiple.on("closed", () => {
+        windowFacturaMultiple = null;
+        window.setEnabled(true);
+        window.focus();
+      });
+      window.setEnabled(false);
+      // Manejar clics en la ventana principal inhabilitada
+      // window.on("blur", () => {
+      // if (windowFacturaMultiple && !windowFacturaMultiple.isFocused()) {
+      if (!windowFacturaMultiple.isFocused()) {
+        // Reproducir sonido de notificación
+        window.webContents.send("play-notification-sound");
+        // Enfocar la ventana secundaria
+        windowFacturaMultiple.focus();
+      }
+      // });
+      window.on("closed", () => {
+        windowFactura = null;
+        windowFacturaMultiple = null;
+      });
+    }
+  }
+);
+ipcMain.on(
   "generateFacturaMultiple",
   async (
     event,
@@ -451,7 +527,9 @@ ipcMain.on(
     otrosServicios,
     datosAgua,
     datosTotales,
-    planilla
+    planilla,
+    // Cambio
+    editados
   ) => {
     console.log("Datos a enviar: " + datos.mensaje);
     console.log("planillaCancelar desde main: ", planilla);
@@ -478,7 +556,9 @@ ipcMain.on(
         otrosServicios,
         datosAgua,
         datosTotales,
-        planilla
+        planilla,
+        // Cambio
+        editados
       );
       windowFacturaMultiple.on("closed", () => {
         windowFacturaMultiple = null;
@@ -4547,6 +4627,38 @@ ipcMain.handle(
     }
   }
 );
+ipcMain.handle(
+  "cancelarServiciosIndividual",
+  async (
+    event,
+    planillaCancelarId,
+    encabezadoCancelarId,
+    serviciosCancelar,
+    comprobante
+  ) => {
+    try {
+      cancelarServicios(
+        event,
+        planillaCancelarId,
+        encabezadoCancelarId,
+        serviciosCancelar,
+        comprobante
+      );
+      event.sender.send("Notificar", {
+        success: true,
+        title: "Actualizado!",
+        message: "Se ha cancelado la planilla.",
+      });
+    } catch (error) {
+      event.sender.send("Notificar", {
+        success: false,
+        title: "Error!",
+        message: "Ha ocurrido un error al cancelar la planilla.",
+      });
+      console.log("Error al cancelar: ", error);
+    }
+  }
+);
 // ipcMain.handle(
 //   "cancelarServiciosMultiples",
 //   async (event, planillaCancelar, comprobante) => {
@@ -4606,10 +4718,14 @@ ipcMain.handle(
 // );
 ipcMain.handle(
   "cancelarServiciosMultiples",
-  async (event, planillaCancelar, comprobante) => {
+  async (event, planillaCancelar, comprobante, editadosCancelar) => {
     console.log("Here: ", planillaCancelar);
     try {
-      cancelarServiciosMultiples(planillaCancelar, comprobante);
+      cancelarServiciosMultiples(
+        planillaCancelar,
+        comprobante,
+        editadosCancelar
+      );
       event.sender.send("Notificar", {
         success: true,
         title: "Actualizado!",
@@ -4633,19 +4749,26 @@ ipcMain.handle("contratarEnPrincipales", async (event, servicioId, tipo) => {
     console.log(error);
   }
 });
-ipcMain.handle("contratarEnPrincipalesFijos", async (event, servicioId, tipo) => {
-  console.log("Recibido contratarPrincipales: ", servicioId, " ", tipo);
-  try {
-    contratarPrincipales(servicioId, tipo);
-  } catch (error) {
-    console.log(error);
+ipcMain.handle(
+  "contratarEnPrincipalesFijos",
+  async (event, servicioId, tipo) => {
+    console.log("Recibido contratarPrincipales: ", servicioId, " ", tipo);
+    try {
+      contratarPrincipales(servicioId, tipo);
+    } catch (error) {
+      console.log(error);
+    }
   }
-});
+);
 ipcMain.handle("getComprobantes", async (event, encabezadoId) => {
   try {
     const conn = await getConnection();
     const comprobantes = await conn.query(
-      "SELECT * FROM comprobantes WHERE encabezadosId=?;",
+      "select comprobantes.codigo,comprobantes.fechaEmision,comprobantes.rutaLocal," +
+        "comprobantes.estado,comprobantes.fechaAnulacion,comprobantes.motivoAnulacion," +
+        "encabezadoComprobantes.encabezadosId,encabezadocomprobantes.comprobantesId " +
+        "from comprobantes join encabezadocomprobantes on comprobantes.id=encabezadocomprobantes.comprobantesId " +
+        "where encabezadosId=?",
       encabezadoId
     );
     console.log("Comprobantes: ", comprobantes);

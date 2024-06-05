@@ -1,5 +1,9 @@
 const { getConnection, closeConnection } = require("../../database");
-async function cancelarServiciosMultiples(planillaCancelar, comprobante) {
+async function cancelarServiciosMultiples(
+  planillaCancelar,
+  comprobante,
+  editadosCancelar
+) {
   console.log("Here: ", planillaCancelar);
   try {
     const conn = await getConnection();
@@ -28,20 +32,44 @@ async function cancelarServiciosMultiples(planillaCancelar, comprobante) {
     //Cambiamos el estado de los detallesServicio !!
     planillaCancelar.servicios.forEach(async (servicio) => {
       servicio.objetos.forEach(async (servicioCancelar) => {
-        // comprobante.encabezadosId = servicio.encabezadosIds;
-        // await conn.query(
-        //   "UPDATE encabezado set estado='Cancelado',fechaPago=Now() WHERE id = ? ;",
-        //   servicioCancelar.encabezadosId
-        // );
         let abono = 0;
         let saldo = 0;
-        if (servicioCancelar.abono !== null) {
-          abono = parseFloat(servicioCancelar.abono).toFixed(2);
+        const servicioEditado = await editadosCancelar.find(
+          (editado) =>
+            editado.id === servicioCancelar.serviciosId &&
+            editado.idDetalle === servicioCancelar.detallesId
+        );
+
+        if (servicioEditado) {
+          if (servicioCancelar.abono !== null) {
+            // Buscar una forma de asegurarnos de que abono sea un número !!
+            abono =
+              parseFloat(servicioCancelar.abono).toFixed(2) * 1 +
+              parseFloat(servicioEditado.valor).toFixed(2) * 1;
+          }
+          if (servicioCancelar.saldo !== null) {
+            saldo =
+              parseFloat(servicioCancelar.saldo).toFixed(2) -
+              parseFloat(servicioEditado.valor).toFixed(2);
+          }
+          console.log("Nuevos abonos: ", abono, saldo);
+        } else {
+          comprobante.encabezadosId = servicio.encabezadosIds;
+          await conn.query(
+            "UPDATE encabezado set estado='Cancelado',fechaPago=Now() WHERE id = ? ;",
+            servicioCancelar.encabezadosId
+          );
+          // let abono = 0;
+          // let saldo = 0;
+          if (servicioCancelar.abono !== null) {
+            abono = parseFloat(servicioCancelar.abono).toFixed(2);
+          }
+          if (servicioCancelar.saldo !== null) {
+            saldo = parseFloat(servicioCancelar.saldo).toFixed(2);
+          }
         }
-        if (servicioCancelar.saldo !== null) {
-          saldo = parseFloat(servicioCancelar.saldo).toFixed(2);
-        }
-        await conn.query(
+        // +++++
+        const result = await conn.query(
           "UPDATE detallesServicio set estado='Cancelado',abono=" +
             abono +
             ", saldo=" +
@@ -53,6 +81,7 @@ async function cancelarServiciosMultiples(planillaCancelar, comprobante) {
       });
     });
     // Cambiamos el estado de las planillas !!
+    // +++++
     planillaCancelar.ids.forEach(async (planillaCancelarId) => {
       await conn.query(
         "UPDATE planillas set estado='Cancelado' WHERE id = ? ;",

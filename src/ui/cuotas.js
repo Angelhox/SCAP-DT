@@ -109,7 +109,7 @@ let contratandoServicio = "";
 let creacionEdit = "";
 let ultimaFechaPago = "";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2024-04-01 00:00:00";
+let fechaCreacion = "2024-05-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {
@@ -2232,6 +2232,11 @@ const abrirUsuarios = async () => {
 const abrirPagos = async () => {
   const acceso = sessionStorage.getItem("acceso");
   const url = "Pagos";
+  await ipcRenderer.send("abrirInterface", url, acceso);
+};
+const abrirPagosII = async () => {
+  const acceso = sessionStorage.getItem("acceso");
+  const url = "PagosII";
   await ipcRenderer.send("abrirInterface", url, acceso);
 };
 const abrirPlanillas = async () => {

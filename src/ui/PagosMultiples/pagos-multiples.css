@@ -1,0 +1,522 @@
+.tabla-consumos {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+
+.table thead tr th {
+    background-color: #21618C;
+    color: #fff;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td,
+th {
+    padding: 100px;
+    text-align: left;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    /* Mantendrá el encabezado en la parte superior de la tabla */
+    z-index: 1;
+    /* Asegura que el encabezado esté por encima de las celdas */
+}
+
+.btn-quit {
+    border: none;
+    margin: 0 auto;
+    width: 100%;
+    background-color: transparent;
+}
+
+.btn-quit i {
+    color: green;
+
+}
+
+.btn-quit-disabled {
+    border: none;
+    margin: 0 auto;
+    width: 100%;
+    background-color: transparent;
+
+}
+
+.btn-quit-disabled i {
+    color: red
+}
+
+.td-sin-servicio {
+    text-align: center;
+}
+
+/* body {
+    border: none;
+    margin: 0;
+    padding: 0;
+    background-color: red;
+} */
+
+.card-planilla {
+    height: 80rem;
+}
+
+.header-planilla {
+    font-size: 100%;
+    font-weight: 500;
+    color: black;
+
+}
+
+.header-planilla p {
+    font-size: 100%
+}
+
+.title-contrato {
+    color: rgb(255, 255, 255);
+    padding-top: .05em;
+}
+
+.positive {
+    color: white;
+}
+
+.negative {
+    color: white;
+}
+
+.card-cuerpo {
+    margin: 0;
+    padding: 0;
+    height: auto;
+    /* background-color: red; */
+}
+
+.card-cuerpo p {
+    margin: 0;
+    padding: 0;
+}
+
+
+.titulo-socio {
+    align-items: baseline;
+
+}
+
+.titulos {
+    margin: 0;
+    padding: 0;
+    font-weight: 500;
+}
+
+
+.titulo-servicios-positive {
+    color: #F1948A;
+    font-weight: 600;
+    border-bottom: 1px solid #85C1E9;
+    padding: .5em 0 0 0;
+}
+
+.titulo-servicios-negative {
+    color: #F1948A;
+    font-weight: 600;
+    border-bottom: 1px solid #f8c471;
+}
+
+.titulo-detalles p {
+    font-weight: 500;
+    margin: 0;
+}
+
+.lista-servicios {
+    height: 6rem;
+    overflow-y: auto;
+
+}
+
+.detalles p {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.btn-planilla-positive {
+    padding: 0 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-buscar {
+    padding: .4em;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-planilla-positive:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.btn-buscar:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.btn-cancelar {
+
+    background-color: #F1948A;
+    padding: 0 1em;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-cancelar:hover {
+    background-color: #f2f2f2;
+    color: rgb(0, 0, 0);
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.encabezado-planilla {
+    padding: 1em 1em 0 1em;
+    background-color: #85C1E9;
+    /* padding-bottom: .5em !important;*/
+    /* max-width: 100%; */
+    width: 100%;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+
+}
+
+.encabezado-planillas {
+    padding: 1em 1em 0 1em;
+    /* padding-bottom: .5em !important;*/
+    width: 100%;
+    max-width: 100%;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    /* border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px; */
+    border: solid 2px #f8c471;
+    /* border-bottom: solid 2px #f2f2f2; */
+    border-bottom: none;
+}
+
+.encabezado-bt {
+    color: white;
+    font-size: 1.1em;
+    font-weight: 700;
+    background-color: #f8c471;
+    ;
+    border: solid 3px #85C1E9;
+    border-top: none;
+    padding: .5em 1.1em .5em 1.1em;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.tbl-rounded {
+    border-radius: 5px;
+    border: #d7dbdd solid 2px;
+}
+
+.clr-b2babb {
+    color: #B2BABB
+}
+
+.lecturas-title {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.dialog-servicios {
+    padding: 0;
+    border: none;
+    background-color: #00000000;
+    overflow: none;
+
+}
+
+.section-dialog {
+    background-color: white;
+    padding: 0;
+    overflow: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.item-custom label {
+    font-weight: 500;
+}
+
+.encabezado-bt p {
+    margin: 0 0 0 0;
+    padding: 0;
+
+}
+
+.err-container {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+
+
+}
+
+.err-container p {
+    margin: 0 12px;
+    color: red;
+}
+
+.encabezado-planillas div label {
+    font-weight: 500;
+}
+
+.encabezado-servicios {
+    font-weight: 600;
+    color: white;
+    position: sticky;
+    top: 0;
+    /* La posición superior en la que el encabezado se fijará */
+    z-index: 1;
+    /* Asegura que esté por encima del contenido de la lista */
+    margin-top: -5rem;
+    padding: 1em 1em 1em 1em;
+    background-color: #85C1E9;
+    /* padding-bottom: .5em !important;*/
+    max-width: 100%;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border: solid 2px #85C1E9;
+    border-bottom: none;
+}
+
+/* .encabezado-planilla div {
+    padding: 0 .5em;
+} */
+.container-servicios-list {
+    overflow-y: auto;
+}
+
+.container-card-servicios {
+    overflow-y: auto;
+    height: 30vh;
+    margin: 0.1em;
+    padding: 0 0 0 1em;
+}
+
+.card-s-cuerpo {
+    padding: 1em
+}
+
+
+::-webkit-scrollbar {
+    width: 10px;
+    /* Ancho de la barra de desplazamiento*/
+}
+
+::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    /* Color de fondo de la pista de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #f8c471;
+
+    /* background-color: #888; */
+    /* Color del "pulgar" de la barra de desplazamiento */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+    /* Cambia el color del "pulgar" al pasar el ratón por encima */
+}
+
+section {
+    padding: 0 0 0 1em;
+    height: 80vh;
+    display: none;
+    transition: opacity 0.5s ease-in-out;
+}
+
+section.active {
+    height: 80vh;
+    width: 100%;
+    display: block;
+    opacity: 1;
+}
+
+.btn-rd {
+    border-radius: 5px;
+}
+
+input {
+    border-radius: 5px;
+}
+
+.mp-0 {
+    margin: 0;
+    padding: 0;
+}
+
+.trans {
+    color: #00000000;
+    background-color: #00000000;
+}
+
+.fila-active {
+    background-color: #85C1E9;
+}
+
+/* Estilo para el ícono en estado normal (sin hover) */
+.fa-caret-down {
+    color: black;
+    transition: color 0.3s;
+    /* Transición suave de color */
+}
+
+.fa-caret-up {
+    color: black;
+    transition: color 0.3s;
+    /* Transición suave de color */
+}
+
+/* Estilo para el botón en estado hover */
+button:hover .fa-caret-up {
+    color: #f8c471;
+    /* Cambiar el color en hover */
+}
+
+/* Estilo para el botón en estado hover */
+button:hover .fa-caret-down {
+    color: #f8c471;
+    /* Cambiar el color en hover */
+}
+
+/* Estilos para el botón */
+.btn-sin-consumo {
+    background-color: #85C1E9;
+    border: none;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    /* font-size: px; */
+    padding: 0 .5em;
+}
+
+/* Estilos para el cuadro de información */
+.informacion {
+    max-width: 50%;
+    width: 8.5em;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1em;
+    z-index: 9999;
+    display: none;
+    position: absolute;
+    /* background-color: rgba(0, 0, 0, 0.7); */
+    background-color: rgba(255, 255, 255, 1);
+    color: rgb(0, 0, 0);
+
+}
+
+
+/* Estilos para el cuadro de información al pasar el cursor sobre el botón */
+.btn-sin-consumo:hover {
+    background-color: #f1f1f1;
+    color: rgb(0, 0, 0);
+
+}
+
+.btn-sin-consumo:hover .informacion {
+    color: rgb(0, 0, 0);
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Estilo base del botón */
+.btn-outline-anulados {
+    height: fit-content;
+    color: #f8f9fa;
+    /* Color del texto */
+    background-color: transparent;
+    /* Fondo transparente */
+    border: 1px solid #f8f9fa;
+    /* Borde con color del texto */
+    padding: 0.1rem 0.75rem;
+    /* Espaciado interno */
+    font-size: 1rem;
+    /* Tamaño del texto */
+    line-height: 1.5;
+    /* Altura de línea */
+    border-radius: 0.25rem;
+    /* Borde redondeado */
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    /* Transición suave */
+}
+
+/* Cambios de estilo al pasar el ratón sobre el botón */
+.btn-outline-anulados:hover {
+    color: #212529;
+    /* Cambio de color del texto al pasar el ratón */
+    background-color: #f8f9fa;
+    /* Cambio de color de fondo al pasar el ratón */
+    border-color: #f8f9fa;
+    /* Cambio de color del borde al pasar el ratón */
+}
+
+.btn-comprobante {
+    display: flex;
+    justify-content: start;
+    width: 100%;
+    background-color: rgb(255, 255, 255);
+    padding: 0;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+    /* Quita el outline predeterminado */
+    transition: background-color 0.3s;
+    /* Agrega una transición suave al color de fondo */
+}
+
+.btn-comprobante:hover {
+    background-color: #85C1E9;
+    color: white;
+    /* Cambia el color de fondo al pasar el ratón por encima */
+}
+
+.header-lecturas {
+    color: green;
+    background-color: #F1948A;
+}

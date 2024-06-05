@@ -1,153 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-      }
-
-      .invoice {
-        background-color: white;
-        padding: 20px;
-        border-radius: 5px;
-      }
-
-      .invoice-header {
-        display: flex;
-        text-align: center;
-        margin-bottom: 20px;
-      }
-
-      .invoice-header h1 {
-        align-self: center;
-        margin: 0 auto;
-        color: #333;
-        font-size: 24px;
-      }
-
-      .invoice-header h4 {
-        align-self: center;
-        margin: 0 auto;
-        color: #333;
-        font-size: 24px;
-      }
-
-      .invoice-items-header {
-        align-self: center;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-evenly;
-      }
-
-      .invoice-details {
-        display: flex;
-        margin-top: 0;
-        padding: 0;
-        justify-content: space-evenly;
-      }
-
-      .invoice-details p {
-        display: flex;
-        margin-top: 0;
-        padding: 0;
-        justify-content: space-evenly;
-      }
-
-      .invoice-details .label {
-        font-weight: bold;
-        font-size: 20rem;
-      }
-
-      .invoice-items {
-        width: 100%;
-      }
-
-      .invoice-items th,
-      .invoice-items td {
-        text-align: center;
-        padding: 5px;
-        border-bottom: 1px solid #ccc;
-        font-size: 15px;
-      }
-
-      .invoice-items .titles {
-        text-align: left;
-      }
-
-      .logo {
-        align-self: start;
-        width: 15%;
-        filter: grayscale(100%);
-      }
-
-      table {
-        margin-bottom: 10px;
-      }
-
-      .signatures {
-        display: flex;
-        justify-content: space-evenly;
-        align-items: center;
-      }
-
-      .signature {
-        border-top: 1px dotted #000;
-        width: 250px;
-        text-align: center;
-      }
-
-      @media print {
-        body {
-          transform: scaleY(0.5);
-          transform-origin: top left;
-
-          margin: 0;
-        }
-
-        /*.invoice {*/
-        /* Oculta el botón de impresión en la vista previa de impresión */
-        /*display: none;
-      /*}*/
-      }
-    </style>
-
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css" />
 
-    <link rel="stylesheet" href="../ui/style/factura.css" />
+    <link
+      rel="stylesheet"
+      href="../../ui/FacturaMultiple/facturaMultiple.css"
+    />
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script> -->
     <link
       rel="stylesheet"
-      href="../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
+      href="../../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
     />
     <link
       rel="stylesheet"
-      href="../../node_modules/@fortawesome/fontawesome-free/css/solid.css"
+      href="../../../node_modules/@fortawesome/fontawesome-free/css/solid.css"
     />
     <link
       rel="stylesheet"
-      href="../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
+      href="../../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
     />
-    <title>Factura</title>
+    <title>Factura Multiple</title>
   </head>
   <body
     style="
       width: 95vw;
-      height: 100vh;
-      font-family: Arial, sans-serif;
+      /* height: 100vh; */
+      height: auto;
+
+      font-family: sans-serif;
       margin: 0;
       padding: 5% 0 0 0;
     "
   >
     <div style="width: 100%; height: 5%; position: fixed; top: 0">
       <div style="display: flex; justify-content: end; align-items: center">
-        <button class="btn-print-custom" id="boton" type="button">
-          Comprobante<i class="ico-btn fa-solid fa-print"></i>
+        <button class="btn-print-custom" id="btn-print" type="button">
+          Imprimir<i class="ico-btn fa-solid fa-print"></i>
         </button>
-        <button type=" button" class="btn-cancel-custom" onclick="cancelarFactura()">
+        <button
+          type=" button"
+          id="btn-cancel"
+          class="btn-cancel-custom"
+          onclick="cancelarFactura()"
+        >
           Cancelar<i class="ico-btn fa-solid fa-ban"></i>
         </button>
         <!-- <p>Here:</p>
@@ -158,7 +56,8 @@
       class="invoice"
       style="
         width: 94%;
-        height: 95%;
+        /* height: 100%; */
+        height: auto;
         /* height: max-content; */
         margin: 0 5%;
         background-color: white;
@@ -166,6 +65,7 @@
         padding: 0 0 0 0;
         border-radius: 5px;
         border: solid 2px black;
+        border-bottom: none;
       "
     >
       <div
@@ -192,6 +92,7 @@
         <div
           style="
             display: flex;
+            flex-direction: column;
             align-self: start;
             margin: 0 auto;
             width: 100%;
@@ -199,17 +100,30 @@
             padding: 1em 0 0 0;
           "
         >
-          <h1
+          <!-- <h1 -->
+          <!-- <i class="fa-solid fa-hand-holding-droplet" style="font-size: 5em; color: #424949;"></i> -->
+
+          <img
+            id="imagen"
+            style="width: 100%; max-width: 20rem; margin: 0 auto; z-index: 0"
+            alt="CSC"
+          />
+
+          <small
             style="
-              padding: 0.5em 0.15em 0.5em 0.15em;
-              margin: 0;
-              filter: grayscale(100%);
-              width: 20%;
-              font-size: 4em;
+              /* padding: 0.15em 0.15em; */
+              margin: 0 auto;
+
+              width: 100%;
+              text-transform: uppercase;
+              font-style: italic;
+              /* font-size: 4em; */
             "
           >
-            SCAP
-          </h1>
+            Cobro de servicios ciudadanos
+          </small>
+
+          <!-- </h1> -->
 
           <div style="width: 100%">
             <h1
@@ -219,11 +133,14 @@
                 color: #333;
                 width: 100%;
                 font-stretch: condensed;
+                text-transform: uppercase;
+                font-size: 2em;
+                display: none;
               "
             >
-              RECAUDACION DE CONSUMO DE AGUA POTABLE Y SERVICIOS
+              Junta administradora de agua potable y saneamiento
             </h1>
-            <h3 style="margin: 0; padding: 0 0 0 0; width: 100%">
+            <h3 style="margin: 0; padding: 0 0 0 0; width: 100%; display: none">
               Santo domingo N°1
             </h3>
             <div
@@ -237,6 +154,11 @@
                 align-items: center;
               "
             >
+              <div style="display: flex; margin: 0; padding: 0">
+                <p style="margin: 0; padding: 0">Ruc:</p>
+                <p style="color: #00000000; margin: 0; padding: 0">-</p>
+                <p style="margin: 0; padding: 0">1792005345001</p>
+              </div>
               <div style="display: flex; margin: 0; padding: 0">
                 <p style="margin: 0; padding: 0">Direccion:</p>
                 <p style="color: #00000000; margin: 0; padding: 0">-</p>
@@ -262,23 +184,23 @@
 
       <div
         style="
-          align-self: center;
-          margin: 0 auto;
+          align-self: flex-start;
           width: 100%;
           display: flex;
-          /* flex-direction: column; */
-          padding: 0.5em 0.5em 0.5em 1em;
+          flex-direction: column;
+          padding: 0.2rem;
           justify-content: space-between;
         "
       >
         <div
           style="
             display: flex;
+            /* flex-direction: column; */
             margin: 0;
-            padding: 0;
             align-self: flex-start;
             justify-content: flex-start;
-            width: 50%;
+            width: 100%;
+            flex-wrap: wrap;
           "
         >
           <h4 style="margin: 0; padding: 0"><strong>Comprobante N°</strong></h4>
@@ -293,7 +215,7 @@
             padding: 0;
             align-self: flex-start;
             justify-content: flex-start;
-            width: 25%;
+            width: 100%;
           "
         >
           <h4 style="margin: 0; padding: 0"><strong>Emisión:</strong></h4>
@@ -308,7 +230,7 @@
             padding: 0;
             align-self: flex-start;
             justify-content: flex-start;
-            width: 25%;
+            width: 100%;
           "
         >
           <h4 style="margin: 0; padding: 0"><strong>Impresión:</strong></h4>
@@ -322,30 +244,81 @@
       <div
         style="
           display: flex;
-          flex-direction: row;
+          flex-direction: column;
+          /* flex-direction: row; */
           flex-wrap: wrap;
           justify-content: flex-start;
-          padding: 0.5em 0.5em 0.5em 1em;
+          padding: 0.2rem;
           justify-content: space-between;
           width: 100%;
         "
       >
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>Socio:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="socioNombres"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>CI:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="socioCedula"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>Telf:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="socioTelefono"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 100%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <p style="margin: 0; padding: 0"><strong>Contrato:</strong></p>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p style="margin: 0; padding: 0" id="contrato"></p>
+        </div>
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>Dir:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="socioDireccion"></p>
@@ -355,30 +328,53 @@
       <div
         style="
           display: flex;
+          flex-direction: column;
           flex-wrap: wrap;
-          padding: 0.5em 0.5em 0.5em 1em;
+          padding: 0.2rem;
           justify-content: space-between;
         "
       >
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+        <div
+          style="
+            display: none;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 33%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>Planilla:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="planilla"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
-          <p style="margin: 0; padding: 0"><strong>Contrato:</strong></p>
-          <p style="color: #00000000; margin: 0; padding: 0">-</p>
-          <p style="margin: 0; padding: 0" id="contrato">.</p>
-        </div>
-    
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
           <p style="margin: 0; padding: 0">
-            <strong>Fecha de emisión:</strong>
+            <strong>Rango fechas:</strong>
           </p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="fechaEmisionPlanilla"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 100%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
           <p style="margin: 0; padding: 0">
             <strong>Ubicacion:</strong>
           </p>
@@ -391,7 +387,7 @@
         <thead>
           <tr>
             <th
-              colspan="5"
+              colspan="6"
               class="titles"
               style="
                 text-align: left;
@@ -400,7 +396,7 @@
                 font-size: 15px;
               "
             >
-              Agua potable
+              Agua potable(Consumos)
             </th>
           </tr>
           <tr>
@@ -412,7 +408,7 @@
                 font-size: 15px;
               "
             >
-              Anterior
+              Fecha
             </th>
             <th
               style="
@@ -422,7 +418,7 @@
                 font-size: 15px;
               "
             >
-              Actual
+              Ant
             </th>
             <th
               style="
@@ -432,7 +428,17 @@
                 font-size: 15px;
               "
             >
-              Consumo
+              Act
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Total
             </th>
             <th
               style="
@@ -452,12 +458,23 @@
                 font-size: 15px;
               "
             >
-              Total
+              Valor
             </th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
+        <tbody id="consumos">
+          <tr style="display: none">
+            <td
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="fechaPlanilla"
+            >
+              NA
+            </td>
             <td
               style="
                 text-align: center;
@@ -548,6 +565,7 @@
                 padding: 5px;
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
+                display: none;
               "
             >
               Descripcion
@@ -562,7 +580,7 @@
             >
               Total
             </th>
-            <th
+            <!-- <th
               style="
                 text-align: center;
                 padding: 5px;
@@ -571,7 +589,7 @@
               "
             >
               Descuento
-            </th>
+            </th> -->
             <th
               style="
                 text-align: center;
@@ -746,26 +764,27 @@
       <div
         class="signatures"
         style="
+          margin: 4em auto 0 auto;
           width: 50%;
-          position: fixed;
-          bottom: 5em;
-          right: 25%;
-          left: 25%;
+          position: relative;
+          /* bottom: 9; */
+          /* right: 25%;
+          left: 25%; */
           display: flex;
           justify-content: space-evenly;
           align-items: center;
         "
       >
         <div
-          style="border-top: 1px dotted #000; width: 35%; text-align: center"
+          style="border-top: 1px dotted #000; width: 40%; text-align: center"
         >
-          Responsable
+          <small>Responsable</small>
         </div>
         <div style="width: 30%"></div>
         <div
-          style="border-top: 1px dotted #000; width: 35%; text-align: center"
+          style="border-top: 1px dotted #000; width: 40%; text-align: center"
         >
-          Recibido
+          <small>Recibido</small>
         </div>
       </div>
     </div>
@@ -899,6 +918,23 @@
         </div>
       </section>
     </dialog>
-    <script src="./factura.js" defer></script>
+    <script src="./facturaMultipleBaucher.js" defer></script>
+    <script>
+      const files = require("fs");
+      const imgElement = document.getElementById("imagen");
+      // Ruta de la imagen
+      const imagePath = "src/ui/FacturaMultipleBaucher/img/templogo.png";
+      // Lee el archivo de imagen
+      files.readFile(imagePath, (err, data) => {
+        if (err) {
+          console.error("Error al leer el archivo de imagen:", err);
+          return;
+        }
+        // Codifica la imagen en base64
+        const base64Image = Buffer.from(data).toString("base64");
+        // Variable con la imagen en base 64
+        imgElement.src = "data:image/png;base64," + base64Image;
+      });
+    </script>
   </body>
 </html>

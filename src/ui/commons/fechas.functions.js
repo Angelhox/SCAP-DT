@@ -6,4 +6,13 @@ function formatearFecha(fechaOriginal) {
   const fechaFormateada = `${year}-${month}-${day}`;
   return fechaFormateada;
 }
-module.exports = { formatearFecha };
+// Función para agregar cero al principio si no está presente !!
+function agregarCeroAlPrincipio(numero) {
+  // Verificar si el número comienza con cero
+  if (!/^0/.test(numero)) {
+    // Si no comienza con cero, agregarlo
+    numero = "0" + numero;
+  }
+  return numero;
+}
+module.exports = { formatearFecha, agregarCeroAlPrincipio };

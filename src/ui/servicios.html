@@ -138,6 +138,11 @@
                 <li class="nav-item mx-2">
                   <a class="nav-link" onclick="abrirPagos()">Pagos</a>
                 </li>
+                <li class="nav-item mx-2">
+                  <a class="nav-link" onclick="abrirPagosII()"
+                    >Pagos Multiples</a
+                  >
+                </li>
               </ul>
               <!-- Login/Sign up -->
               <div
@@ -437,34 +442,53 @@
                 Beneficiarios
                 <i class="fs-1 fa-solid fa-hands-holding-child mx-2 my-2"></i>
               </p>
-              <div>
-                <button
-                  class="btn btn-outline-light"
-                  type="button"
-                  id="reporte_beneficiarios"
-                >
-                  Reporte
-                </button>
-                <button
-                  class="btn btn-outline-light"
-                  type="button"
-                  id="contratar-todos"
-                >
-                  Contratar para todos
-                </button>
-                <button
-                  class="btn btn-outline-light"
-                  type="button"
-                  id="contratar-principales"
-                >
-                 Contratar Principales
-                </button>
+              <div class="d-flex justify-content-between">
+                <div class="dropdown mx-2">
+                  <button
+                    class="btn btn-outline-light dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    Opciones<i class="px-1 fa-solid fa-list"></i>
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li class="nav-item mx-2">
+                      <a
+                        class="dropdown-item"
+                        type="button"
+                        id="reporte_beneficiarios"
+                        >Reporte beneficiarios</a
+                      >
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li class="nav-item mx-2">
+                      <a
+                        class="dropdown-item"
+                        type="button"
+                        id="contratar-todos"
+                        >Contratar para todos</a
+                      >
+                    </li>
+
+                    <li><hr class="dropdown-divider" /></li>
+                    <li class="nav-item mx-2">
+                      <a
+                        class="dropdown-item"
+                        type="button"
+                        id="contratar-principales"
+                        >Contratar Principales</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+
                 <button
                   class="btn btn-outline-light"
                   type="button"
                   id="btn-volver"
                 >
-                  Volver
+                  <i class="fa-solid fa-arrow-left-long"></i>
                 </button>
               </div>
             </div>
