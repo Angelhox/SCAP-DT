@@ -98,16 +98,6 @@ const anuladosBt = document.getElementById("btnAnulados");
 // ----------------------------------------------------------------
 // Variables contenedoras
 let tarifasDisponibles = [];
-// const socioNombre = document.getElementById("nombrecompleto");
-// const medidorCodigo = document.getElementById("codigo");
-// const medidorMarca = document.getElementById("marca");
-// const medidorBarrio = document.getElementById("barrio");
-// const medidorPrincipal = document.getElementById("principal");
-// const medidorSecundaria = document.getElementById("secundaria");
-// const medidorNumeroCasa = document.getElementById("numerocasa");
-// const medidorReferencia = document.getElementById("referencia");
-// const medidorObservacion = document.getElementById("observacion");
-
 let planillas = [];
 let editingStatus = false;
 let planillaMedidorSn = false;

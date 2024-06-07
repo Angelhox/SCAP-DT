@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      .invoice {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+      }
+
+      .invoice-header {
+        display: flex;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .invoice-header h1 {
+        align-self: center;
+        margin: 0 auto;
+        color: #333;
+        font-size: 24px;
+      }
+
+      .invoice-header h4 {
+        align-self: center;
+        margin: 0 auto;
+        color: #333;
+        font-size: 24px;
+      }
+
+      .invoice-items-header {
+        align-self: center;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-evenly;
+      }
+
+      .invoice-details {
+        display: flex;
+        margin-top: 0;
+        padding: 0;
+        justify-content: space-evenly;
+      }
+
+      .invoice-details p {
+        display: flex;
+        margin-top: 0;
+        padding: 0;
+        justify-content: space-evenly;
+      }
+
+      .invoice-details .label {
+        font-weight: bold;
+        font-size: 20rem;
+      }
+
+      .invoice-items {
+        width: 100%;
+      }
+
+      .invoice-items th,
+      .invoice-items td {
+        text-align: center;
+        padding: 5px;
+        border-bottom: 1px solid #ccc;
+        font-size: 15px;
+      }
+
+      .invoice-items .titles {
+        text-align: left;
+      }
+
+      .logo {
+        align-self: start;
+        width: 15%;
+        filter: grayscale(100%);
+      }
+
+      table {
+        margin-bottom: 10px;
+      }
+
+      .signatures {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+      }
+
+      .signature {
+        border-top: 1px dotted #000;
+        width: 250px;
+        text-align: center;
+      }
+
+      @media print {
+        body {
+          transform: scaleY(0.5);
+          transform-origin: top left;
+
+          margin: 0;
+        }
+
+        /*.invoice {*/
+        /* Oculta el botón de impresión en la vista previa de impresión */
+        /*display: none;
+      /*}*/
+      }
+    </style>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css" />
+
+    <link rel="stylesheet" href="./facturaIndividualBaucher.css" />
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script> -->
+    <link
+      rel="stylesheet"
+      href="../../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../../node_modules/@fortawesome/fontawesome-free/css/solid.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
+    />
+    <title>Factura Individual</title>
+  </head>
+  <body
+    style="
+      width: 95vw;
+      /* height: 100vh; */
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 5% 0 0 0;
+    "
+  >
+    <div style="width: 100%; height: 5%; position: fixed; top: 0">
+      <div style="display: flex; justify-content: end; align-items: center">
+        <button class="btn-print-custom" id="boton" type="button">
+          Imprimir<i class="ico-btn fa-solid fa-print"></i>
+        </button>
+        <button
+          type=" button"
+          class="btn-cancel-custom"
+          onclick="cancelarFactura()"
+        >
+          Cancelar<i class="ico-btn fa-solid fa-ban"></i>
+        </button>
+        <!-- <p>Here:</p>
+    <p id="mensaje"></p> -->
+      </div>
+    </div>
+    <div
+      class="invoice"
+      style="
+        width: 94%;
+        height: auto;
+        /* height: max-content; */
+        margin: 0 5%;
+        background-color: white;
+        /* padding: 20px 0; */
+        padding: 0 0 0 0;
+        border-radius: 5px;
+        border: solid 2px black;
+        /* border-bottom: none; */
+      "
+    >
+      <div
+        style="
+          width: 100%;
+          height: fit-content;
+          display: flex;
+          text-align: center;
+          /* margin-bottom: 20px; */
+          border-bottom: solid 2px black;
+        "
+      >
+        <!-- <img
+          style="
+            align-self: start;
+            padding: 10px;
+            padding-top: none;
+            filter: grayscale(100%);
+            width: 15%;
+          "
+          src="./../assets/fonts/logo.png"
+          alt="Not found"
+        /> -->
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            align-self: start;
+            margin: 0 auto;
+            width: 100%;
+            height: 100%;
+            padding: 1em 0 0 0;
+          "
+        >
+          <!-- <h1
+            style="
+              padding: 0.5em 0.15em 0.5em 0.15em;
+              margin: 0;
+              filter: grayscale(100%);
+              width: 20%;
+              font-size: 4em;
+            "
+          >
+            SCAP
+          </h1> -->
+          <img
+            id="imagen"
+            style="width: 100%; max-width: 20rem; margin: 0 auto; z-index: 0"
+            alt="CSC"
+          />
+          <small
+            style="
+              /* padding: 0.15em 0.15em; */
+              margin: 0 auto;
+
+              width: 100%;
+              text-transform: uppercase;
+              font-style: italic;
+              /* font-size: 4em; */
+            "
+          >
+            Cobro de servicios ciudadanos
+          </small>
+          <div style="width: 100%">
+            <h1
+              style="
+                align-self: center;
+                margin: 0 auto;
+                color: #333;
+                width: 100%;
+                font-stretch: condensed;
+                text-transform: uppercase;
+                font-size: 2em;
+                display: none;
+              "
+            >
+              Junta administradora de agua potable y saneamiento
+            </h1>
+
+            <div
+              style="
+                align-self: center;
+                margin: 0 auto;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-evenly;
+                align-items: center;
+              "
+            >
+              <div style="display: flex; margin: 0; padding: 0">
+                <p style="margin: 0; padding: 0">Ruc:</p>
+                <p style="color: #00000000; margin: 0; padding: 0">-</p>
+                <p style="margin: 0; padding: 0">1792005345001</p>
+              </div>
+              <div style="display: flex; margin: 0; padding: 0">
+                <p style="margin: 0; padding: 0">Direccion:</p>
+                <p style="color: #00000000; margin: 0; padding: 0">-</p>
+                <p style="margin: 0; padding: 0">
+                  Barrio Central S/N Cayambe Ayora
+                </p>
+              </div>
+              <div style="display: flex; margin: 0; padding: 0">
+                <p style="margin: 0; padding: 0">Teléfono:</p>
+                <p style="color: #00000000; margin: 0; padding: 0">-</p>
+                <p style="margin: 0; padding: 0">0967461380</p>
+              </div>
+              <div style="display: flex; margin: 0; padding: 0">
+                <p style="margin: 0; padding: 0">Correo:</p>
+                <p style="color: #00000000; margin: 0; padding: 0">-</p>
+                <p style="margin: 0; padding: 0">santoDomingouno@gmail.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- <hr style="border: solid 1px black; opacity: 0.5" /> -->
+
+      <div
+        style="
+          align-self: flex-start;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          padding: 0.2rem;
+          justify-content: space-between;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+            flex-wrap: wrap;
+          "
+        >
+          <h4 style="margin: 0; padding: 0"><strong>Comprobante N°</strong></h4>
+
+          <p style="margin: 0" id="codigoComprobante"></p>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <h4 style="margin: 0; padding: 0"><strong>Emisión:</strong></h4>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p id="fechaEmision" style="margin: 0; padding: 0"></p>
+          <p style="padding-top: 0; padding-bottom: 0; margin: 0"></p>
+        </div>
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <h4 style="margin: 0; padding: 0"><strong>Impresión:</strong></h4>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p id="fechaImpresion" style="margin: 0; padding: 0"></p>
+          <p style="margin: 0; padding: 0"></p>
+        </div>
+        <!-- <p style="color: #00000000">-</p> -->
+      </div>
+      <hr style="margin: 0; padding: 0" />
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          padding: 0.2rem;
+          justify-content: space-between;
+          width: 100%;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <p style="margin: 0; padding: 0"><strong>Socio:</strong></p>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p style="margin: 0; padding: 0" id="socioNombres"></p>
+        </div>
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <p style="margin: 0; padding: 0"><strong>CI:</strong></p>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p style="margin: 0; padding: 0" id="socioCedula"></p>
+        </div>
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <p style="margin: 0; padding: 0"><strong>Telf:</strong></p>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p style="margin: 0; padding: 0" id="socioTelefono"></p>
+        </div>
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <p style="margin: 0; padding: 0"><strong>Contrato:</strong></p>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p style="margin: 0; padding: 0" id="contrato"></p>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <p style="margin: 0; padding: 0"><strong>Dir:</strong></p>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p style="margin: 0; padding: 0" id="socioDireccion"></p>
+        </div>
+      </div>
+      <hr style="margin: 0; padding: 0" />
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          flex-wrap: wrap;
+          padding: 0.2rem;
+          justify-content: space-between;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <p style="margin: 0; padding: 0"><strong>Planilla:</strong></p>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p style="margin: 0; padding: 0" id="planilla"></p>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <p style="margin: 0; padding: 0">
+            <strong>Fecha de emisión:</strong>
+          </p>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p style="margin: 0; padding: 0" id="fechaEmisionPlanilla"></p>
+        </div>
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
+          <p style="margin: 0; padding: 0">
+            <strong>Ubicacion:</strong>
+          </p>
+          <p style="color: #00000000; margin: 0; padding: 0">-</p>
+          <p style="margin: 0; padding: 0" id="ubicacion"></p>
+        </div>
+      </div>
+      <hr style="margin: 0; padding: 0" />
+      <table id="data-agua" style="width: 100%; margin-bottom: 10px">
+        <thead>
+          <tr>
+            <th
+              colspan="5"
+              class="titles"
+              style="
+                text-align: left;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Agua potable(Consumos)
+            </th>
+          </tr>
+          <tr>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Anterior
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Actual
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Total
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Tarifa
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Valor
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="lecturaAnterior"
+            >
+              NA
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="lecturaActual"
+            >
+              NA
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="consumo"
+            >
+              NA
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="tarifa"
+            >
+              NA
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="total"
+            >
+              NA
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table id="data-servicios" style="width: 100%; margin-bottom: 10px">
+        <thead>
+          <tr>
+            <th
+              colspan="6"
+              style="
+                text-align: left;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Servicios
+            </th>
+          </tr>
+          <tr>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Servicios
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+                display: none;
+              "
+            >
+              Descripcion
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Total
+            </th>
+            <!-- <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Descuento
+            </th> -->
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Saldo
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Abono
+            </th>
+          </tr>
+        </thead>
+        <tbody id="servicios-details">
+          <!-- <tr>
+            <td>Desechos</td>
+            <td>Recoleccion semanal de desechos</td>
+            <td>$1.00</td>
+          </tr>
+          <tr>
+            <td>Fiestas</td>
+            <td>Fiesta de San Pedro</td>
+            <td>$10</td>
+          </tr> -->
+        </tbody>
+      </table>
+      <table style="width: 100%; margin-bottom: 10px">
+        <thead>
+          <tr>
+            <th
+              colspan="5"
+              style="
+                text-align: left;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Total
+            </th>
+          </tr>
+          <tr>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            ></th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            ></th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              <!-- Subtotal -->
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              <!-- Descuento -->
+            </th>
+            <th
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            >
+              Total
+            </th>
+          </tr>
+        </thead>
+        <tbody id="data-totales">
+          <tr>
+            <td
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            ></td>
+            <td
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+            ></td>
+            <td
+              class="trans"
+              style="
+                color: #00000000;
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="subtotal"
+            >
+              $0.0
+            </td>
+            <td
+              class="trans"
+              style="
+                color: #00000000;
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="descuento"
+            >
+              $0.0
+            </td>
+            <td
+              style="
+                text-align: center;
+                padding: 5px;
+                border-bottom: 1px solid #ccc;
+                font-size: 15px;
+              "
+              id="total-pagar"
+            >
+              $0.0
+            </td>
+          </tr>
+          <!-- <tr>
+            <td>Multa</td>
+            <td>Multa por falta a mingas</td>
+            <td>$20</td>
+            <td>$10</td>
+            <td>$10</td>
+          </tr>
+          <tr>
+            <td>Fiestas</td>
+            <td>Fiesta de San Pedro</td>
+            <td>$10</td>
+            <td>$10</td>
+            <td>$0</td>
+          </tr> -->
+        </tbody>
+      </table>
+      <div
+        class="signatures"
+        style="
+          margin: 4em auto 0 auto;
+          width: 50%;
+          position: relative;
+          display: flex;
+          justify-content: space-evenly;
+          align-items: center;
+        "
+      >
+        <div
+          style="border-top: 1px dotted #000; width: 40%; text-align: center"
+        >
+          Responsable
+        </div>
+        <div style="width: 30%"></div>
+        <div
+          style="border-top: 1px dotted #000; width: 40%; text-align: center"
+        >
+          Recibido
+        </div>
+      </div>
+    </div>
+    <!-- <div class="signatures">
+      <div class="signature">Entregado</div>
+
+      <div class="signature">Recibido</div>
+    </div> -->
+    <dialog id="dialog-cancelacion" class="dialog-servicios">
+      <section
+        style="width: 60vw; height: fit-content"
+        class="active section-dialog"
+      >
+        <div class="row container-fluid" style="margin: 0; padding: 0">
+          <div class="col-12 encabezado-servicios">
+            <div
+              class="col-12 mp-0 d-flex flex-column align-items-center justify-content-end"
+            >
+              <p class="fs-1 mp-0" id="title-dg">
+                Formas de pago
+                <i class="fs-1 mx-2 my-2 fa-solid fa-file-invoice-dollar"></i>
+              </p>
+            </div>
+          </div>
+          <div
+            class="col-12 d-flex justify-content-between align-items-center encabezado-bt"
+          >
+            <div class="d-flex" id="fechaPago-dg">
+              <!-- <p class="servicio-title mp-0" id="servicio-tit">Agua Potable</p>
+        <p class="trans">-</p> -->
+
+              <p class="mp-0">Fecha de pago:</p>
+              <!-- <p class="trans">-</p>
+              <p>2023-10-11</p> -->
+            </div>
+            <div class="d-flex" id="total-dg">
+              <p class="mp-0">Total a pagar:</p>
+            </div>
+            <!-- <p class="" id="detalles-dg">Servicio fijo | No aplazable</p> -->
+            <!-- <p id="servicio-val">Valor: $2.50</p> -->
+          </div>
+          <div class="col-12" style="overflow: none">
+            <div class="row justify-content-between text-center">
+              <!--<div class="col-4 my-2 item-custom">
+                <label for="subtotal-dg" class="fs-5">Subtotal:</label>
+                <p id="subtotal-dg">10.25</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="descuento-dg" class="fs-5">Descuento:</label>
+                <p id="descuento-dg">1.50</p>
+              </div>
+              <div class="col-4 my-2 item-custom">
+                <label for="total-dg" class="fs-5">Total:</label>
+                <p id="total-dg">8.75</p>
+              </div> -->
+              <!-- <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Forma de pago:</label>
+              
+                <select id="formaPago" class="form-select text-center item-custom">
+                  <option value="Efectivo" selected>Efectivo</option>
+                  <option value="Cheque" disabled>Cheque</option>
+                  <option value="Tarjeta" disabled>Tarjeta</option>
+                </select>
+              </div> -->
+
+              <div class="col-3 my-2 item-custom">
+                <label for="subtotal" class="fs-5">Saldo a favor:</label>
+                <p id="saldo-favor-dg">1</p>
+              </div>
+
+              <div class="col-3 my-2 item-custom">
+                <label for="efectivo-dg" class="fs-5">Efectivo:</label>
+                <input
+                  style="border: none"
+                  id="efectivo-dg"
+                  type="number"
+                  step="any"
+                  class="form-control"
+                />
+              </div>
+
+              <div class="col-3 my-2 item-custom">
+                <label for="recibido-dg" class="fs-5">Total recibido:</label>
+                <p id="recibido-dg">2</p>
+              </div>
+              <div class="col-3 my-2 item-custom">
+                <label for="cambio" class="fs-5">Cambio:</label>
+                <p id="cambio-dg">2.75</p>
+              </div>
+
+              <div class="col-12 err-container" id="err-container">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p id="errorTextAbono">Error</p>
+              </div>
+              <div
+                class="col-12 d-flex align-items-center justify-content-center my-4"
+              >
+                <button
+                  style="display: none; width: 22.5%"
+                  class="btn btn-success mx-1"
+                  id="btnGuardar-dg"
+                >
+                  Aceptar
+                </button>
+                <button
+                  disabled
+                  style="width: 30%"
+                  class="btn btn-success mx-1"
+                  id="btnEntregar-dg"
+                >
+                  Entregar cambio
+                </button>
+                <button
+                  disabled
+                  style="width: 30%"
+                  class="btn btn-success mx-1"
+                  id="btnAbonar-dg"
+                >
+                  Abonar
+                </button>
+                <button
+                  style="width: 30%"
+                  class="btn btn-danger mx-1"
+                  id="btnCerrar-dg"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </dialog>
+    <script src="./facturaIndividualBaucher.js" defer></script>
+    <script>
+      const files = require("fs");
+      const imgElement = document.getElementById("imagen");
+      // Ruta de la imagen
+      const imagePath = "src/assets/jpg/templogo.png";
+      // Lee el archivo de imagen
+      files.readFile(imagePath, (err, data) => {
+        if (err) {
+          console.error("Error al leer el archivo de imagen:", err);
+          return;
+        }
+        // Codifica la imagen en base64
+        const base64Image = Buffer.from(data).toString("base64");
+        // Variable con la imagen en base 64
+        imgElement.src = "data:image/png;base64," + base64Image;
+      });
+    </script>
+  </body>
+</html>

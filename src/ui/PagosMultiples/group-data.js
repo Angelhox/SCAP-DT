@@ -66,7 +66,7 @@ async function agruparServicios(allServicios) {
         grupoExistente.total += objeto.total;
         grupoExistente.subtotal += objeto.subtotal;
       }
-      grupoExistente.descuentoValor += objeto.descuento;
+      grupoExistente.descuento += objeto.descuento;
       // Recorriendo hasta quedarse con el ultimo saldo
       grupoExistente.saldo = objeto.saldo;
       grupoExistente.objetos.push(objeto);

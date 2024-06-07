@@ -355,20 +355,7 @@ ipcRenderer.on(
         } else {
           console.log(`No se encontró un objeto con el ID ${otroServicio.id}`);
         }
-        // ***
-        // if (otroServicio.nombre === "Agua Potable") {
-        //   aguaSn = true;
-        //   console.log("Tiene agua");
-        //   lecturaAnterior.textContent = datosAgua.lecturaAnterior;
-        //   lecturaActual.textContent = datosAgua.lecturaActual;
-        //   consumo.textContent =
-        //     datosAgua.lecturaActual - datosAgua.lecturaAnterior;
-        //   tarifa.textContent = datosAgua.tarifaConsumo;
-        //   total.textContent = datosAgua.valorConsumo;
-        // } else {
-
         renderDetalles(otroServicio);
-        // }
       });
     }
     subtotal.textContent = "$" + datosTotales.subtotal;

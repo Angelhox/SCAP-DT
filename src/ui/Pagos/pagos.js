@@ -2,6 +2,13 @@ const { ipcRenderer, shell } = require("electron");
 const fs = require("fs");
 const validator = require("validator");
 const Swal = require("sweetalert2");
+const {
+  createPlanillaAgrupada,
+  createServicioAgrupado,
+} = require("../commons/group-data.functions");
+const {
+  anularFijo,
+} = require("../commons/DetallesServicios/administrate.functions");
 // ----------------------------------------------------------------
 // Varibles de las planillas
 // ----------------------------------------------------------------
@@ -62,10 +69,15 @@ const valorTotalPagar = document.getElementById("valorTotalPagar");
 const dialogComprobantes = document.getElementById("formComprobantes");
 const comprobantesList = document.getElementById("comprobantes");
 const cerrarComprobantes = document.getElementById("cerrar-form-comprobantes");
-// const anularComprobantes = document.getElementById("anular-comprobante");
 const botonesComprobantes = document.getElementById("botones-comprobantes");
 const filtrarComprobantes = document.getElementById("filtrar-comprobantes");
-
+//----------------------------------------------------------------
+// Variables de los elementos del dialogo de servicios anulados
+const dialogAnulados = document.getElementById("formAnulados");
+const fechaEmisionDg = document.getElementById("fecha-emision-dg");
+const anuladosFijosList = document.getElementById("fijosAnulados");
+const cerrarAnuladosBt = document.getElementById("cerrar-form-anulados");
+// ----------------------------------------------------------------
 // Variable que almacena globalmente los comprobantes
 let comprobantesGeneral = [];
 // ----------------------------------------------------------------
@@ -87,6 +99,7 @@ const abonadoDg = document.getElementById("abonado-dg");
 const abonarDg = document.getElementById("abonar-dg");
 const guardarDg = document.getElementById("btnGuardar-dg");
 const administrarDg = document.getElementById("btnAdministrar-dg");
+const anularDg = document.getElementById("btnAnular-dg");
 //----------------------------------------------------------------
 // Variables de los elementos de la pagina
 const vistaFacturaBt = document.getElementById("vista-factura");
@@ -95,6 +108,7 @@ const contenedorLecturas = document.getElementById("contenedor-lecturas");
 const collapse = document.getElementById("collapse");
 const calcularConsumoBt = document.getElementById("calcular-consumo");
 const cancelarForm = document.getElementById("cancelarForm");
+const anuladosBt = document.getElementById("btnAnulados");
 // ----------------------------------------------------------------
 // Variables contenedoras
 let tarifasDisponibles = [];
@@ -114,6 +128,7 @@ let editDetalleId = "";
 let fechaEmisionEdit = "";
 let editContratoId = "";
 let planillaEdit = {};
+let planillaAgrupada = {};
 let encabezadoId = "";
 let editPlanillaEstado = "";
 let totalesSumados = [];
@@ -519,7 +534,6 @@ function renderPlanillas(datosPlanillas) {
     footerDiv.appendChild(totalDiv);
     footerDiv.appendChild(button);
 
-
     // Agregar todos los elementos a la tarjeta principal
     cardDiv.appendChild(headerDiv);
     cardDiv.appendChild(bodyDiv);
@@ -841,6 +855,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   );
   const planilla = await ipcRenderer.invoke("getPlanillaById", planillaId);
   planillaEdit = planilla[0];
+  planillaAgrupada = createPlanillaAgrupada(planilla[0]);
   editContratoId = contratoId;
   fechaEmisionEdit = fechaEmision;
   // ----------------------------------------------------------------
@@ -962,6 +977,9 @@ async function renderServicios(servicios, tipo) {
 
   // console.log("Encabezado desde servicios: " + encabezadoId);
   servicios.forEach((servicio) => {
+    let servicioAgrupado = createServicioAgrupado(servicio);
+    planillaAgrupada.servicios.push(servicioAgrupado);
+    planillaAgrupada.encabezados.push(servicio.encabezadosId);
     // Crear el div principal
     if (servicio.nombre !== "Agua Potable") {
       if (
@@ -1000,6 +1018,7 @@ async function renderServicios(servicios, tipo) {
         totalDescuentoEdit +=
           servicio.descuento / servicio.numeroPagosIndividual;
         const tdBtnGestionar = document.createElement("td");
+        tdBtnGestionar.style = "text-align:center";
         const btnGestionar = document.createElement("button");
         btnGestionar.className = "btn";
         btnGestionar.type = "button";
@@ -1053,6 +1072,88 @@ async function renderServicios(servicios, tipo) {
   // if (editPlanillaEstado == "Cancelado") {
   //   await comprobante(encabezadoId);
   // }
+}
+anuladosBt.addEventListener("click", async () => {
+  if (fechaEmisionEdit !== "" && editContratoId !== "") {
+    const fijosAnulados = await ipcRenderer.invoke(
+      "getAnuladosByContratoId",
+      fechaEmisionEdit,
+      editContratoId
+    );
+
+    renderAnulados(fijosAnulados);
+  } else {
+    console.log("Any planilla selected :)");
+  }
+});
+function renderAnulados(serviciosAnulados) {
+  fechaEmisionDg.textContent = fechaEmisionEdit;
+  anuladosFijosList.innerHTML =
+    '<tr><td class="text-center"' +
+    ' colspan="5">Sin servicios anulados para mostrar ' +
+    "</td></tr>";
+  if (serviciosAnulados.length > 0) {
+    anuladosFijosList.innerHTML = "";
+    serviciosAnulados.forEach((anulado) => {
+      const trAnulado = document.createElement("tr");
+      const tdServicio = document.createElement("td");
+      tdServicio.textContent = anulado.nombre;
+      const tdSubtotal = document.createElement("td");
+      tdSubtotal.textContent = anulado.subtotal;
+      const tdDescuento = document.createElement("td");
+      tdDescuento.textContent = anulado.descuentoValor;
+      const tdTotal = document.createElement("td");
+      tdTotal.textContent = anulado.total;
+      const btRestaurar = document.createElement("button");
+      btRestaurar.type = "button";
+      btRestaurar.textContent = "Restaurar";
+      btRestaurar.classList = "btn btn-outline-light";
+      btRestaurar.addEventListener("click", async () => {
+        await restaurarAnulado(anulado.id);
+      });
+      trAnulado.appendChild(tdServicio);
+      trAnulado.appendChild(tdSubtotal);
+      trAnulado.appendChild(tdDescuento);
+      trAnulado.appendChild(tdTotal);
+      anuladosFijosList.appendChild(trAnulado);
+      trAnulado.appendChild(btRestaurar);
+    });
+  }
+  if (dialogAnulados.close) {
+    dialogAnulados.showModal();
+  }
+}
+cerrarAnuladosBt.addEventListener("click", () => {
+  dialogAnulados.close();
+});
+async function restaurarAnulado(detalleAnuladoId) {
+  dialogAnulados.close();
+  Swal.fire({
+    title: "¿Quieres restaurar este servicio?",
+    text: "El valor se aplicara a la planilla, si esta aún no ha sido cancelada.",
+    icon: "question",
+    iconColor: "#f8c471",
+    showCancelButton: true,
+    confirmButtonColor: "#2874A6",
+    cancelButtonColor: "#EC7063 ",
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      const newDetalle = {
+        estado: "Por cancelar",
+      };
+      const result = await ipcRenderer.invoke(
+        "updateDetalle",
+        fechaEmisionEdit,
+        editContratoId,
+        detalleAnuladoId,
+        newDetalle
+      );
+      console.log(result);
+    } else {
+    }
+  });
 }
 function verificarEstado() {}
 guardarDg.onclick = function () {
@@ -1254,6 +1355,7 @@ async function vistaFactura(planillaEstado) {
             fecha: planillaEdit.fechaEmision,
             cedula: planillaEdit.cedulaPasaporte,
             contrato: planillaEdit.codigo,
+            contratoId: editContratoId,
             planilla: planillaEdit.planillasCodigo,
             telefono: telefonoDf,
             direccion: planillaEdit.direccion,
@@ -1285,15 +1387,20 @@ async function vistaFactura(planillaEstado) {
               confirmButtonColor: "green",
             });
           } else {
+            planillaAgrupada.encabezados = [
+              ...new Set(planillaAgrupada.encabezados),
+            ];
             await ipcRenderer.send(
-              "datos-a-pagina2",
+              // "datos-a-pagina2",
+              "generate-factura-individual-baucher",
               datos,
               encabezado,
               serviciosFijos,
               otrosServicios,
               datosAgua,
               datosTotales,
-              editados
+              editados,
+              planillaAgrupada
             );
           }
         }
@@ -1482,6 +1589,23 @@ const detallesServiciodg = async (servicio) => {
   console.log("Abonar: " + valorAbonar);
   if (servicio.tipo !== "Servicio fijo" && servicio.aplazableSn === "Si") {
     abonarDg.readOnly = false;
+    anularDg.style.display = "none";
+    anularDg.disabled = true;
+  } else if (
+    servicio.tipo !== "Servicio fijo" &&
+    servicio.aplazableSn === "No"
+  ) {
+    abonarDg.readOnly = true;
+    anularDg.style.display = "none";
+    anularDg.disabled = true;
+  } else if (servicio.tipo == "Servicio fijo") {
+    abonarDg.readOnly = true;
+    anularDg.style.display = "block";
+    anularDg.disabled = false;
+    anularDg.addEventListener("click", () => {
+      CerrarFormServicios();
+      anularFijo(servicio);
+    });
   }
   abonarDg.value = valorAbonar;
   abonarDg.placeHolder = "" + valorAbonar;
@@ -1508,6 +1632,7 @@ const detallesServiciodg = async (servicio) => {
     dialogServicios.showModal();
   }
 };
+
 function resetForm() {
   planillaForm.reset();
   planillaEdit = {};

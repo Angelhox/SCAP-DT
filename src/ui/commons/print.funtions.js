@@ -126,4 +126,7 @@ async function guardarEnDirectorioSeleccionado(codigoComprobante) {
     return;
   }
 }
-module.exports = { guardarEnDirectorioSeleccionado };
+
+module.exports = {
+  guardarEnDirectorioSeleccionado,
+};

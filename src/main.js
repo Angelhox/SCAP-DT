@@ -460,7 +460,6 @@ ipcMain.on(
   "generateFacturaMultipleBaucher",
   async (
     event,
-
     serviciosFijos,
     otrosServicios,
     datosAgua,
@@ -595,7 +594,8 @@ ipcMain.on(
     otrosServicios,
     datosAgua,
     datosTotales,
-    editados
+    editados,
+    planillaAgrupada
   ) => {
     console.log("Datos a enviar: " + datos.mensaje);
     // await window.loadFile("src/ui/factura.html");
@@ -623,7 +623,52 @@ ipcMain.on(
       otrosServicios,
       datosAgua,
       datosTotales,
-      editados
+      editados,
+      planillaAgrupada
+    );
+  }
+);
+ipcMain.on(
+  "generate-factura-individual-baucher",
+  async (
+    event,
+    datos,
+    encabezado,
+    serviciosFijos,
+    otrosServicios,
+    datosAgua,
+    datosTotales,
+    editados,
+    planillaAgrupada
+  ) => {
+    console.log("Datos a enviar: " + datos.mensaje);
+    // await window.loadFile("src/ui/factura.html");
+    // // // window.send("datos-a-pagina2", datos);
+    // await window.show();
+
+    //  windowFactura = new BrowserWindow({ show: true });
+    windowFactura = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    });
+    await windowFactura.loadFile("src/ui/FacturaIndividualBaucher/facturaIndividualBaucher.html");
+    // // window.send("datos-a-pagina2", datos);
+    await windowFactura.show();
+
+    await windowFactura.webContents.send(
+      "generate-factura-individual-baucher",
+      datos,
+      encabezado,
+      serviciosFijos,
+      otrosServicios,
+      datosAgua,
+      datosTotales,
+      editados,
+      planillaAgrupada
     );
   }
 );

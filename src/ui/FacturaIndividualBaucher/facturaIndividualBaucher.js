@@ -7,6 +7,14 @@ const printer = require("pdf-to-printer");
 
 const path = require("path");
 const { ipcRenderer, ipcMain } = require("electron");
+const {
+  printSaveBaucherIndividual,
+  guardarEnDirectorioSeleccionado,
+} = require("../commons/print.funtions");
+const {
+  agregarCeroAlPrincipio,
+  formatearFecha,
+} = require("../commons/fechas.functions");
 const socioNombres = document.getElementById("socioNombres");
 const socioCedula = document.getElementById("socioCedula");
 const socioTelefono = document.getElementById("socioTelefono");
@@ -54,6 +62,7 @@ let encabezadoCancelarId = "";
 let serviciosCancelar = [];
 let planillaAgrupadaCancelar = [];
 let codigoPlanilla = "";
+let contratoId = "";
 let codigoGenerado = "";
 let socioRuta = "";
 let contratoRuta = "";
@@ -63,169 +72,134 @@ let totalPago = 0;
 let editSocioId = "";
 let saldosFavor = {};
 // Función para guardar el archivo PDF en la carpeta seleccionada
-async function guardarEnDirectorioSeleccionado(pdfOptions) {
-  const content = document.querySelector(".invoice");
+// async function guardarEnDirectorioSeleccionado(pdfOptions) {
+//   const content = document.querySelector(".invoice");
 
-  try {
-    const directorioSeleccionado = await ipcRenderer.invoke("selectDirectory");
-    const nombreRuta = codigoGenerado;
-    console.log("Codigo generado: " + nombreRuta);
-    if (directorioSeleccionado) {
-      if (nombreRuta !== null) {
-        const rutaCompleta = path.join(
-          directorioSeleccionado,
-          "/Respaldos/" +
-            socioRuta +
-            "/" +
-            contratoRuta +
-            "/" +
-            nombreRuta +
-            ".pdf"
-        );
-        pdfOptions.path = rutaCompleta;
-        // Extraer la ruta de la carpeta
-        const folderPath = path.dirname(pdfOptions.path);
-        // Verificar si la carpeta existe
-        if (!fs.existsSync(folderPath)) {
-          // La carpeta no existe, crearla
-          fs.mkdirSync(folderPath, { recursive: true });
-        }
-        try {
-          const chromePath =
-            "C:/Program Files/Google/Chrome/Application/chrome.exe";
+//   try {
+//     const directorioSeleccionado = await ipcRenderer.invoke("selectDirectory");
+//     const nombreRuta = codigoGenerado;
+//     console.log("Codigo generado: " + nombreRuta);
+//     if (directorioSeleccionado) {
+//       if (nombreRuta !== null) {
+//         const rutaCompleta = path.join(
+//           directorioSeleccionado,
+//           "/Respaldos/" +
+//             socioRuta +
+//             "/" +
+//             contratoRuta +
+//             "/" +
+//             nombreRuta +
+//             ".pdf"
+//         );
+//         pdfOptions.path = rutaCompleta;
+//         // Extraer la ruta de la carpeta
+//         const folderPath = path.dirname(pdfOptions.path);
+//         // Verificar si la carpeta existe
+//         if (!fs.existsSync(folderPath)) {
+//           // La carpeta no existe, crearla
+//           fs.mkdirSync(folderPath, { recursive: true });
+//         }
+//         try {
+//           const chromePath =
+//             "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
-          const browser = await puppeteer.launch({
-            executablePath: chromePath,
-            // Otras opciones de configuración si es necesario
-          });
+//           const browser = await puppeteer.launch({
+//             executablePath: chromePath,
+//             // Otras opciones de configuración si es necesario
+//           });
 
-          // Crea una instancia de navegador
-          // const browser = await puppeteer.launch();
-          const page = await browser.newPage();
-          // Agrega un manejador para los mensajes de la consola
-          page.on("console", (msg) => {
-            console.log(`Mensaje de la consola: ${msg.text()}`);
-          });
-
-          // Contenido HTML que deseas convertir en PDF
-          // Configura la página como página sin margen
-          //await page.setViewport({ width: 100, height: 100, deviceScaleFactor: 1 }); // No hace caso :(
-          // Carga el contenido HTML en la página
-          await page.setContent(content.outerHTML);
-          await page.addStyleTag({
-            content: `
-          body {
-           margin:0;
-           padding:0;
-           background-color:black;
-          }
-        `,
-          });
-          // Función para agregar una imagen a la página
-          // await page.evaluate(() => {
-          //   const img = document.createElement("img");
-          //   img.src = "src/assets/fonts/bg.jpg"; // Ruta a tu imagen
-          //   img.alt = "Descripción de la imagen"; // Texto alternativo para la imagen
-          //   document.body.appendChild(img); // Agrega la imagen al cuerpo de la página
-          // });
-          // Genera el PDF
-          await page
-            .pdf({
-              path: pdfOptions.path,
-              format: pdfOptions.format,
-              width: pdfOptions.width,
-              scale: pdfOptions.scale,
-              height: pdfOptions.height,
-              margin: pdfOptions.margin,
-            })
-            .then(async () => {
-              console.log(`El PDF se guardó en: ${rutaCompleta}`);
-              const newComprobante = {
-                codigo: codigoGenerado,
-                fechaEmision: formatearFecha(new Date()),
-                rutaLocal: rutaCompleta,
-                estado: "Vigente",
-                planillas: JSON.stringify(planillaAgrupadaCancelar),
-                // fechaAnulacion:
-                // motivoAnulacio:
-                // encabezadosId: encabezadoCancelarId,
-              };
-              await cancelarServicios(
-                planillaCancelarId,
-                serviciosCancelar,
-                encabezadoCancelarId,
-                newComprobante
-              );
-              const options = {
-                copies: 2,
-              };
-              // printer.print(pdfOptions.path,options);
-              await ipcRenderer.send(
-                "Dos",
-                [pdfOptions.path, pdfOptions.path],
-                // "C:/Users/Usuario/Documents/dos.pdf",
-                "C:/Users/USE/Documents/dos.pdf",
-                2.5,
-                1
-              );
-              // Impresión exitosa
-              // abrirPagos();
-              console.log("El PDF se ha enviado a la cola de impresión.");
-            })
-            .catch((error) => {
-              // Error de impresión
-              // abrirPagos();
-              console.error("Error al imprimir el PDF:", error);
-            });
-          // Cierra el navegador
-          await browser.close();
-          //await window.print();
-          console.log("PDF generado y guardado correctamente.");
-          // await cerrarFactura();
-        } catch (error) {
-          console.error("Error al generar el PDF:", error);
-        }
-      } else {
-        console.log("Ruta no definida");
-      }
-    } else {
-      console.log("El usuario canceló la selección de directorio.");
-    }
-  } catch (error) {
-    console.error("Error al generar el comprobante:", error);
-  }
-}
+//           // Crea una instancia de navegador
+//           // const browser = await puppeteer.launch();
+//           const page = await browser.newPage();
+//           await page.setContent(content.outerHTML);
+//           await page.addStyleTag({
+//             content: `
+//           body {
+//            margin:0;
+//            padding:0;
+//            background-color:black;
+//           }
+//         `,
+//           });
+//           // Genera el PDF
+//           await page
+//             .pdf({
+//               path: pdfOptions.path,
+//               // format: pdfOptions.format,
+//               width: pdfOptions.width,
+//               scale: pdfOptions.scale,
+//               height: pdfOptions.height,
+//               margin: pdfOptions.margin,
+//             })
+//             .then(async () => {
+//               console.log(`El PDF se guardó en: ${rutaCompleta}`);
+//               const newComprobante = {
+//                 codigo: codigoGenerado,
+//                 fechaEmision: formatearFecha(new Date()),
+//                 rutaLocal: rutaCompleta,
+//                 estado: "Vigente",
+//                 planillas: JSON.stringify(planillaAgrupadaCancelar),
+//                 // fechaAnulacion:
+//                 // motivoAnulacio:
+//                 // encabezadosId: encabezadoCancelarId,
+//               };
+//               await cancelarServicios(
+//                 planillaCancelarId,
+//                 serviciosCancelar,
+//                 encabezadoCancelarId,
+//                 newComprobante
+//               );
+//               const options = {
+//                 copies: 2,
+//               };
+//               // printer.print(pdfOptions.path,options);
+//               await ipcRenderer.send(
+//                 "Dos",
+//                 [pdfOptions.path, pdfOptions.path],
+//                 // "C:/Users/Usuario/Documents/dos.pdf",
+//                 "C:/Users/USE/Documents/dos.pdf",
+//                 2.5,
+//                 1
+//               );
+//               // Impresión exitosa
+//               // abrirPagos();
+//               console.log("El PDF se ha enviado a la cola de impresión.");
+//             })
+//             .catch((error) => {
+//               // Error de impresión
+//               // abrirPagos();
+//               console.error("Error al imprimir el PDF:", error);
+//             });
+//           // Cierra el navegador
+//           await browser.close();
+//           //await window.print();
+//           console.log("PDF generado y guardado correctamente.");
+//           // await cerrarFactura();
+//         } catch (error) {
+//           console.error("Error al generar el PDF:", error);
+//         }
+//       } else {
+//         console.log("Ruta no definida");
+//       }
+//     } else {
+//       console.log("El usuario canceló la selección de directorio.");
+//     }
+//   } catch (error) {
+//     console.error("Error al generar el comprobante:", error);
+//   }
+// }
 async function cerrarFactura() {
   await ipcRenderer.send("cerrarFactura");
   await ipcRenderer.send("recargaComprobantes");
 }
 document.addEventListener("DOMContentLoaded", () => {
   boton.addEventListener("click", async () => {
-    // Configura las opciones para la generación de PDF
-    const scale = 0.7;
-    const scaleX = 0.9; // Escala en el eje X (80%)
-    const scaleY = 0.9; // Escala en el eje Y (120%)
-
-    const pdfOptions = {
-      path: "X:/FacturasSCAP/respaldo.pdf", // Nombre del archivo PDF de salida
-      format: "A4", // Formato de página
-      width: "210mm",
-      height: "297mm",
-      scale: scale,
-      margin: {
-        top: "10mm",
-        bottom: "10mm",
-        left: "0mm",
-        right: "10mm",
-      },
-    };
-    cobrosAlDg();
-    //await guardarEnDirectorioSeleccionado(pdfOptions);
-    // Borrado 002
+    Pagar();
+    // cobrosAlDg();
   });
 });
 ipcRenderer.on(
-  "datos-a-pagina2",
+  "generate-factura-individual-baucher",
   async (
     event,
     datos,
@@ -244,23 +218,12 @@ ipcRenderer.on(
     planillaAgrupadaCancelar = planillaAgrupada;
     encabezadoCancelarId = encabezado.encabezadoId;
     codigoPlanilla = encabezado.planilla;
+    contratoId = encabezado.contratoId;
     editSocioId = encabezado.socioId;
     console.log("Socio cancelando: " + editSocioId);
     socioRuta = encabezado.socio;
     contratoRuta = encabezado.contrato;
     await generarCodigoComprobante();
-
-    console.log(
-      "Recibido par cancelar" +
-        encabezadoCancelarId +
-        " " +
-        planillaCancelarId +
-        " " +
-        encabezado.planilla
-    );
-    // const mensajeElement = document.getElementById("mensaje");
-    // mensajeElement.textContent = datos.mensaje;
-    // Datos del socio
     const fechaImpresionNode = document.createTextNode(
       formatearFecha(new Date())
     );
@@ -271,7 +234,7 @@ ipcRenderer.on(
     const codigoComprobanteNode = document.createTextNode(codigoGenerado);
     codigoComprobante.appendChild(codigoComprobanteNode);
     fechaImpresion.appendChild(fechaImpresionNode);
-    let nombres = encabezado.socio.replace(/ NA | SN /gi, "");
+    let nombres = encabezado.socio.replace(/ NA | SN /gi, " ");
     const socioNode = document.createTextNode(nombres);
     socioNombres.appendChild(socioNode);
     const cedulaNode = document.createTextNode(encabezado.cedula);
@@ -279,8 +242,10 @@ ipcRenderer.on(
     let numero = agregarCeroAlPrincipio(encabezado.telefono);
     const telefonoNode = document.createTextNode(numero);
     socioTelefono.appendChild(telefonoNode);
-    let direccion = encabezado.direccion.replace(/ NA | SN /gi, "");
-
+    let direccion = encabezado.direccion.replace(
+      / NA | SN |, Principal, |Secundaria/gi,
+      " "
+    );
     const direccionNode = document.createTextNode(direccion);
     socioDireccion.appendChild(direccionNode);
     // Datos de la planilla
@@ -288,7 +253,10 @@ ipcRenderer.on(
     planilla.appendChild(planillaNode);
     const contratoNode = document.createTextNode(encabezado.contrato);
     contrato.appendChild(contratoNode);
-    let ubic = encabezado.ubicacion.replace(/ SN,| SN|,/gi, "");
+    let ubic = encabezado.ubicacion.replace(
+      / SN,| SN|, SN|, Principal, |Secundaria|, 999/gi,
+      " "
+    );
     const ubicacionNode = document.createTextNode(ubic);
     contratoUbicacion.appendChild(ubicacionNode);
     const fechaNode = document.createTextNode(formatearFecha(encabezado.fecha));
@@ -314,6 +282,9 @@ ipcRenderer.on(
           renderDetalles(servicioFijo);
         }
       });
+      if (!aguaSn) {
+        dataAgua.style.display = "none";
+      }
     }
     if (otrosServicios !== null && otrosServicios !== undefined) {
       otrosServicios.forEach(async (otroServicio) => {
@@ -332,18 +303,7 @@ ipcRenderer.on(
         } else {
           console.log(`No se encontró un objeto con el ID ${otroServicio.id}`);
         }
-        // if (otroServicio.nombre === "Agua Potable") {
-        //   aguaSn = true;
-        //   console.log("Tiene agua");
-        //   lecturaAnterior.textContent = datosAgua.lecturaAnterior;
-        //   lecturaActual.textContent = datosAgua.lecturaActual;
-        //   consumo.textContent =
-        //     datosAgua.lecturaActual - datosAgua.lecturaAnterior;
-        //   tarifa.textContent = datosAgua.tarifaConsumo;
-        //   total.textContent = datosAgua.valorConsumo;
-        // } else {
         renderDetalles(otroServicio);
-        // }
       });
     }
     subtotal.textContent = "$" + datosTotales.subtotal;
@@ -555,14 +515,13 @@ async function getSaldoAFavor(socioId) {
   saldosFavor.total = saldos.total;
   saldosFavor.entradas = saldos.entradas;
   saldosFavor.salidas = saldos.salidas;
-  // console.log("Saldo: " + saldos.total);
+
   return saldosFavor;
 }
 function renderDetalles(servicio) {
   serviciosCancelar.push(servicio);
   console.log("Servicios a cancelar: " + serviciosCancelar);
-  // contratosList.innerHTML = "";
-  // datosContratos.forEach((contrato) => {
+
   if (
     servicio.nombre !== "Socio comuna" &&
     servicio.estadoDetalles !== "Anulado"
@@ -570,17 +529,18 @@ function renderDetalles(servicio) {
     detailsList.innerHTML += `
   <tr>
   <td>${servicio.nombre}</td>
-    <td>${servicio.descripcion}</td>
+    <td style="display:none;">${servicio.descripcion}</td>
     <td     style="
     text-align: center;
     padding: 5px;
     
     font-size: 15px;
   ">${parseFloat(servicio.total).toFixed(2)}</td>
-    <td     style="
+    <td     
+    style="
+    display:none;
     text-align: center;
     padding: 5px;
-    
     font-size: 15px;
   ">${parseFloat(servicio.descuento).toFixed(2)}</td>
     <td     style="
@@ -597,10 +557,6 @@ function renderDetalles(servicio) {
   ">${parseFloat(servicio.abono).toFixed(2)}</td>
  </tr>
     `;
-  }
-  // });
-  if (!aguaSn) {
-    dataAgua.style.display = "none";
   }
 }
 const cancelarServicios = async (
@@ -621,10 +577,11 @@ const cancelarServicios = async (
   );
 };
 const generarCodigoComprobante = async () => {
-  if (codigoPlanilla !== "") {
+  if (contratoId !== "") {
     const timestamp = Date.now();
     const codigoUnico = `${timestamp}`;
-    codigoGenerado = codigoPlanilla + "" + codigoUnico;
+    // codigoGenerado = codigoPlanilla + "" + codigoUnico;
+    codigoGenerado = (contratoId + "" + codigoUnico).padStart(33, "0");
     console.log("Codigo generado: ", codigoGenerado);
     return codigoGenerado;
   } else {
@@ -649,6 +606,31 @@ ipcRenderer.on("Notificar", (event, response) => {
     });
   }
 });
+async function Pagar() {
+  await guardarEnDirectorioSeleccionado(codigoGenerado).then(async (result) => {
+    if (result) {
+      console.log(result);
+      const newComprobante = {
+        codigo: codigoGenerado,
+        fechaEmision: formatearFecha(new Date()),
+        rutaLocal: result,
+        estado: "Vigente",
+        // Asegurarse de que funciona realmente !!
+        planillas: JSON.stringify(planillaAgrupadaCancelar),
+        // fechaAnulacion:
+        // motivoAnulacio:
+      };
+      console.log("Planilla a imprimir: ", planillaAgrupadaCancelar);
+      await cancelarServicios(
+        planillaCancelarId,
+        serviciosCancelar,
+        encabezadoCancelarId,
+        newComprobante
+      );
+      await cerrarFactura();
+    }
+  });
+}
 ipcRenderer.on("ResultadoPago", async (event, response) => {
   console.log("Response: " + response);
   if (response.success) {
@@ -659,8 +641,8 @@ ipcRenderer.on("ResultadoPago", async (event, response) => {
 
     const pdfOptions = {
       path: "X:/FacturasSCAP/respaldo.pdf", // Nombre del archivo PDF de salida
-      format: "A4", // Formato de página
-      width: "210mm",
+      format: "A6", // Formato de página
+      width: "80mm",
       height: "297mm",
       scale: scale,
       lanscape: true,
@@ -672,7 +654,7 @@ ipcRenderer.on("ResultadoPago", async (event, response) => {
       },
     };
     //cobrosAlDg();
-    await guardarEnDirectorioSeleccionado(pdfOptions);
+    await guardarEnDirectorioSeleccionado(codigoComprobante);
     // Swal.fire({
     //   title: response.title,
     //   text: response.message,
@@ -689,24 +671,6 @@ ipcRenderer.on("ResultadoPago", async (event, response) => {
   // });
   //}
 });
-// Función para agregar cero al principio si no está presente
-function agregarCeroAlPrincipio(numero) {
-  // Verificar si el número comienza con cero
-  if (!/^0/.test(numero)) {
-    // Si no comienza con cero, agregarlo
-    numero = "0" + numero;
-  }
-  return numero;
-}
-
-function formatearFecha(fecha) {
-  const fechaOriginal = new Date(fecha);
-  const year = fechaOriginal.getFullYear();
-  const month = String(fechaOriginal.getMonth() + 1).padStart(2, "0");
-  const day = String(fechaOriginal.getDate()).padStart(2, "0");
-  const fechaFormateada = `${year}-${month}-${day}`;
-  return fechaFormateada;
-}
 async function cancelarFactura() {
   await ipcRenderer.send("cerrarFactura");
 }

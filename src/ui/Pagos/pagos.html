@@ -31,7 +31,7 @@
       href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css"
     />
 
-    <title>Pagos</title>
+    <title>Pagos Individuales</title>
   </head>
   <body class="vh-100 overflow-hidden body">
     <!-- Navbar -->
@@ -548,7 +548,19 @@
                           <th>Subtotal</th>
                           <th>Descuento</th>
                           <th>Total</th>
-                          <th></th>
+                          <th
+                            style="text-align: center; width: 5em"
+                            class="py-0 text-white"
+                          >
+                            <button
+                              id="btnAnulados"
+                              type="button"
+                              class="mb-1 w-100 btn-outline-anulados"
+                              style="margin: 0 auto"
+                            >
+                              Anulados
+                            </button>
+                          </th>
                         </tr>
                       </thead>
                       <tbody id="serviciosFijos">
@@ -574,20 +586,6 @@
                       </thead>
                       <tbody id="otrosServicios">
                         <tr>
-                          <!-- <td class="mp-0">Agua potable</td>
-
-                          <td>$132.75</td>
-                          <td>$13.27</td>
-                          <td>119.48</td>
-                          <td>
-                            <button
-                              type="button"
-                              onclick="mostrarFormServicios()"
-                              class="btn"
-                            >
-                              <i class="fa-solid fa-ellipsis-vertical"></i>
-                            </button>
-                          </td> -->
                           <td class="text-center" colspan="4">
                             Sin servicios ocacionales para mostrar
                           </td>
@@ -613,22 +611,6 @@
                       </thead>
                       <tbody id="otrosAplazables">
                         <tr>
-                          <!-- <td>Agua potable</td>
-
-                          <td>$132.75</td>
-                          <td>$13.27</td>
-                          <td>119.48</td>
-                          <td>119.48</td>
-                          <td>46.25</td>
-                          <td>
-                            <button
-                              type="button"
-                              onclick="mostrarFormServicios()"
-                              class="btn"
-                            >
-                              <i class="fa-solid fa-ellipsis-vertical"></i>
-                            </button>
-                          </td> -->
                           <td class="text-center" colspan="7">
                             Sin servicios aplazabes para mostrar
                           </td>
@@ -637,111 +619,6 @@
                     </table>
                   </div>
                 </div>
-                <!-- <div class="col-6">
-                        <p class="text-center mt-2 mb-2">Servicios Fijos</p>
-                        <div
-                          id="serviciosFijos"
-                          class="row container-card-servicios"
-                        >
-                          <div
-                            class="col-12 card border-info mb-2"
-                            style="
-                              max-width: 100%;
-                              max-height: fit-content;
-                              padding: 0;
-                            "
-                          >
-                            <div
-                              class="card-header titulo-detalles"
-                              style="
-                                margin: 0;
-                                padding: 0.5%;
-                                background-color: #85c1e9;
-                              "
-                            >
-                              <p>Alcantarillado</p>
-                            </div>
-                            <div class="card-body card-cuerpo card-s-cuerpo">-->
-                <!-- <h5 class="card-title">Recoleccion de desechos</h5> -->
-                <!--<div class="col-12">
-                                <div class="row">
-                                  <div class="col-3 card-cuerpo">
-                                    <p class="">Valor:</p>
-                                    <p class="">$2.50</p>
-                                  </div>
-                                  <div class="col-3">
-                                    <p>Descuento:</p>
-                                    <p>Tercera Edad</p>
-                                  </div>
-                                  <div class="col-3">
-                                    <p>Valor desc:</p>
-                                    <p>$0.50</p>
-                                  </div>
-                                  <div class="col-3">
-                                    <p>Total:</p>
-                                    <p>2.50</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-6">
-                        <p class="text-center mt-2 mb-2">
-                          Servicios Ocacionales
-                        </p>
-                        <div
-                          id="otrosServicios"
-                          class="row container-card-servicios"
-                        >
-                          <div
-                            class="col-12 card border-info mb-2"
-                            style="
-                              max-width: 100%;
-                              max-height: fit-content;
-                              padding: 0;
-                            "
-                          >
-                            <div
-                              class="card-header titulo-detalles"
-                              style="
-                                margin: 0;
-                                padding: 0.5%;
-                                background-color: #aed6f1;
-                              "
-                            >
-                              <p>Vacunas</p>
-                            </div>
-                            <div
-                              class="card-body card-cuerpo"
-                              style="padding: 1em"
-                            >-->
-                <!-- <h5 class="card-title">Recoleccion de desechos</h5> -->
-                <!-- <div class="col-12">
-                                <div class="row">
-                                  <div class="col-3 card-cuerpo">
-                                    <p class="">Valor:</p>
-                                    <p class="">$2.50</p>
-                                  </div>
-                                  <div class="col-3">
-                                    <p>Descuento:</p>
-                                    <p>Tercera Edad</p>
-                                  </div>
-                                  <div class="col-3">
-                                    <p>Valor desc:</p>
-                                    <p>$0.50</p>
-                                  </div>
-                                  <div class="col-3">
-                                    <p>Total:</p>
-                                    <p>2.50</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div> -->
               </div>
 
               <div class="col-12">
@@ -807,7 +684,6 @@
                       </div>
                     </div>
                   </div>
-              
                 </div>
               </div>
             </form>
@@ -915,14 +791,30 @@
               <div
                 class="col-12 d-flex align-items-center justify-content-center my-4"
               >
-                <button class="btn btn-success mx-1" id="btnGuardar-dg">
-                  Aceptar
+                <button
+                  disabled
+                  style="display: none"
+                  class="btn btn-success mx-1 w-25"
+                  id="btnAnular-dg"
+                >
+                  Anular
                 </button>
-                <button class="btn btn-success mx-1" id="btnAdministrar-dg">
+
+                <button
+                  class="btn btn-success mx-1 w-25"
+                  id="btnAdministrar-dg"
+                >
                   Administrar
                 </button>
                 <button
-                  class="btn btn-danger mx-1"
+                  class="btn btn-success mx-1 w-25"
+                  id="btnGuardar-dg"
+                  style="display: none"
+                >
+                  Aceptar
+                </button>
+                <button
+                  class="btn btn-danger mx-1 w-25"
                   onclick="CerrarFormServicios()"
                 >
                   Cerrar
@@ -1013,6 +905,70 @@
               <!-- <button class="btn btn-danger mx-1 w-25" id="anular-comprobante">
                 Anular
               </button> -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </dialog>
+    <dialog id="formAnulados" class="dialog-servicios">
+      <section
+        style="width: 90vh; height: fit-content"
+        class="active section-dialog"
+      >
+        <div class="row container-fluid" style="margin: 0; padding: 0">
+          <div class="col-12 encabezado-servicios">
+            <div
+              class="col-12 mp-0 d-flex flex-column align-items-center justify-content-end"
+            >
+              <p class="fs-1 mp-0">
+                Servicios anulados
+                <i class="fs-1 fa-solid fa-gears mx-2 my-2"></i>
+              </p>
+            </div>
+          </div>
+          <div
+            class="col-12 d-flex justify-content-between align-items-center encabezado-bt"
+          >
+            <div class="d-flex align-items-baseline mp-0">
+              <p class="mp-0" id="titulo-dg">Fecha de emision de la planilla</p>
+            </div>
+
+            <p class="" id="fecha-emision-dg">2023-12-11</p>
+          </div>
+          <div class="col-12" style="overflow: none">
+            <div style="height: 30vh; max-height: 30vh; overflow-y: auto">
+              <table class="mt-3 table table-hover">
+                <thead class="table-dark">
+                  <tr>
+                    <th>
+                      Servicios
+                      <small>(Fijos)</small>
+                    </th>
+                    <th>Subtotal</th>
+                    <th>Descuento</th>
+                    <th>Total</th>
+                    <th style="text-align: center; width: 5em">Restaurar</th>
+                  </tr>
+                </thead>
+                <tbody id="fijosAnulados">
+                  <tr>
+                    <td class="text-center" colspan="5">
+                      Sin servicios anulados para mostrar
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              class="col-12 d-flex align-items-center justify-content-center my-4"
+            >
+              <button
+                class="btn btn-danger mx-1 w-25"
+                id="cerrar-form-anulados"
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
