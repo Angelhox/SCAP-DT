@@ -1286,7 +1286,8 @@ async function vistaFactura() {
     //   });
     // } else {
     await ipcRenderer.send(
-      // "generateFacturaMultiple",
+      // Si descomentas esta linea descomenta encabezado tambien <-----
+      // "generateFacturaMultiple",  
       "generateFacturaMultipleBaucher",
       // datos,
       // encabezado,

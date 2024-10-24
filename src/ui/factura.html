@@ -131,7 +131,7 @@
       rel="stylesheet"
       href="../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
     />
-    <title>Factura</title>
+    <title>Factura Individual</title>
   </head>
   <body
     style="
@@ -147,7 +147,11 @@
         <button class="btn-print-custom" id="boton" type="button">
           Comprobante<i class="ico-btn fa-solid fa-print"></i>
         </button>
-        <button type=" button" class="btn-cancel-custom" onclick="cancelarFactura()">
+        <button
+          type=" button"
+          class="btn-cancel-custom"
+          onclick="cancelarFactura()"
+        >
           Cancelar<i class="ico-btn fa-solid fa-ban"></i>
         </button>
         <!-- <p>Here:</p>
@@ -330,22 +334,58 @@
           width: 100%;
         "
       >
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 33%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>Socio:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="socioNombres"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 33%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>CI:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="socioCedula"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 33%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>Telf:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="socioTelefono"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 100%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>Dir:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="socioDireccion"></p>
@@ -360,25 +400,61 @@
           justify-content: space-between;
         "
       >
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 33%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>Planilla:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="planilla"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 33%;
+          "
+        >
           <p style="margin: 0; padding: 0"><strong>Contrato:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="contrato">.</p>
         </div>
-    
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 33%;">
+
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 33%;
+          "
+        >
           <p style="margin: 0; padding: 0">
             <strong>Fecha de emisión:</strong>
           </p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="fechaEmisionPlanilla"></p>
         </div>
-        <div style="display: flex; margin: 0; padding: 0;align-self: flex-start;justify-content: flex-start; width: 100%;">
+        <div
+          style="
+            display: flex;
+            margin: 0;
+            padding: 0;
+            align-self: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+          "
+        >
           <p style="margin: 0; padding: 0">
             <strong>Ubicacion:</strong>
           </p>
@@ -746,24 +822,32 @@
       <div
         class="signatures"
         style="
-          width: 50%;
-          position: fixed;
-          bottom: 5em;
-          right: 25%;
-          left: 25%;
+          margin: 4em auto 0 auto;
+          width: 100%;
+          position: relative;
           display: flex;
           justify-content: space-evenly;
           align-items: center;
         "
       >
         <div
-          style="border-top: 1px dotted #000; width: 35%; text-align: center"
+          style="
+            border-top: 1px dotted #000;
+            width: 40%;
+            text-align: center;
+            margin: 0 2px 0 2px;
+          "
         >
           Responsable
         </div>
-        <div style="width: 30%"></div>
+        <div style="width: 10%"></div>
         <div
-          style="border-top: 1px dotted #000; width: 35%; text-align: center"
+          style="
+            border-top: 1px dotted #000;
+            width: 40%;
+            text-align: center;
+            margin: 0 2px 0 2px;
+          "
         >
           Recibido
         </div>

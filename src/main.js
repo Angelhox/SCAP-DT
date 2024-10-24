@@ -9,7 +9,7 @@ const pdfToPrinter = require("pdf-to-printer");
 const path = require("path");
 const url = require("url");
 const { error } = require("console");
-const { page } = require("pdfkit");
+const { page, scale } = require("pdfkit");
 const {
   cancelarServiciosMultiples,
 } = require("./ui/PagosMultiples/pagos-multiples.api");
@@ -18,6 +18,7 @@ const { cancelarServicios } = require("./ui/Pagos/pagos-individual.api");
 let window;
 let windowFactura;
 let windowFacturaMultiple;
+let windowReportes;
 let servicioEnviar = [];
 
 ipcMain.on("hello", () => {
@@ -92,20 +93,19 @@ ipcMain.on("printPDFNot valid", async (event, filePath) => {
 //     console.error('Error:', error);
 //   }
 // });
-
 // --------------------------------
-ipcMain.on("PrintBaucher", async (event, outputPath) => {
-  try {
-    const options = {
-      scale: "fit",
-    };
-    await pdfToPrinter.print(outputPath, options);
-    await fs.unlink(outputPath);
-    console.log("PDF impreso con éxito.");
-  } catch (error) {
-    console.error("Error al imprimir PDF:", error);
+ipcMain.on(
+  "PrintBaucher",
+  async (event, outputPath, options = { scale: "fit", copies: 2 }) => {
+    try {
+      await pdfToPrinter.print(outputPath);
+      await fs.unlink(outputPath);
+      console.log("PDF impreso con éxito.");
+    } catch (error) {
+      console.error("Error al imprimir PDF:", error);
+    }
   }
-});
+);
 ipcMain.on(
   "Dos",
   async (event, pdfPaths, outputPath, scaleWidth, scaleHeight) => {
@@ -147,6 +147,7 @@ ipcMain.on(
         // orientation: "landscape",
         // scale: "fit",
       };
+      await pdfToPrinter.print(outputPath, options);
       await pdfToPrinter.print(outputPath, options);
       // await fs.unlink(outputPath);
       console.log("PDFs unidos e impresos con éxito.");
@@ -454,6 +455,58 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
   }
 });
 // ----------------------------------------------------------------
+// Reportes
+// ----------------------------------------------------------------
+ipcMain.on(
+  "generate-report-contratos",
+  async (
+    event,
+    datosContratos,
+    datosContratosSinMedidor,
+    anioFiltro,
+    mesFiltro,
+    sectorFiltro
+  ) => {
+    if (!windowReportes) {
+      windowReportes = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+        },
+      });
+      await windowReportes.loadFile(
+        "src/ui/Reportes/Contratos/contratosReport.html"
+      );
+      await windowReportes.show();
+      await windowReportes.webContents.send(
+        "generate-report-contratos",
+        datosContratos,
+        datosContratosSinMedidor,
+        anioFiltro,
+        mesFiltro,
+        sectorFiltro
+      );
+      windowReportes.on("closed", () => {
+        windowReportes = null;
+        window.setEnabled(true);
+        window.focus();
+      });
+      window.setEnabled(false);
+      if (!windowReportes.isFocused()) {
+        // Reproducir sonido de notificación
+        window.webContents.send("play-notification-sound");
+        // Enfocar la ventana secundaria
+        windowReportes.focus();
+      }
+      window.on("closed", () => {
+        windowReportes = null;
+      });
+    }
+  }
+);
+// ----------------------------------------------------------------
 // Funciones de las facturas
 // ----------------------------------------------------------------
 ipcMain.on(
@@ -520,7 +573,7 @@ ipcMain.on(
   "generateFacturaMultiple",
   async (
     event,
-    datos,
+    // datos,
     encabezado,
     serviciosFijos,
     otrosServicios,
@@ -655,7 +708,9 @@ ipcMain.on(
         contextIsolation: false,
       },
     });
-    await windowFactura.loadFile("src/ui/FacturaIndividualBaucher/facturaIndividualBaucher.html");
+    await windowFactura.loadFile(
+      "src/ui/FacturaIndividualBaucher/facturaIndividualBaucher.html"
+    );
     // // window.send("datos-a-pagina2", datos);
     await windowFactura.show();
 
@@ -669,6 +724,35 @@ ipcMain.on(
       datosTotales,
       editados,
       planillaAgrupada
+    );
+  }
+);
+ipcMain.on(
+  "reprintFacturaMultiple",
+  async (
+    event,
+    planilla,
+    codigoComprobanteExistente,
+    fechaComprobanteExistente
+  ) => {
+    windowFactura = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    });
+    await windowFactura.loadFile(
+      "src/ui/FacturaMultipleBaucher/reprintMultipleBaucher.html"
+    );
+    // // window.send("datos-a-pagina2", datos);
+    await windowFactura.show();
+    await windowFactura.webContents.send(
+      "reprintFacturaMultiple",
+      planilla,
+      codigoComprobanteExistente,
+      fechaComprobanteExistente
     );
   }
 );
@@ -4810,7 +4894,7 @@ ipcMain.handle("getComprobantes", async (event, encabezadoId) => {
     const conn = await getConnection();
     const comprobantes = await conn.query(
       "select comprobantes.codigo,comprobantes.fechaEmision,comprobantes.rutaLocal," +
-        "comprobantes.estado,comprobantes.fechaAnulacion,comprobantes.motivoAnulacion," +
+        "comprobantes.estado,comprobantes.fechaAnulacion,comprobantes.motivoAnulacion,comprobantes.planillas," +
         "encabezadoComprobantes.encabezadosId,encabezadocomprobantes.comprobantesId " +
         "from comprobantes join encabezadocomprobantes on comprobantes.id=encabezadocomprobantes.comprobantesId " +
         "where encabezadosId=?",
@@ -4835,50 +4919,50 @@ ipcMain.handle("getEstados", async (event, encabezadoId) => {
     console.log(error);
   }
 });
-ipcMain.handle(
-  "anularPago",
-  async (event, planillaId, encabezadoId, comprobante) => {
-    try {
-      const conn = await getConnection();
-      const resultPlanilla = await conn
-        .query(
-          "UPDATE planillas set estado='Por cobrar' WHERE id= ?",
-          planillaId
-        )
-        .then(async (resultPlanilla) => {
-          const resultEncabezado = await conn.query(
-            "UPDATE encabezado set estado=null,fechaPago=null WHERE id=?",
-            encabezadoId
-          );
-        })
-        .then(async (resultEncabezado) => {
-          const resultDetalles = await conn.query(
-            "UPDATE detallesServicio set estado='Por cancelar' WHERE encabezadosId=?",
-            encabezadoId
-          );
-        })
-        .then(async (resultDetalles) => {
-          const resultComprobante = await conn.query(
-            "UPDATE comprobantes set ? WHERE id=?",
-            [comprobante, comprobante.id]
-          );
-          event.sender.send("Notificar", {
-            success: true,
-            title: "Actualizado!",
-            message: "Se ha anulado el pago y el comprobante.",
-          });
-          return resultComprobante;
-        });
-    } catch (error) {
-      event.sender.send("Notificar", {
-        success: false,
-        title: "Error!",
-        message: "Ha ocurrido un error al anular el pago.",
-      });
-      console.log("Error al anular el pago: ", error);
-    }
-  }
-);
+// ipcMain.handle(
+//   "anularPago",
+//   async (event, planillaId, encabezadoId, comprobante) => {
+//     try {
+//       const conn = await getConnection();
+//       const resultPlanilla = await conn
+//         .query(
+//           "UPDATE planillas set estado='Por cobrar' WHERE id= ?",
+//           planillaId
+//         )
+//         .then(async (resultPlanilla) => {
+//           const resultEncabezado = await conn.query(
+//             "UPDATE encabezado set estado=null,fechaPago=null WHERE id=?",
+//             encabezadoId
+//           );
+//         })
+//         .then(async (resultEncabezado) => {
+//           const resultDetalles = await conn.query(
+//             "UPDATE detallesServicio set estado='Por cancelar' WHERE encabezadosId=?",
+//             encabezadoId
+//           );
+//         })
+//         .then(async (resultDetalles) => {
+//           const resultComprobante = await conn.query(
+//             "UPDATE comprobantes set ? WHERE id=?",
+//             [comprobante, comprobante.comprobantesId]
+//           );
+//           event.sender.send("Notificar", {
+//             success: true,
+//             title: "Actualizado!",
+//             message: "Se ha anulado el pago y el comprobante.",
+//           });
+//           return resultComprobante;
+//         });
+//     } catch (error) {
+//       event.sender.send("Notificar", {
+//         success: false,
+//         title: "Error!",
+//         message: "Ha ocurrido un error al anular el pago.",
+//       });
+//       console.log("Error al anular el pago: ", error);
+//     }
+//   }
+// );
 // ----------------------------------------------------------------
 // Funciones de los saldos
 // ----------------------------------------------------------------

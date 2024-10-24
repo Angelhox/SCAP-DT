@@ -72,7 +72,7 @@ let creacionEdit = "";
 let editServicioId = "";
 let contratandoId = "";
 let ultimaFechaPago = "";
-let fechaCreacion = "2024-05-01 00:00:00";
+let fechaCreacion = "2024-09-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   let individualSnDf = "Si";
   e.preventDefault();
@@ -536,8 +536,8 @@ const mostrarEstadisticas = async (servicioId) => {
 // Funcion que muestra los estados de recaudacion de un servic.
 // ----------------------------------------------------------------
 btnContratarTodos.addEventListener("click", () => {
-   // Solicitar confirmacion al usuario !!
-   Swal.fire({
+  // Solicitar confirmacion al usuario !!
+  Swal.fire({
     title: "¿Quieres aplicar este servicio a todos los contratos activos?",
     text: "El valor del servicio se aplicara en la planilla vigente.",
     icon: "question",
@@ -549,10 +549,9 @@ btnContratarTodos.addEventListener("click", () => {
     cancelButtonText: "Cancelar",
   }).then(async (result) => {
     if (result.isConfirmed) {
-     await contratarTodos();
+      await contratarTodos();
     }
   });
-
 });
 btnContratarPrincipales.addEventListener("click", () => {
   // Solicitar confirmacion al usuario !!
@@ -1210,6 +1209,7 @@ buscarRecaudaciones.onclick = async () => {
 // };
 async function init() {
   fechaCreacion.value = formatearFecha(new Date());
+  servicioCreacion.value = formatearFecha(new Date());
   mesActual();
   mesLimites();
   anioActual();

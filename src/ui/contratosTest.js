@@ -100,6 +100,16 @@ const ubicacionDt = document.getElementById("ubicacionDt");
 const criterio = document.getElementById("criterio");
 const criterioContent = document.getElementById("criterio-content");
 const buscarContratosBtn = document.getElementById("buscarContratos");
+// Variables de reportes
+let datosContratos = [];
+let datosContratosSinMedidor = [];
+const btnReportes = document.getElementById("btn-reporte-contratos");
+const dialogReports = document.getElementById("dialogReports");
+const btnCloseReports = document.getElementById("btn-close-dg-reports");
+const btnGenerarReports = document.getElementById("btn-generar-reporte-dg");
+const sectorBusqueda = document.getElementById("sector-busqueda");
+const mesBusqueda = document.getElementById("mesBusqueda");
+const anioBusqueda = document.getElementById("anioBusqueda");
 // ----------------------------------------------------------------
 // Esta funcion obtiene los id de los servicios disponibles
 // los manipula como elementos del DOM asignandoles el evento de marcado y desmarcado
@@ -2032,6 +2042,85 @@ generarCodigoBt.onclick = () => {
 cancelarContrato.onclick = () => {
   resetForm();
 };
+btnReportes.addEventListener("click", () => {
+  cargarAnioBusquedas();
+  cargarMesesBusqueda();
+  console.log(datosContratos, datosContratosSinMedidor);
+  if (dialogReports.close) {
+    dialogReports.show();
+  }
+});
+btnGenerarReports.addEventListener("click", async () => {
+  const fechaFiltro = `${anioBusqueda.value}-${mesBusqueda.value}-01`;
+  const anioFiltro = anioBusqueda.value;
+  const mesFiltro = mesBusqueda.value;
+  const sectorFiltro = sectorBusqueda.value;
+  console.log("fecha filtro: ", fechaFiltro);
+  await ipcRenderer.send(
+    "generate-report-contratos",
+    datosContratos,
+    datosContratosSinMedidor,
+    anioFiltro,
+    mesFiltro,
+    sectorFiltro
+  );
+});
+function cerrarDialogReports() {
+  dialogReports.close();
+}
+btnCloseReports.addEventListener("click", () => {
+  cerrarDialogReports();
+});
+function cargarAnioBusquedas() {
+  anioBusqueda.innerHTML = '<option value="all" >Todo año</option>';
+  // Obtener el año actual
+  var anioActual = new Date().getFullYear();
+  // Crear opciones de años desde el año actual hacia atrás
+  for (var i = anioActual; i >= 2020; i--) {
+    var option = document.createElement("option");
+    option.value = i;
+    option.text = i;
+    // if (i === anioActual) {
+    //   option.selected = true;
+    // }
+    anioBusqueda.appendChild(option);
+  }
+}
+function cargarMesesBusqueda() {
+  // mesBusqueda.innerHTML = '<option value="all" >Todo mes</option>';
+  // Obtén el mes actual (0-indexed, enero es 0, diciembre es 11)
+  const mesActual = new Date().getMonth();
+  // Array de nombres de meses
+  const nombresMeses = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
+  // Llena el select con las opciones de los meses
+  for (let i = 0; i < nombresMeses.length; i++) {
+    const option = document.createElement("option");
+    option.value = i + 1; // El valor es el índice del mes
+    option.textContent = nombresMeses[i];
+    if (i === mesActual) {
+      console.log("seleccionando: " + mesActual);
+      option.selected = true;
+    }
+
+    mesBusqueda.appendChild(option);
+  }
+
+  // Establece el mes actual como seleccionado
+  // mesBusqueda.value = mesActual;
+}
 // ----------------------------------------------------------------
 // Transicion entre las secciones de la vista
 // ----------------------------------------------------------------

@@ -32,8 +32,8 @@ const connection = mysql.createConnection({
   // database: "railway",
   // database: "bdscaprevis",
   // port: 44319,
+  // port: 3308,
   port: 3308,
-  // port: 3306,
 });
 function getConnection() {
   console.log("Conexion: ", connection);

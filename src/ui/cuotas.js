@@ -109,7 +109,7 @@ let contratandoServicio = "";
 let creacionEdit = "";
 let ultimaFechaPago = "";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2024-05-01 00:00:00";
+let fechaCreacion = "2024-09-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {
@@ -751,7 +751,7 @@ btnContratarTodos.addEventListener("click", () => {
     cancelButtonText: "Cancelar",
   }).then(async (result) => {
     if (result.isConfirmed) {
-     await contratarTodos(usuarios, contratandoServicio);
+      await contratarTodos(usuarios, contratandoServicio);
     }
   });
 });
@@ -770,7 +770,10 @@ btnContratarPrincipales.addEventListener("click", () => {
     cancelButtonText: "Cancelar",
   }).then(async (result) => {
     if (result.isConfirmed) {
-      await contratarPrincipales(contratandoServicio.id, contratandoServicio.tipo);
+      await contratarPrincipales(
+        contratandoServicio.id,
+        contratandoServicio.tipo
+      );
     }
   });
 });
@@ -1223,13 +1226,13 @@ async function vistaFactura(tipo) {
   } else if (tipo == "cancelados") {
     recaudacionesReporte = [];
     recaudacionesReporte = recaudacionesAgrupadas.filter(
-      (recaudacion) => recaudacion.abono > 0
+      (recaudacion) => recaudacion.abono === recaudacion.total
     );
     console.log("rp: Cancelados ", recaudacionesReporte);
   } else if (tipo == "sinCancelar") {
     recaudacionesReporte = [];
     recaudacionesReporte = recaudacionesAgrupadas.filter(
-      (recaudacion) => recaudacion.abono <= 0
+      (recaudacion) => recaudacion.abono < recaudacion.total
     );
     console.log("rp Sin cancelar: ", recaudacionesReporte);
   } else if (tipo == "filtrado") {

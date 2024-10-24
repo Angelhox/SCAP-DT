@@ -9,6 +9,10 @@ const {
 const {
   anularFijo,
 } = require("../commons/DetallesServicios/administrate.functions");
+const {
+  anularComprobantes,
+  anularComprobantesMultiples,
+} = require("../Comprobantes/comprobantes.api");
 // ----------------------------------------------------------------
 // Varibles de las planillas
 // ----------------------------------------------------------------
@@ -634,8 +638,27 @@ function renderComprobantes(comprobantes) {
         ? formatearFecha(comprobante.fechaAnulacion)
         : "Sin fecha";
       tdAnulacion.style.backgroundColor = "#00000000";
+      const tdReimprimir = document.createElement("td");
+      tdReimprimir.textContent = "Imprimir";
+      tdReimprimir.addEventListener("click", async () => {
+        console.log("Planillas: ", comprobante.planillas);
+        if (comprobante.planillas) {
+          const planilla = JSON.parse(comprobante.planillas);
+          const codigoComprobanteExistente = comprobante.codigo;
+          const fechaComprobanteExistente = comprobante.fechaEmision;
+          await ipcRenderer.send(
+            // "datos-a-pagina2",
+            "reprintFacturaMultiple",
+            planilla,
+            codigoComprobanteExistente,
+            fechaComprobanteExistente
+          );
+          console.log("Objeto: ", planilla);
+        } else {
+          console.log("Invalid JSON");
+        }
+      });
       const tdComprobante = document.createElement("td");
-
       tdComprobante.innerHTML = `<i class="fs-5 fa-solid fa-file"></i>`;
       tdComprobante.style = "text-align: center; width: 5em";
       tdComprobante.style.backgroundColor = "#00000000";
@@ -654,6 +677,7 @@ function renderComprobantes(comprobantes) {
       trComprobante.appendChild(tdEmision);
       trComprobante.appendChild(tdEstado);
       trComprobante.appendChild(tdAnulacion);
+      trComprobante.appendChild(tdReimprimir);
       trComprobante.appendChild(tdComprobante);
       comprobantesList.append(trComprobante);
     });
@@ -715,6 +739,7 @@ function abrirComprobante(comprobante) {
 }
 
 async function anularPagos(vigente) {
+  console.log("Comprobante a anular: ", vigente);
   // Consultamos si se quiere anular em comprobante vigente.
   Swal.fire({
     title: "¿Quieres anular el pago de esta planilla?",
@@ -764,7 +789,7 @@ async function anularPagos(vigente) {
               const newComprobante = {
                 motivoAnulacion: result.seleccion,
                 estado: "Anulado",
-                id: vigente.id,
+                id: vigente.comprobantesId,
                 fechaAnulacion: new Date(),
               };
 
@@ -783,8 +808,8 @@ async function anularPagos(vigente) {
                 cancelButtonText: "Cancelar",
               }).then(async (result) => {
                 if (result.isConfirmed) {
-                  const result = await ipcRenderer.invoke(
-                    "anularPago",
+                  await anularComprobantesMultiples(
+                    editContratoId,
                     editPlanillaId,
                     encabezadoId,
                     newComprobante

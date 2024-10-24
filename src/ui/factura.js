@@ -163,8 +163,8 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
               await ipcRenderer.send(
                 "Dos",
                 [pdfOptions.path, pdfOptions.path],
-                // "C:/Users/Usuario/Documents/dos.pdf",
-                "C:/Users/USE/Documents/dos.pdf",
+                "C:/Users/Usuario/Documents/dos.pdf",
+                // "C:/Users/USE/Documents/dos.pdf",
                 2.5,
                 1
               );
@@ -181,7 +181,7 @@ async function guardarEnDirectorioSeleccionado(pdfOptions) {
           await browser.close();
           //await window.print();
           console.log("PDF generado y guardado correctamente.");
-          // await cerrarFactura();
+          await cerrarFactura();
         } catch (error) {
           console.error("Error al generar el PDF:", error);
         }

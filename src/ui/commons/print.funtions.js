@@ -30,10 +30,10 @@ async function guardarEnDirectorioSeleccionado(codigoComprobante) {
     scale: scale,
     lanscape: true,
     margin: {
-      top: "1mm",
-      bottom: "1mm",
-      left: "0.5mm",
-      right: "0.5mm",
+      top: "0",
+      bottom: "0",
+      left: "0",
+      right: "0",
     },
   };
   const content = document.querySelector(".invoice");
@@ -41,6 +41,10 @@ async function guardarEnDirectorioSeleccionado(codigoComprobante) {
     const directorioSeleccionado = await ipcRenderer.invoke("selectDirectory");
     const nombreRuta = codigoComprobante;
     console.log("Codigo generado: " + nombreRuta);
+    const options = {
+      scale: "fit",
+      copies: 2,
+    };
     if (directorioSeleccionado) {
       if (nombreRuta !== null) {
         const rutaCompleta = path.join(
@@ -78,8 +82,8 @@ async function guardarEnDirectorioSeleccionado(codigoComprobante) {
         // Genera el PDF
         await page.emulateMediaType("screen");
         await baucher.pdf({
-          // path: "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
-          path: "C:/Users/Use/Documents/jaaps-temporal-print.pdf",
+          path: "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
+          // path: "C:/Users/Use/Documents/jaaps-temporal-print.pdf",
           //   format: pdfOptions.format,
           width: pdfBaucherOptions.width,
           scale: pdfBaucherOptions.scale,
@@ -99,8 +103,9 @@ async function guardarEnDirectorioSeleccionado(codigoComprobante) {
             console.log(`El PDF se guardó en: ${rutaCompleta}`);
             await ipcRenderer.send(
               "PrintBaucher",
-              // "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
-              "C:/Users/USE/Documents/jaaps-temporal-print.pdf"
+              "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
+              // "C:/Users/USE/Documents/jaaps-temporal-print.pdf",
+              options
             );
             // Impresión exitosa
             console.log("El PDF se ha enviado a la cola de impresión.");
@@ -126,7 +131,76 @@ async function guardarEnDirectorioSeleccionado(codigoComprobante) {
     return;
   }
 }
+async function reprintBaucher() {
+  const scale = 0.9;
+  const scaleX = 0.9; // Escala en el eje X (80%)
+  const scaleY = 0.9; // Escala en el eje Y (120%)
+
+  const pdfBaucherOptions = {
+    path: "X:/FacturasSCAP/respaldo.pdf",
+    format: "A6",
+    width: "80mm",
+    height: "297mm",
+    scale: scale,
+    lanscape: true,
+    margin: {
+      top: "0",
+      bottom: "0",
+      left: "0",
+      right: "0",
+    },
+  };
+  const content = document.querySelector(".invoice");
+  try {
+    const options = {
+      scale: "fit",
+      copies: 2,
+    };
+    const chromePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+
+    const browser = await puppeteer.launch({
+      executablePath: chromePath,
+      // Agrega mas opciones de configuración si es necesario !!
+    });
+    // Crea una instancia de navegador
+    const baucher = await browser.newPage();
+    // Contenido HTML que deseas convertir en PDF
+    await baucher.setContent(content.outerHTML);
+    // Genera el PDF
+    await baucher
+      .pdf({
+        path: "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
+        // path: "C:/Users/Use/Documents/jaaps-temporal-print.pdf",
+        //   format: pdfOptions.format,
+        width: pdfBaucherOptions.width,
+        scale: pdfBaucherOptions.scale,
+        height: pdfBaucherOptions.height,
+        margin: pdfBaucherOptions.margin,
+      })
+      .then(async () => {
+        await ipcRenderer.send(
+          "PrintBaucher",
+          "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
+          // "C:/Users/USE/Documents/jaaps-temporal-print.pdf",
+          options
+        );
+        // Impresión exitosa
+        console.log("El PDF se ha enviado a la cola de impresión.");
+      })
+      .catch((error) => {
+        // Error de impresión
+        console.error("Error al imprimir el PDF:", error);
+      });
+    // Cierra el navegador
+    await browser.close();
+    console.log("PDF generado  correctamente.");
+  } catch (error) {
+    console.error("Error al generar el comprobante:", error);
+    return;
+  }
+}
 
 module.exports = {
   guardarEnDirectorioSeleccionado,
+  reprintBaucher,
 };

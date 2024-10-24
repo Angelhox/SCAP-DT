@@ -102,6 +102,8 @@ const ubicacionDt = document.getElementById("ubicacionDt");
 const criterio = document.getElementById("criterio");
 const criterioContent = document.getElementById("criterio-content");
 const buscarContratosBtn = document.getElementById("buscarContratos");
+// Boton de reportes
+const reportes = document.getElementById("btn-reporte-contratos");
 // ----------------------------------------------------------------
 // Esta funcion obtiene los id de los servicios disponibles
 // los manipula como elementos del DOM asignandoles el evento de marcado y desmarcado
@@ -2025,6 +2027,9 @@ generarCodigoBt.onclick = () => {
 cancelarContrato.onclick = () => {
   resetForm();
 };
+reportes.addEventListener('click', () => {
+  console.log('Generar reporte');
+});
 // ----------------------------------------------------------------
 // Transicion entre las secciones de la vista
 // ----------------------------------------------------------------

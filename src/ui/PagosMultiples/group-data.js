@@ -60,37 +60,41 @@ async function agruparServicios(allServicios) {
     );
     // Si el grupo existe, agregar el valor al grupo
     if (grupoExistente) {
-      grupoExistente.index += 1;
-      grupoExistente.abono += objeto.abono;
-      if (objeto.aplazableSn === "No") {
-        grupoExistente.total += objeto.total;
-        grupoExistente.subtotal += objeto.subtotal;
+      if (objeto.estadoDetalles !== "Anulado") {
+        grupoExistente.index += 1;
+        grupoExistente.abono += objeto.abono;
+        if (objeto.aplazableSn === "No") {
+          grupoExistente.total += objeto.total;
+          grupoExistente.subtotal += objeto.subtotal;
+        }
+        grupoExistente.descuento += objeto.descuento;
+        // Recorriendo hasta quedarse con el ultimo saldo
+        grupoExistente.saldo = objeto.saldo;
+        grupoExistente.objetos.push(objeto);
+        grupoExistente.detallesIds.push(objeto.detallesId);
+        grupoExistente.encabezadosIds.push(objeto.encabezadosId);
       }
-      grupoExistente.descuento += objeto.descuento;
-      // Recorriendo hasta quedarse con el ultimo saldo
-      grupoExistente.saldo = objeto.saldo;
-      grupoExistente.objetos.push(objeto);
-      grupoExistente.detallesIds.push(objeto.detallesId);
-      grupoExistente.encabezadosIds.push(objeto.encabezadosId);
     } else {
       // Si el grupo no existe, crear uno nuevo con el valor
-      acumulador.push({
-        id: objeto.serviciosId,
-        index: 1,
-        contratadosId: objeto.contratadosId,
-        tipo: objeto.tipo,
-        aplazableSn: objeto.aplazableSn,
-        nombre: objeto.nombre,
-        subtotal: objeto.subtotal,
-        descuento: objeto.descuentoValor,
-        total: objeto.total,
-        abono: objeto.abono,
-        saldo: objeto.saldo,
-        descripcion: objeto.servicioDescripcion,
-        objetos: [objeto],
-        detallesIds: [objeto.detallesId],
-        encabezadosIds: [objeto.encabezadosId],
-      });
+      if (objeto.estadoDetalles !== "Anulado") {
+        acumulador.push({
+          id: objeto.serviciosId,
+          index: 1,
+          contratadosId: objeto.contratadosId,
+          tipo: objeto.tipo,
+          aplazableSn: objeto.aplazableSn,
+          nombre: objeto.nombre,
+          subtotal: objeto.subtotal,
+          descuento: objeto.descuentoValor,
+          total: objeto.total,
+          abono: objeto.abono,
+          saldo: objeto.saldo,
+          descripcion: objeto.servicioDescripcion,
+          objetos: [objeto],
+          detallesIds: [objeto.detallesId],
+          encabezadosIds: [objeto.encabezadosId],
+        });
+      }
     }
 
     return acumulador;

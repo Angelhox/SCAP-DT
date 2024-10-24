@@ -193,7 +193,7 @@
               type="button"
               id="btnSeccion2"
             >
-              Contratos eixistentes
+              Contratos existentes
             </button>
           </div>
           <div class="col-12">
@@ -567,13 +567,22 @@
                 Contratos con medidor
                 <i class="fs-1 fa-solid fa-file-signature mx-2 my-2"></i>
               </p>
-              <button
-                class="btn btn-outline-light"
-                type="button"
-                id="btnSeccion1"
-              >
-                Nuevo contrato
-              </button>
+              <div>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="btnSeccion1"
+                >
+                  Nuevo contrato
+                </button>
+                <button
+                  class="btn btn-outline-light"
+                  type="button"
+                  id="btn-reporte-contratos"
+                >
+                  Reportes
+                </button>
+              </div>
             </div>
             <div class="col-12">
               <label for="criterio">Administra los contratos existentes</label>
@@ -847,6 +856,110 @@
         </div>
       </div>
     </section>
+    <dialog id="dialogReports" class="dialog">
+      <section
+        style="width: 90vh; height: fit-content"
+        class="active section-dialog"
+      >
+        <div class="row container-fluid" style="margin: 0; padding: 0">
+          <div class="col-12 encabezado-servicios">
+            <div
+              class="col-12 mp-0 d-flex flex-column align-items-center justify-content-end"
+            >
+              <p class="fs-1 mp-0" id="title-dg">
+                Reportes
+                <i class="fs-1 fa-solid fa-gears mx-2 my-2"></i>
+              </p>
+            </div>
+          </div>
+          <div
+            class="col-12 d-flex justify-content-between align-items-center encabezado-bt"
+          >
+            <div class="d-flex align-items-baseline mp-0">
+              <!-- <p class="servicio-title mp-0" id="servicio-tit">Agua Potable</p>
+          <p class="trans">-</p> -->
+
+              <p class="mp-0" id="descripcion-dg">
+                Socios registrados en la comunidad
+              </p>
+            </div>
+
+            <!-- <p class="" id="detalles-dg">Servicio fijo | No aplazable</p> -->
+            <!-- <p id="servicio-val">Valor: $2.50</p> -->
+          </div>
+          <div class="col-12" style="overflow: none">
+            <div class="row justify-content-between text-center">
+              <div class="col-12"><h4>Filtros</h4></div>
+              <div class="col-4">
+                <label for="">Fecha de Inicio</label>
+                <div class="col-row d-flex">
+                  <div class="col-6 text-center mp-0">
+                    <select
+                      id="anioBusqueda"
+                      class="form-select"
+                      aria-label="Default select example"
+                      style="
+                        border-top-right-radius: 0;
+                        border-bottom-right-radius: 0;
+                      "
+                    >
+                      <option value="all">Todos los años</option>
+                    </select>
+                  </div>
+                  <div class="col-6 text-center mp-0">
+                    <select
+                      style="
+                        border-top-left-radius: 0;
+                        border-bottom-left-radius: 0;
+                      "
+                      id="mesBusqueda"
+                      class="form-select"
+                    >
+                      <!-- <option value="all" selected>Todos los meses</option> -->
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-4">
+                <label for="">Sectores</label>
+                <div class="col-row d-flex">
+                  <div class="col-12 text-center mp-0">
+                    <select
+                    id="sector-busqueda"
+                      class="form-select"
+                      aria-label="Default select example"
+                    >
+                      <option value="all">Todos los Sectores</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="col-12 err-container"
+                id="err-container"
+                style="display: none"
+              >
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p id="errorTextAbono">Error</p>
+              </div>
+              <div
+                class="col-12 d-flex align-items-center justify-content-center my-4"
+              >
+                <button
+                  class="btn btn-success mx-1"
+                  id="btn-generar-reporte-dg"
+                >
+                  Generar Reporte
+                </button>
+                <button class="btn btn-danger mx-1" id="btn-close-dg-reports">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </dialog>
   </body>
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"

@@ -50,8 +50,9 @@ section.active {
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
-.title-item{
-font-weight: 500;
+
+.title-item {
+    font-weight: 500;
 }
 
 .card-fondo {
@@ -266,7 +267,7 @@ font-weight: 500;
 }
 
 .btn-check-custom {
- width: 100rem;
+    width: 100rem;
     padding: 0.375rem 0.75rem;
     font-size: 1rem;
     line-height: 1.5;
@@ -323,6 +324,7 @@ font-weight: 500;
     display: none;
 
 }
+
 ::-webkit-scrollbar {
     width: 10px;
     /* Ancho de la barra de desplazamiento*/
@@ -334,7 +336,8 @@ font-weight: 500;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #f8c471;;
+    background-color: #f8c471;
+    ;
     /* Color del "pulgar" de la barra de desplazamiento */
 }
 
@@ -342,18 +345,19 @@ font-weight: 500;
     background-color: #555;
     /* Cambia el color del "pulgar" al pasar el ratón por encima */
 }
-.value-disponibles{
+
+.value-disponibles {
     font-size: 1.2em;
     font-weight: 500;
-    
+
 }
-  
+
 #contenedor-sugerencias {
     position: relative;
     width: 100%;
-  }
+}
 
-  #lista-sugerencias {
+#lista-sugerencias {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -364,15 +368,15 @@ font-weight: 500;
     width: 100%;
     max-height: 200px;
     overflow-y: auto;
-  }
-  
-  .form-control {
+}
+
+.form-control {
     border-radius: 0;
     box-shadow: none;
     border-color: #d2d6de;
-  }
-  
-  .form-control {
+}
+
+.form-control {
     display: block;
     width: 100%;
     height: 34px;
@@ -387,9 +391,45 @@ font-weight: 500;
     -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     -webkit-transition: border-color ease-in-out 0.15s,
-      -webkit-box-shadow ease-in-out 0.15s;
+        -webkit-box-shadow ease-in-out 0.15s;
     -o-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
     transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-  }
+}
 
- 
+/*Formulario de reportes*/
+.dialog {
+    padding: 0;
+    border: none;
+    background-color: #00000000;
+    overflow: none;
+    z-index: 999999;
+
+}
+
+.section-dialog {
+    background-color: white;
+    padding: 0;
+    overflow: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.encabezado-bt {
+    color: white;
+    font-size: 1.1em;
+    font-weight: 700;
+    background-color: #f8c471;
+    ;
+    border: solid 3px #85C1E9;
+    border-top: none;
+    padding: .5em 1.1em .1em 1.1em;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 5px;
+
+}
+
+.encabezado-bt p {
+    margin: 0 0 0 0;
+    padding: 0;
+
+}

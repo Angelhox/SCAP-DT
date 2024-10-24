@@ -227,7 +227,7 @@ ipcRenderer.on(
   "generateFacturaMultiple",
   async (
     event,
-    datos,
+    // datos,
     encabezado,
     serviciosFijos,
     otrosServicios,

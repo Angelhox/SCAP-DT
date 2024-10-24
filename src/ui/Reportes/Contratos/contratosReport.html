@@ -115,21 +115,21 @@
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../ui/style/factura.css" />
+    <link rel="stylesheet" href="../../style/factura.css" />
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script> -->
     <link
       rel="stylesheet"
-      href="../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
+      href="../../../../node_modules/@fortawesome/fontawesome-free/css/fontawesome.css"
     />
     <link
       rel="stylesheet"
-      href="../../node_modules/@fortawesome/fontawesome-free/css/solid.css"
+      href="../../../../node_modules/@fortawesome/fontawesome-free/css/solid.css"
     />
     <link
       rel="stylesheet"
-      href="../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
+      href="../../../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
     />
-    <title>Factura</title>
+    <title>Reportes</title>
   </head>
   <body
     style="
@@ -143,7 +143,7 @@
   >
     <div style="width: 100%; height: 5%; position: fixed; top: 0">
       <div style="display: flex; justify-content: end; align-items: center">
-        <button class="btn-print-custom" id="boton" type="button">
+        <button class="btn-print-custom" id="btn-print" type="button">
           Imprimir<i class="ico-btn fa-solid fa-print"></i>
         </button>
         <button type=" button" class="btn-cancel-custom" id="cancelar-reporte">
@@ -158,8 +158,9 @@
       style="
         width: 94%;
         /* height: 95%; */
+        min-height: 95%;
         height: max-content;
-        margin: 0 5%;
+        margin: 0 5% ;
         background-color: white;
         padding: 0 0 0 0;
         border-radius: 5px;
@@ -218,24 +219,24 @@
                 font-stretch: condensed;
               "
             >
-              JUNTA ADMINISTRADORA DE AGUA POTABLE Y SANEAMIENTO
+            JUNTA ADMINISTRADORA DE AGUA POTABLE Y SANEAMIENTO
             </h1>
             <h3 style="margin: 0; padding: 0 0 0 0; width: 100%">
               SANTO DOMINGO N°1
             </h3>
             <small
-              style="
-                /* padding: 0.15em 0.15em; */
-                margin: 0 auto;
+            style="
+              /* padding: 0.15em 0.15em; */
+              margin: 0 auto;
 
-                width: 100%;
-                text-transform: uppercase;
-                font-style: italic;
-                font-size: 0.7rem;
-              "
-            >
-              Cobro de servicios ciudadanos
-            </small>
+              width: 100%;
+              text-transform: uppercase;
+              font-style: italic;
+              font-size: 0.7rem;
+            "
+          >
+            Cobro de servicios ciudadanos
+          </small>
             <div
               style="
                 align-self: center;
@@ -310,11 +311,11 @@
         style="border: solid 1px black; opacity: 0.5; margin: 0; padding: 0"
       />
 
-      <table id="data-agua" style="width: 100%">
+      <table id="data-report" style="width: 100%">
         <thead>
           <tr style="margin: 0; padding: 0.5em 0; width: 100%">
             <th
-              id="nombreServicio"
+              id="nombreReporte"
               colspan="2"
               class="titles"
               style="
@@ -325,11 +326,11 @@
                 font-size: 15px;
               "
             >
-              Agua potable
+              Reporte de Socios
             </th>
             <th
               id="fechaDesde"
-              colspan="3"
+              colspan="2"
               class="titles"
               style="
                 text-align: left;
@@ -401,9 +402,9 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
-              id="estado"
+              id="identificacion"
             >
-              Estado
+              Identificación
             </th>
             <th
               style="
@@ -412,9 +413,9 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
-              id="total"
+              id="fecha-registro"
             >
-              Total
+              Fecha de registro
             </th>
             <th
               style="
@@ -423,9 +424,9 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
-              id="abonado"
+           id="estado"
             >
-              Abonado
+             Estado
             </th>
             <th
               style="
@@ -434,16 +435,25 @@
                 border-bottom: 1px solid #ccc;
                 font-size: 15px;
               "
-              id="saldo"
+              id="barrio"
             >
-              Saldo
+              Barrio
             </th>
+            </th>
+        
           </tr>
         </thead>
-        <tbody id="recaudaciones"></tbody>
+        <tbody id="data">
+          <!-- <tr>
+            <td colspan="6" style="text-align: center;">Sin datos para mostrar</td>
+          </tr> -->
+        </tbody>
       </table>
 
-      <table style="width: 100%; margin-bottom: 10px" id="valores-totales">
+      <table
+        style="width: 100%; margin-bottom: 10px; display: none"
+        id="valores-totales"
+      >
         <thead>
           <tr>
             <th
@@ -634,6 +644,6 @@
 
       <div class="signature">Recibido</div>
     </div> -->
-    <script src="./consolidado.js" defer></script>
+    <script src="./contratosReport.js" defer></script>
   </body>
 </html>

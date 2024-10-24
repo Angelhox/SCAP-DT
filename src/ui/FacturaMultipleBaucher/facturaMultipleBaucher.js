@@ -6,7 +6,10 @@
 const Swal = require("sweetalert2");
 const path = require("path");
 const { ipcRenderer, ipcMain } = require("electron");
-const { formatearFecha, agregarCeroAlPrincipio } = require("../../ui/commons/fechas.functions");
+const {
+  formatearFecha,
+  agregarCeroAlPrincipio,
+} = require("../../ui/commons/fechas.functions");
 const {
   guardarEnDirectorioSeleccionado,
 } = require("../commons/print.funtions");
@@ -277,7 +280,7 @@ ipcRenderer.on(
       serviciosFijos !== undefined
     ) {
       serviciosFijos.forEach(async (servicioFijo) => {
-        console.log("En for: " , servicioFijo.nombre);
+        console.log("En for: ", servicioFijo.nombre);
         if (servicioFijo.nombre === "Agua Potable") {
           aguaSn = true;
           console.log("Tiene agua");
@@ -665,20 +668,17 @@ function renderDetalles(servicio) {
     <td     style="
     text-align: center;
     padding: 5px;
-
-    font-size: 15px;
-  ">${parseFloat(servicio.saldo).toFixed(2)}</td>
-    <td     style="
-    text-align: center;
-    padding: 5px;
-    
     font-size: 15px;
   ">${parseFloat(servicio.abono).toFixed(2)}</td>
+      <td     style="
+    text-align: center;
+    padding: 5px;
+    font-size: 15px;
+  ">${parseFloat(servicio.saldo).toFixed(2)}</td>
  </tr>
     `;
   }
   // });
- 
 }
 const cancelarServiciosMultiples = async (
   planillaCancelar,

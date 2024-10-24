@@ -546,15 +546,15 @@ function renderDetalles(servicio) {
     <td     style="
     text-align: center;
     padding: 5px;
-
-    font-size: 15px;
-  ">${parseFloat(servicio.saldo).toFixed(2)}</td>
-    <td     style="
-    text-align: center;
-    padding: 5px;
     
     font-size: 15px;
   ">${parseFloat(servicio.abono).toFixed(2)}</td>
+      <td     style="
+    text-align: center;
+    padding: 5px;
+
+    font-size: 15px;
+  ">${parseFloat(servicio.saldo).toFixed(2)}</td>
  </tr>
     `;
   }
