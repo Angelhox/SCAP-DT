@@ -70,4 +70,12 @@ async function cancelarServicios(
     console.log("Error al cancelar: ", error);
   }
 }
-module.exports = { cancelarServicios };
+const getSaldoNoCancelado = async (contratadoId) => {
+  const conn = await getConnection();
+  const saldoNoCancelado = await conn.query(
+    "SELECT * FROM detallesservicio where serviciosContratadosId=? and estado='Por cancelar';",
+    contratadoId
+  );
+  return saldoNoCancelado;
+};
+module.exports = { cancelarServicios, getSaldoNoCancelado };

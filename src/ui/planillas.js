@@ -105,7 +105,7 @@ let editPlanillaId = "";
 let editDetalleId = "";
 let fechaEmisionEdit = "";
 let editContratoId = "";
-let fechaCreacion = "2024-09-01 00:00:00";
+let fechaCreacion = "2024-11-01 00:00:00";
 planillaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const newPlanilla = {
@@ -164,6 +164,8 @@ planillaForm.addEventListener("submit", async (e) => {
 });
 
 function renderPlanillas(datosPlanillas) {
+  const estadoEnBusqueda = estadoBuscar.value;
+  console.log("Estado buscar: ", estadoEnBusqueda);
   planillasList.innerHTML = "";
   datosPlanillas.forEach(async (datosPlanilla) => {
     // Crear el elemento div principal con las clases y el estilo
@@ -276,10 +278,11 @@ function renderPlanillas(datosPlanillas) {
 
     //Consulta los servicios a cancelar de acuerdo al id del contrato
     const datosServicios = await ipcRenderer.invoke(
-      "getDatosServiciosByContratoId",
+      "getDatosServiciosByContratoIdWithStatus",
       datosPlanilla.contratosId,
       formatearFecha(datosPlanilla.fechaEmision),
-      "all"
+      "all",
+      estadoEnBusqueda === "Por cobrar" ? "Por cancelar" : "Cancelado"
     );
     console.log("Servicios encontrados: " + datosServicios);
     // Crear elementos para los detalles de servicios (Consumo, Tarifa, Valor)
@@ -549,6 +552,7 @@ const getDatosLecturas = async (contratoId, fechaEmision) => {
   return lectura;
 };
 const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
+  let estadoPlanilla;
   console.log("Planilla a editar: " + planillaId);
   console.log("fechaEmision: " + formatearFecha(fechaEmision));
   console.log("fechaEmision: " + fechaEmision);
@@ -579,6 +583,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   socioNombres.textContent = planilla[0].nombre;
   socioCedula.textContent = planilla[0].cedulaPasaporte;
   socioUbicacion.textContent = planilla[0].ubicacion;
+  estadoPlanilla = planilla[0].estado;
   planillaEstado.textContent = planilla[0].estado;
 
   const tieneAgua = await ipcRenderer.invoke(
@@ -643,6 +648,12 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   serviciosFijosList.innerHTML = "";
   otrosServiciosList.innerHTML = "";
   otrosAplazablesList.innerHTML = "";
+  let estadoBuscar = "";
+  if (estadoPlanilla === "Cancelado") {
+    estadoBuscar = "Cancelado";
+  } else if (estadoPlanilla === "Por cobrar") {
+    estadoBuscar = "Por cancelar";
+  }
   const serviciosFijos = await ipcRenderer.invoke(
     "getDatosServiciosByContratoId",
     contratoId,
@@ -651,7 +662,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     "fijos"
   );
   if (serviciosFijos[0] !== undefined) {
-    renderServicios(serviciosFijos, "fijos");
+    renderServicios(serviciosFijos, "fijos", estadoBuscar);
   } else {
     serviciosFijosList.innerHTML = "";
   }
@@ -663,7 +674,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     "otros"
   );
   if (otrosServicios[0] !== undefined) {
-    renderServicios(otrosServicios, "otros");
+    renderServicios(otrosServicios, "otros", estadoBuscar);
   } else {
     otrosServiciosList.innerHTML = "";
   }
@@ -673,13 +684,23 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
   // valorTotalDescuento.value=0;
   valorTotalDescuento.value = descuentoFinal;
 };
-function renderServicios(servicios, tipo) {
+function renderServicios(servicios, tipo, estadoBuscar) {
   let totalPagarEdit = 0;
   let totalDescuentoEdit = 0;
   let subtotalEdit = 0;
+  let estadoFiltro = null;
+  if (estadoBuscar === "Cancelado") {
+    estadoFiltro = "Por cancelar";
+  } else if (estadoBuscar === "Por cancelar") {
+    estadoFiltro = "Cancelado";
+  }
   console.log("Servicios a renderizard: ", servicios, tipo);
   servicios.forEach((servicio) => {
-    if (servicio.estadoDetalles !== "Anulado") {
+    if (
+      servicio.estadoDetalles !== "Anulado" &&
+      servicio.nombre !== "Socio comuna" &&
+      servicio.estadoDetalles !== estadoFiltro
+    ) {
       // Crear el div principal
       if (servicio.nombre !== "Agua Potable") {
         const tr = document.createElement("tr");

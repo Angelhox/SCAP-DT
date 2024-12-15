@@ -67,6 +67,10 @@ th {
     height: 80rem;
 }
 
+.card-cuota {
+    height: 60rem;
+}
+
 .header-planilla {
     font-size: 100%;
     font-weight: 500;
@@ -140,6 +144,18 @@ th {
 
 }
 
+.lista-cuota {
+    display: flex;
+    flex-direction: column;
+    height: 9rem;
+    overflow-y: auto;
+    justify-content: center;
+    align-items: center;
+
+}
+.service-name{
+    font-weight: 600;
+}
 .detalles p {
     list-style: none;
     margin: 0;

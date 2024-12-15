@@ -1,9 +1,12 @@
 // ----------------------------------------------------------------
 // Librerias
 // ----------------------------------------------------------------
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, ipcMain } = require("electron");
 const validator = require("validator");
 const Swal = require("sweetalert2");
+const {
+  getAboutBeneficiarios,
+} = require("./Reportes/ServiciosContratados/serviciosContratados.api");
 // ----------------------------------------------------------------
 const servicioCreacion = document.getElementById("fechaCreacion");
 const servicioNombre = document.getElementById("nombre");
@@ -72,7 +75,7 @@ let creacionEdit = "";
 let editServicioId = "";
 let contratandoId = "";
 let ultimaFechaPago = "";
-let fechaCreacion = "2024-09-01 00:00:00";
+let fechaCreacion = "2024-11-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   let individualSnDf = "Si";
   e.preventDefault();
@@ -1412,9 +1415,25 @@ btnReporte.onclick = async () => {
   }
 };
 reporteBeneficiarios.addEventListener("click", () => {
-  vistaFactura("beneficiarios");
+  generateReport();
 });
-
+const generateReport = async () => {
+  const beneficiarios = await getAboutBeneficiarios(contratandoId);
+  if (beneficiarios) {
+    const encabezado = {
+      tipoReporte: "beneficiarios",
+      servicio: servicioTit.textContent,
+      tipo: "Servicios Fijos",
+      fechaD: creacionEdit,
+      fechaH: formatearFecha(new Date()),
+    };
+    ipcRenderer.send(
+      "generate-report-servicios-contratados",
+      beneficiarios,
+      encabezado
+    );
+  }
+};
 // Ejemplo: Obtener el primer y último día de septiembre de 2023
 const resultado = obtenerPrimerYUltimoDiaDeMes("2023", 1); // 8 representa septiembre (0-indexed)
 console.log("Primer día:", formatearFecha(resultado.primerDia));

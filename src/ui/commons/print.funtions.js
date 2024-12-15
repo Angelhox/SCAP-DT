@@ -3,6 +3,8 @@ const path = require("path");
 const fs = require("fs");
 const puppeteer = require("puppeteer");
 // Función para guardar el archivo PDF en la carpeta seleccionada
+let tempDocPath= "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf";
+// let tempDocPath = "C:/Users/Use/Documents/jaaps-temporal-print.pdf";
 async function guardarEnDirectorioSeleccionado(codigoComprobante) {
   const scale = 0.9;
   const scaleX = 0.9; // Escala en el eje X (80%)
@@ -82,8 +84,7 @@ async function guardarEnDirectorioSeleccionado(codigoComprobante) {
         // Genera el PDF
         await page.emulateMediaType("screen");
         await baucher.pdf({
-          path: "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
-          // path: "C:/Users/Use/Documents/jaaps-temporal-print.pdf",
+          path: tempDocPath,
           //   format: pdfOptions.format,
           width: pdfBaucherOptions.width,
           scale: pdfBaucherOptions.scale,
@@ -101,12 +102,7 @@ async function guardarEnDirectorioSeleccionado(codigoComprobante) {
           })
           .then(async () => {
             console.log(`El PDF se guardó en: ${rutaCompleta}`);
-            await ipcRenderer.send(
-              "PrintBaucher",
-              "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
-              // "C:/Users/USE/Documents/jaaps-temporal-print.pdf",
-              options
-            );
+            await ipcRenderer.send("PrintBaucher", tempDocPath, options);
             // Impresión exitosa
             console.log("El PDF se ha enviado a la cola de impresión.");
           })
@@ -169,8 +165,7 @@ async function reprintBaucher() {
     // Genera el PDF
     await baucher
       .pdf({
-        path: "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
-        // path: "C:/Users/Use/Documents/jaaps-temporal-print.pdf",
+        path: tempDocPath,
         //   format: pdfOptions.format,
         width: pdfBaucherOptions.width,
         scale: pdfBaucherOptions.scale,
@@ -178,12 +173,7 @@ async function reprintBaucher() {
         margin: pdfBaucherOptions.margin,
       })
       .then(async () => {
-        await ipcRenderer.send(
-          "PrintBaucher",
-          "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf",
-          // "C:/Users/USE/Documents/jaaps-temporal-print.pdf",
-          options
-        );
+        await ipcRenderer.send("PrintBaucher", tempDocPath, options);
         // Impresión exitosa
         console.log("El PDF se ha enviado a la cola de impresión.");
       })

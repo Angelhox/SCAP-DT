@@ -109,7 +109,7 @@ let contratandoServicio = "";
 let creacionEdit = "";
 let ultimaFechaPago = "";
 let valoresDistintosDf = "No";
-let fechaCreacion = "2024-09-01 00:00:00";
+let fechaCreacion = "2024-11-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (validator.isEmpty(servicioNombre.value)) {
@@ -227,7 +227,7 @@ function renderCuotas(cuotas) {
 
     const divContainerDetalles = document.createElement("div");
     divContainerDetalles.className = "row container-detalles";
-
+   
     const detalles = [
       { label: "Valor:$", value: parseFloat(cuota.valor).toFixed(2) },
       { label: "Tipo:", value: cuota.tipo },

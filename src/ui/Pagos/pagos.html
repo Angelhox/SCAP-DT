@@ -31,7 +31,7 @@
       href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css"
     />
 
-    <title>Pagos Individuales</title>
+    <title>Pagos Individuales at work</title>
   </head>
   <body class="vh-100 overflow-hidden body">
     <!-- Navbar -->
@@ -264,18 +264,18 @@
                   >
                     <option value="Por cobrar" selected>Sin cancelar</option>
                     <option value="Cancelado">Cancelado</option>
-                    <option value="all">Todos</option>
+                    <!-- <option value="all">Todos</option> -->
                   </select>
                 </div>
                 <div class="col-3">
                   <label for="criterio">Tipo</label>
                   <select
-                    id="tipo"
+                    id="tipoBusqueda"
                     class="form-select"
                     aria-label="Default select example"
                   >
-                    <option value="Por cobrar" selected>Planilla</option>
-                    <option value="Cancelado" disabled>Comprobante</option>
+                    <option value="planilla" selected>Planilla</option>
+                    <option value="otro" >Comprobante</option>
                   </select>
                 </div>
                 <div class="col-4"></div>
@@ -799,12 +799,19 @@
                 >
                   Anular
                 </button>
-
                 <button
                   class="btn btn-success mx-1 w-25"
                   id="btnAdministrar-dg"
+                  style="display: none"
                 >
                   Administrar
+                </button>
+                <button
+                  class="btn btn-success mx-1 w-25"
+                  id="btnPagar-dg"
+                  style="display: none"
+                >
+                  Pagar
                 </button>
                 <button
                   class="btn btn-success mx-1 w-25"

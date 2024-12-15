@@ -1,6 +1,7 @@
 const { getConnection, closeConnection } = require("../../database");
 async function contratarPrincipales(servicioId, tipo) {
-  if (servicioId === 40 || servicioId === 42) {
+  // if (servicioId === 40 || servicioId === 42) {
+  if (servicioId ===49) {
     try {
       const conn = await getConnection();
       const contratadosNoPrincipales = await conn.query(

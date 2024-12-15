@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css" />
 
-    <link rel="stylesheet" href="./facturaIndividualBaucher.css" />
+    <link rel="stylesheet" href="./facturaCuotaIndividual.css" />
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script> -->
     <link
       rel="stylesheet"
@@ -19,7 +19,7 @@
       rel="stylesheet"
       href="../../../node_modules/@fortawesome/fontawesome-free/css/brands.css"
     />
-    <title>Factura Individual Baucher</title>
+    <title>Factura Cuota Baucher</title>
   </head>
   <body
     style="
@@ -37,7 +37,7 @@
   >
     <div style="width: 100%; height: 5%; position: fixed; top: 0">
       <div style="display: flex; justify-content: end; align-items: center">
-        <button class="btn-print-custom" id="boton" type="button">
+        <button class="btn-print-custom" id="botonPagar" type="button">
           Imprimir<i class="ico-btn fa-solid fa-print"></i>
         </button>
         <button
@@ -363,7 +363,7 @@
             width: 100%;
           "
         >
-          <p style="margin: 0; padding: 0"><strong>Planilla:</strong></p>
+          <p style="margin: 0; padding: 0"><strong>Cuota:</strong></p>
           <p style="color: #00000000; margin: 0; padding: 0">-</p>
           <p style="margin: 0; padding: 0" id="planilla"></p>
         </div>
@@ -923,6 +923,6 @@
         </div>
       </section>
     </dialog>
-    <script src="./facturaIndividualBaucher.js" defer></script>
+    <script src="./facturaCuotaIndividual.js" defer></script>
   </body>
 </html>

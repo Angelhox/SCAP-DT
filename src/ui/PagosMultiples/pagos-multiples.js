@@ -230,14 +230,15 @@ async function renderServiciosAgrupados(servicios) {
     if (servicio.nombre !== "Agua Potable") {
       if (
         servicio.nombre !== "Socio comuna" &&
-        servicio.estadoDetalles !== "Anulado"
+        servicio.estadoDetalles !== "Anulado" &&
+        servicio.estadoDetalles !== "Cancelado"
       ) {
         // encabezadoId = servicio.encabezadosId;
         // console.log("Encabezado desde detalle : " + encabezadoId);
         const tr = document.createElement("tr");
         tr.id = servicio.id;
         const tdServicio = document.createElement("td");
-        tdServicio.textContent = "("+servicio.index +") "+ servicio.nombre;
+        tdServicio.textContent = "(" + servicio.index + ") " + servicio.nombre;
         const tdAplazable = document.createElement("td");
         tdAplazable.textContent = servicio.aplazableSn;
         const tdSubtotal = document.createElement("td");
@@ -320,7 +321,6 @@ async function comprobante(encabezadoId) {
   console.log("sin programar");
 }
 
-function verificarEstado() {}
 guardarDg.onclick = function () {
   let totalRc = totalFinal;
   // Cambio
@@ -1287,7 +1287,7 @@ async function vistaFactura() {
     // } else {
     await ipcRenderer.send(
       // Si descomentas esta linea descomenta encabezado tambien <-----
-      // "generateFacturaMultiple",  
+      // "generateFacturaMultiple",
       "generateFacturaMultipleBaucher",
       // datos,
       // encabezado,
@@ -1421,6 +1421,7 @@ const detallesServiciodg = async (servicio) => {
   let valorAplicado = 0;
   let valorAbonar = 0;
   let valorSaldo = 0;
+  console.log("Servicio al Dg: ", servicio);
   console.log("Servicio al Dg: " + servicio.contratadosId);
   servicioDg.textContent = servicio.nombre;
   descripcionDg.textContent = servicio.descripcion;

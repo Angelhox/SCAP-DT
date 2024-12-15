@@ -15,8 +15,10 @@ const {
 } = require("./ui/PagosMultiples/pagos-multiples.api");
 const { contratarPrincipales } = require("./ui/Cuotas/cuotas.api");
 const { cancelarServicios } = require("./ui/Pagos/pagos-individual.api");
+const { cancelarCuota } = require("./ui/PagosCuotas/pagos-cuotas.api");
 let window;
 let windowFactura;
+let windowFacturaCuota;
 let windowFacturaMultiple;
 let windowReportes;
 let servicioEnviar = [];
@@ -51,49 +53,7 @@ ipcMain.on("printPDFNot valid", async (event, filePath) => {
   //     console.log('error en la impresion: ' + error);
   // }
 });
-// ----------------------------------------------------------------
 
-// ipcMain.on('printPDF', async (event, pdfPath) => {
-//   console.log(pdfPath);
-//   try {
-//     const existingPdfBytes = await fs.readFile(pdfPath);
-//     const pdfDoc = await PDFDocument.load(existingPdfBytes);
-
-//     // Asegurarse de que el documento tenga al menos una página
-//     if (pdfDoc.getPageCount() === 0) {
-//       console.error('El documento PDF no contiene ninguna página.');
-//       return;
-//     }
-
-//     // Obtener la primera página del documento
-//     const firstPage = pdfDoc.getPage(0);
-
-//     // Crear un nuevo documento y agregar una página
-//     const newPdfDoc = await PDFDocument.create();
-//     const newPage = newPdfDoc.addPage([firstPage.getWidth(), firstPage.getHeight()]);
-
-//     // Dibujar la primera página dos veces en la nueva página
-//     newPage.drawPage(firstPage);
-//     newPage.drawPage(firstPage, { x: firstPage.getWidth() / 2 });
-
-//     // Imprimir el documento modificado
-//     const modifiedPdfBytes = await newPdfDoc.save();
-//     const pdfBlob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
-//     const pdfDataUri = URL.createObjectURL(pdfBlob);
-
-//     const printWindow = new BrowserWindow({ show: false });
-//     printWindow.loadURL(pdfDataUri);
-
-//     printWindow.webContents.on('did-finish-load', () => {
-//       printWindow.webContents.print({}, () => {
-//         printWindow.close();
-//       });
-//     });
-//   } catch (error) {
-//     console.error('Error:', error);
-//   }
-// });
-// --------------------------------
 ipcMain.on(
   "PrintBaucher",
   async (event, outputPath, options = { scale: "fit", copies: 2 }) => {
@@ -294,6 +254,40 @@ app.on("ready", () => {
 // ----------------------------------------------------------------
 // Funciones de comunicacion entre paginas
 // ----------------------------------------------------------------
+
+ipcMain.on("generate-pago-individal", async (event, datos) => {
+  if (!windowFacturaCuota) {
+    windowFacturaCuota = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    });
+    await windowFacturaCuota.loadFile(
+      "src/ui/FacturaCuotaIndividual/facturaCuotaIndividual.html"
+    );
+    await windowFacturaCuota.show();
+    await windowFacturaCuota.webContents.send("generate-pago-individal", datos);
+    windowFacturaCuota.on("closed", () => {
+      windowFacturaCuota = null;
+      window.setEnabled(true);
+      window.focus();
+    });
+    window.setEnabled(false);
+    if (!windowFacturaCuota.isFocused()) {
+      // Reproducir sonido de notificación
+      window.webContents.send("play-notification-sound");
+      // Enfocar la ventana secundaria
+      windowFacturaCuota.focus();
+    }
+    window.on("closed", () => {
+      windowFacturaCuota = null;
+    });
+  }
+});
+
 ipcMain.on("datos-a-servicios", async (event, servicio) => {
   console.log("Datos a enviar: " + servicio.id);
   servicioEnviar = servicio;
@@ -457,6 +451,44 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
 // ----------------------------------------------------------------
 // Reportes
 // ----------------------------------------------------------------
+ipcMain.on(
+  "generate-report-servicios-contratados",
+  async (event, beneficiarios,encabezado) => {
+    if (!windowReportes) {
+      windowReportes = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+        },
+      });
+      await windowReportes.loadFile(
+        "src/ui/Reportes/ServiciosContratados/serviciosContratados.html"
+      );
+      await windowReportes.show();
+      await windowReportes.webContents.send(
+        "generate-report-servicios-contratados",
+     beneficiarios,encabezado
+      );
+      windowReportes.on("closed", () => {
+        windowReportes = null;
+        window.setEnabled(true);
+        window.focus();
+      });
+      window.setEnabled(false);
+      if (!windowReportes.isFocused()) {
+        // Reproducir sonido de notificación
+        window.webContents.send("play-notification-sound");
+        // Enfocar la ventana secundaria
+        windowReportes.focus();
+      }
+      window.on("closed", () => {
+        windowReportes = null;
+      });
+    }
+  }
+);
 ipcMain.on(
   "generate-report-contratos",
   async (
@@ -756,6 +788,11 @@ ipcMain.on(
     );
   }
 );
+ipcMain.on("cerrarFacturaCuotaIndividual", async (event) => {
+  console.log("Closing...");
+  await windowFacturaCuota.close();
+  windowFacturaCuota = null;
+});
 ipcMain.on("cerrarFactura", async (event) => {
   console.log("Closing...");
   await windowFactura.close();
@@ -3351,7 +3388,7 @@ async function createCuentaServicios(datosContrato, fechaCreacion) {
   console.log("Consultando encabezado para: " + datosContrato.id);
   const conn = await getConnection();
 
-  let encabezadoId;
+  let encabezadoId = null;
   try {
     // Consultamos si existe un encabezado con los detalles de los servicios contratados segun el contrato
     const encabezadoExiste = await conn.query(
@@ -3365,7 +3402,7 @@ async function createCuentaServicios(datosContrato, fechaCreacion) {
       // "') and contratosId=" +
       // contratoId +
       // ";"
-      "select count(id) as existe, id from viewEncabezados WHERE tipo='planilla' and   " +
+      "select count(id) as existe, id, estado from viewEncabezados WHERE tipo='planilla' and   " +
         "month(fechaEmisionEncabezado)=month('" +
         fechaCreacion +
         "')" +
@@ -3391,58 +3428,37 @@ async function createCuentaServicios(datosContrato, fechaCreacion) {
       encabezadoId = resultEncabezado.insertId;
     } else {
       // Si existe el encabezado obtenemos el id del encabezado existente
-      encabezadoId = encabezadoExiste[0].id;
+      if (encabezadoExiste[0].estado !== "Cancelado") {
+        encabezadoId = encabezadoExiste[0].id;
+      }
     }
-    // Consultamos los servicios fijos contratados segun el id del contrato
-    const serviciosContratados = await conn.query(
-      "SELECT * FROM viewServiciosCancelar WHERE contratosId=" +
-        contratoId +
-        " AND estado='Activo' AND tipo='Servicio fijo' AND aplazableSn='No';"
-    );
-    await createDetallesServicios(
-      serviciosContratados,
-      encabezadoId,
-      fechaCreacion,
-      datosContrato
-    );
-    // Consultamos los servicios ocacionales, las cuotas y las multas que no son aplazables para
-    // incluirlas en el detalle de servicios y relacionarlos con un encabezado correspondiente a la
-    // cuenta de servicios de cada mes.
-    // const otrosValoresNoAplazables = await conn.query(
-    //   "SELECT serviciosContratados.id,serviciosContratados.estado," +
-    //     "serviciosContratados.fechaEmision,servicios.id as serviciosId," +
-    //     "servicios.nombre,servicios.descripcion,servicios.tipo,servicios.valor," +
-    //     "tiposdescuento.descripcion as descripcionDescuento,tiposdescuento.valor as valorDescuento " +
-    //     "from serviciosContratados join servicios on servicios.id=serviciosContratados.serviciosId join " +
-    //     "tiposdescuento on tiposdescuento.id=serviciosContratados.descuentosId " +
-    //     "where serviciosContratados.contratosId=" +
-    //     contratoId +
-    //     " and serviciosContratados.estado='Activo'  and not servicios.tipo='Servicio fijo' and " +
-    //     "servicios.aplazableSn='No' and month(servicioscontratados.fechaEmision)=" +
-    //     " month(now()) and year(servicioscontratados.fechaEmision)= year(now());"
-    // );
-    const otrosValores = await conn.query(
-      // "SELECT serviciosContratados.id,serviciosContratados.estado," +
-      //   "serviciosContratados.fechaEmision,serviciosContratados.valorIndividual,servicios.id as serviciosId," +
-      //   "servicios.aplazableSn,servicios.nombre,servicios.descripcion,servicios.tipo,servicios.valor,servicios.valorPagos," +
-      //   "tiposdescuento.descripcion as descripcionDescuento,tiposdescuento.valor as valorDescuento " +
-      //   "from serviciosContratados join servicios on servicios.id=serviciosContratados.serviciosId join " +
-      //   "tiposdescuento on tiposdescuento.id=serviciosContratados.descuentosId " +
-      //   "where serviciosContratados.contratosId=" +
-      //   contratoId +
-      //   " and serviciosContratados.estado='Sin aplicar' and not servicios.tipo='Servicio fijo'"
-      "SELECT * FROM viewServiciosCancelar WHERE contratosId=" +
-        contratoId +
-        // " AND estado='Sin aplicar' AND NOT tipo='Servicio fijo';"
-        " AND NOT tipo='Servicio fijo';"
-    );
+    if (encabezadoId !== null) {
+      // Consultamos los servicios fijos contratados segun el id del contrato
+      const serviciosContratados = await conn.query(
+        "SELECT * FROM viewServiciosCancelar WHERE contratosId=" +
+          contratoId +
+          " AND estado='Activo' AND tipo='Servicio fijo' AND aplazableSn='No';"
+      );
+      await createDetallesServicios(
+        serviciosContratados,
+        encabezadoId,
+        fechaCreacion,
+        datosContrato
+      );
+      const otrosValores = await conn.query(
+        "SELECT * FROM viewServiciosCancelar WHERE contratosId=" +
+          contratoId +
+          // " AND estado='Sin aplicar' AND NOT tipo='Servicio fijo';"
+          " AND NOT tipo='Servicio fijo';"
+      );
 
-    await createDetallesServicios(
-      otrosValores,
-      encabezadoId,
-      fechaCreacion,
-      datosContrato
-    );
+      await createDetallesServicios(
+        otrosValores,
+        encabezadoId,
+        fechaCreacion,
+        datosContrato
+      );
+    }
   } catch (error) {
     console.log("Error al crear cuentaservicios: " + error);
   }
@@ -3492,9 +3508,11 @@ async function createDetallesServicios(
         "') " +
         "and  detallesServicio.serviciosContratadosId=" +
         servicioContratado.id +
-        ";"
+        " and encabezadosId=" +
+        encabezadoId +
+        " ;"
     );
-    console.log("Detalle servicio existe: ", detalleServicioExiste.length);
+    // console.log("Detalle servicio existe: ", detalleServicioExiste.length);
     // Si no existen los detalles de servicios correspondiente a la fecha se crean y se añaden al encabezado
     // if (detalleServicioExiste[0].existe == 0) {
     if (detalleServicioExiste.length === 0) {
@@ -3538,7 +3556,7 @@ async function createDetallesServicios(
             var faltante = totalPagar - abonado;
             if (faltante > servicioContratado.valorPagosIndividual) {
               console.log(
-                "Entro a los aplazables con faltante mayor a la cuota"
+                "Entro a los aplazables con faltante mayor a la cuota del abono"
               );
 
               var pagosRestantes =
@@ -3960,22 +3978,167 @@ ipcMain.handle(
         } else {
           Console.log("?");
         }
-
-        // const results = await conn.query(
-        //   "SELECT * FROM viewPlanillas WHERE " +
-        //     criterio +
-        //     " = " +
-        //     criterioContent +
-        //     " and estado='" +
-        //     estado +
-        //     "' and " +
-        //     " year(fechaEmision) = '" +
-        //     anio +
-        //     "' and month(fechaEmision) = '" +
-        //     mes +
-        //     "' order by fechaEmision desc"
-        // );
-        // results = await conn.query("SELECT * FROM viewPlanillas");
+        console.log("Con parametros", results);
+        return results;
+      }
+    } catch (error) {
+      console.log("Error en la busqueda de planillas: " + error);
+    }
+  }
+);
+// Cargamos las planillas disponibles
+ipcMain.handle(
+  "getDatosCuotasIndividuales",
+  async (event, criterio, criterioContent, estado, anio, mes) => {
+    console.log(
+      "Recibo parametros planillas: " + criterio,
+      criterioContent,
+      estado,
+      anio,
+      mes
+    );
+    try {
+      const conn = await getConnection();
+      if (estado == undefined || estado == "all") {
+        estado = "";
+      }
+      if (criterio == undefined) {
+        criterio = "all";
+      }
+      if (anio == undefined) {
+        anio = "all";
+      }
+      if (mes == undefined) {
+        mes = "all";
+      }
+      if (criterio == "all") {
+        if (anio == "all" && mes == "all") {
+          console.log("anio all mes all");
+          const results = await conn.query(
+            "SELECT * FROM viewCuotasIndividuales WHERE " +
+              "estadoEncabezado like'%" +
+              estado +
+              "%'" +
+              " and tipoEncabezado='otro'" +
+              " order by primerApellido "
+          );
+          console.log(results);
+          return results;
+        } else if (anio == "all" && mes !== "all") {
+          console.log("anio all mes df", mes);
+          const results = await conn.query(
+            "SELECT * FROM viewCuotasIndividuales WHERE " +
+              "estadoEncabezado like'%" +
+              estado +
+              "%' and month(fechaEmision) = '" +
+              mes +
+              "' and tipoEncabezado='otro'" +
+              " order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio !== "all" && mes == "all") {
+          console.log("mes all anio df", anio);
+          const results = await conn.query(
+            "SELECT * FROM viewCuotasIndividuales WHERE " +
+              "estadoEncabezado like '%" +
+              estado +
+              "%' and " +
+              " year(fechaEmision) = '" +
+              anio +
+              "' and tipoEncabezado='otro'" +
+              " order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio !== "all" && mes !== "all") {
+          console.log("mes df anio df ", mes, anio);
+          const results = await conn.query(
+            "SELECT * FROM viewCuotasIndividuales WHERE " +
+              "estadoEncabezado like'%" +
+              estado +
+              "%' and " +
+              " year(fechaEmision) = '" +
+              anio +
+              "' and month(fechaEmision) = '" +
+              mes +
+              "' and tipoEncabezado='otro'" +
+              " order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        }
+      } else {
+        if (anio == "all" && mes == "all") {
+          console.log("C mes all anio all");
+          const results = await conn.query(
+            "SELECT * FROM viewCuotasIndividuales WHERE " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%' and estadoEncabezado like'%" +
+              estado +
+              "%'" +
+              " and tipoEncabezado='otro'" +
+              " order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio == "all" && mes !== "all") {
+          console.log("C anio all mes df ", mes);
+          const results = await conn.query(
+            "SELECT * FROM viewCuotasIndividuales WHERE " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%' and estadoEncabezado like'%" +
+              estado +
+              "%' and month(fechaEmision) = '" +
+              mes +
+              "' and tipoEncabezado='otro'" +
+              " order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio !== "all" && mes == "all") {
+          console.log("C anio df mes all ", anio);
+          const results = await conn.query(
+            "SELECT * FROM viewCuotasIndividuales WHERE " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%' and estadoEncabezado like'%" +
+              estado +
+              "%' and " +
+              " year(fechaEmision) = '" +
+              anio +
+              "' and tipoEncabezado='otro'" +
+              " order by primerApellido;"
+          );
+          console.log(results);
+          return results;
+        } else if (anio !== "all" && mes !== "all") {
+          console.log("anio df mes df", anio, mes);
+          const results = await conn.query(
+            "SELECT * FROM viewCuotasIndividuales WHERE " +
+              criterio +
+              " like '%" +
+              criterioContent +
+              "%' and estadoEncabezado like'%" +
+              estado +
+              "%' and " +
+              " year(fechaEmision) = '" +
+              anio +
+              "' and month(fechaEmision) = '" +
+              mes +
+              "' and tipoEncabezado='otro'" +
+              " order by primerApellido ;"
+          );
+          console.log(results);
+          return results;
+        } else {
+          Console.log("?");
+        }
         console.log("Con parametros", results);
         return results;
       }
@@ -4199,7 +4362,7 @@ ipcMain.handle("getAllServicios", async (event, fechaEmision, contratoId) => {
     //Usar month() y year()
     const conn = await getConnection();
     const results = await conn.query(
-      "SELECT * FROM viewEstadoPagos WHERE fechaEmision=? and contratosId=? ;",
+      "SELECT * FROM viewEstadoPagos WHERE fechaEmision=? and contratosId=? and estadoDetalles !='Cancelado';",
       [fechaEmision, contratoId]
     );
     return results;
@@ -4207,6 +4370,19 @@ ipcMain.handle("getAllServicios", async (event, fechaEmision, contratoId) => {
     console.log("Error en la busqueda de servicios: " + error);
   }
 });
+// ipcMain.handle("getAllServicios", async (event, fechaEmision, contratoId) => {
+//   try {
+//     //Usar month() y year()
+//     const conn = await getConnection();
+//     const results = await conn.query(
+//       "SELECT * FROM viewEstadoPagos WHERE fechaEmision=? and contratosId=? ;",
+//       [fechaEmision, contratoId]
+//     );
+//     return results;
+//   } catch (error) {
+//     console.log("Error en la busqueda de servicios: " + error);
+//   }
+// });
 // Funcion que carga los datos de la planilla para editarlos
 ipcMain.handle("getPlanillaById", async (event, planillaId) => {
   const conn = await getConnection();
@@ -4542,6 +4718,68 @@ ipcMain.handle("ejectContratadoDetalles", async () => {
 
 // Funcion que carga los servicios de acuerdo al id de la planilla
 ipcMain.handle(
+  "getDatosServiciosByContratoIdWithStatus",
+  async (event, contratoId, fechaEmision, criterio, estado) => {
+    if (estado === undefined) {
+      estado = "Por cancelar";
+    }
+    console.log("Fecha emision: " + fechaEmision);
+    const conn = await getConnection();
+    if (criterio === "otros") {
+      const result = await conn.query(
+        "SELECT * FROM viewDetallesServicio WHERE contratosId = " +
+          contratoId +
+          " and month(fechaEmision) = month('" +
+          fechaEmision +
+          "') and year(fechaEmision)= year('" +
+          fechaEmision +
+          "') and not tipo='Servicio fijo' and estadoDetalles ='" +
+          estado +
+          "';"
+      );
+      console.log("resultado de buscar servicios: ", result);
+      return result;
+    } else if (criterio === "fijos") {
+      const result = await conn.query(
+        "SELECT * FROM viewDetallesServicio WHERE contratosId = " +
+          contratoId +
+          " and month(fechaEmision) = month('" +
+          fechaEmision +
+          "') and year(fechaEmision)= year('" +
+          fechaEmision +
+          "') and  tipo='Servicio fijo' and estadoDetalles ='" +
+          estado +
+          "';"
+      );
+      console.log("resultado de buscar servicios: ", result);
+      return result;
+    } else {
+      const result = await conn.query(
+        "SELECT * FROM viewDetallesServicio WHERE contratosId = " +
+          contratoId +
+          " and month(fechaEmision) = month('" +
+          fechaEmision +
+          "') and year(fechaEmision)= year('" +
+          fechaEmision +
+          "') and estadoDetalles ='" +
+          estado +
+          "';"
+      );
+      console.log("resultado de buscar servicios: ", result);
+      return result;
+    }
+    console.log("fechaEmision recibida: ", fechaEmision, contratoId);
+
+    // const result = await conn.query(
+    //   "SELECT * FROM viewservicioscontratados WHERE id = " +
+    //     contratoId +
+    //     " and month(fechaEmision) = month('" +
+    //     fechaEmision +
+    //     "') and estado ='Activo';"
+    // );
+  }
+);
+ipcMain.handle(
   "getDatosServiciosByContratoId",
   async (event, contratoId, fechaEmision, criterio) => {
     console.log("Fecha emision: " + fechaEmision);
@@ -4554,7 +4792,8 @@ ipcMain.handle(
           fechaEmision +
           "') and year(fechaEmision)= year('" +
           fechaEmision +
-          "') and not tipo='Servicio fijo';"
+          "') and not tipo='Servicio fijo' " +
+          ";"
       );
       console.log("resultado de buscar servicios: ", result);
       return result;
@@ -4566,7 +4805,8 @@ ipcMain.handle(
           fechaEmision +
           "') and year(fechaEmision)= year('" +
           fechaEmision +
-          "') and  tipo='Servicio fijo';"
+          "') and  tipo='Servicio fijo' " +
+          ";"
       );
       console.log("resultado de buscar servicios: ", result);
       return result;
@@ -4578,7 +4818,7 @@ ipcMain.handle(
           fechaEmision +
           "') and year(fechaEmision)= year('" +
           fechaEmision +
-          "');"
+          "') ;"
       );
       console.log("resultado de buscar servicios: ", result);
       return result;
@@ -4746,6 +4986,26 @@ ipcMain.handle(
       });
       console.log(result);
       return result;
+    } catch (error) {
+      event.sender.send("Notificar", {
+        success: false,
+        title: "Error!",
+        message: "Ha ocurrido un error al cancelar la planilla.",
+      });
+      console.log("Error al cancelar: ", error);
+    }
+  }
+);
+ipcMain.handle(
+  "cancelarCuotaIndividual",
+  async (event, servicioCancelar, comprobante) => {
+    try {
+      cancelarCuota(event, servicioCancelar, comprobante);
+      event.sender.send("Notificar", {
+        success: true,
+        title: "Actualizado!",
+        message: "Se ha cancelado la planilla.",
+      });
     } catch (error) {
       event.sender.send("Notificar", {
         success: false,
