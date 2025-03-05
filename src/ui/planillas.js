@@ -105,7 +105,7 @@ let editPlanillaId = "";
 let editDetalleId = "";
 let fechaEmisionEdit = "";
 let editContratoId = "";
-let fechaCreacion = "2024-11-01 00:00:00";
+let fechaCreacion = "2025-01-01 00:00:00";
 planillaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const newPlanilla = {

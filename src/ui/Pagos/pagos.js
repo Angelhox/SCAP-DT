@@ -119,6 +119,19 @@ const calcularConsumoBt = document.getElementById("calcular-consumo");
 const cancelarForm = document.getElementById("cancelarForm");
 const anuladosBt = document.getElementById("btnAnulados");
 // ----------------------------------------------------------------
+// Varibles del dialogo vista factura
+const dialogVistaFactura = document.getElementById("formVistaFactura");
+const serviciosListDg = document.getElementById("lista-servicios-dg");
+const estadoPlanillaDg = document.getElementById("estado-planilla-dg");
+const contratoDg = document.getElementById("contrato-dg");
+const emisionDg = document.getElementById("emision-dg");
+const socioDg = document.getElementById("socio-dg");
+const consumoDg = document.getElementById("consumo-dg");
+const tarifaDg = document.getElementById("tarifa-dg");
+const valorDg = document.getElementById("valor-dg");
+const totalPagarDg = document.getElementById("total-pagar-dg");
+const closeDg = document.getElementById("close-dg");
+// ----------------------------------------------------------------
 // Variables contenedoras
 let tarifasDisponibles = [];
 
@@ -338,7 +351,7 @@ function renderPlanillas(datosPlanillas) {
         } else {
           // Crear elementos de la lista de servicios (Alcantarillado, Recolección de desechos, Riego Agrícola, Bomberos)
           if (
-            datosServicio.nombre !== "Socio comuna" &&
+            datosServicio.nombre !== "Socio comuna" ||
             datosServicio.estadoDetalles !== "Anulado"
           ) {
             if (datosServicio.aplazableSn === "Si") {
@@ -489,7 +502,7 @@ function renderPlanillas(datosPlanillas) {
 
     // Crear el elemento para el pie de la tarjeta
     const footerDiv = document.createElement("div");
-    footerDiv.className = "card-footer row d-flex";
+    footerDiv.className = "card-footer row d-flex justify-content-between";
     footerDiv.style.border = "none";
     // Crear elemento para el total
     const totalDiv = document.createElement("div");
@@ -509,7 +522,7 @@ function renderPlanillas(datosPlanillas) {
 
     // Crear el botón con la clase y el ícono
     const button = document.createElement("button");
-    button.className = "btn-planilla-positive col-6";
+    button.className = "btn-planilla-positive col-5";
     // Añadir un evento onclick
     button.onclick = function () {
       // Verificar si headerDiv ya tiene la clase bg-success
@@ -542,9 +555,18 @@ function renderPlanillas(datosPlanillas) {
     const buttonIcon = document.createElement("i");
     buttonIcon.className = "fa-solid fa-file-pen";
     button.appendChild(buttonIcon);
-
+    const divView = document.createElement("div");
+    divView.className = "m-0 px-1 col-2";
+    const buttonView = document.createElement("button");
+    buttonView.className = "btn-planilla-positive";
+    buttonView.innerHTML = `<i class="fa-solid fa-up-right-and-down-left-from-center"></i>`;
+    buttonView.onclick = () => {
+      viewFactura(datosPlanilla, datosServicios);
+    };
+    divView.appendChild(buttonView);
     // Agregar elementos al pie de la tarjeta
     footerDiv.appendChild(totalDiv);
+    footerDiv.appendChild(divView);
     footerDiv.appendChild(button);
 
     // Agregar todos los elementos a la tarjeta principal
@@ -752,7 +774,91 @@ function renderCuotasIndividuales(datosCuotasIndividuales) {
     planillasList.appendChild(divContainer);
   });
 }
-
+closeDg.onclick = () => {
+  dialogVistaFactura.close();
+};
+function viewFactura(datosPlanilla, datosServicios) {
+  if (dialogVistaFactura.close) {
+    dialogVistaFactura.showModal();
+  }
+  let dgValorAguaPotable = null;
+  let dgTotalPagar = 0;
+  let dgTarifa = "";
+  estadoPlanillaDg.textContent = datosPlanilla.estado;
+  contratoDg.textContent = " " + datosPlanilla.codigo;
+  socioDg.textContent = " " + datosPlanilla.nombre;
+  emisionDg.textContent = " " + formatearFecha(datosPlanilla.fechaEmision);
+  const serviciosUl = document.createElement("ul");
+  serviciosUl.className = "list-group list-group-flush";
+  serviciosListDg.innerHTML = ``;
+  serviciosListDg.appendChild(serviciosUl);
+  if (datosServicios.length > 0) {
+    datosServicios.forEach(async (datosServicio) => {
+      if (datosServicio.nombre === "Agua Potable") {
+        dgValorAguaPotable = datosServicio.total;
+        dgTarifa = datosServicio.tarifa;
+        dgTotalPagar += datosServicio.total;
+      } else {
+        if (
+          datosServicio.nombre !== "Socio comuna" &&
+          datosServicio.estadoDetalles !== "Anulado"
+        ) {
+          if (datosServicio.aplazableSn === "Si") {
+            const servicioLi = document.createElement("li");
+            servicioLi.className = "titulo-detalles d-flex detalles";
+            const servicioP = document.createElement("p");
+            servicioP.textContent = datosServicio.nombre + ": ";
+            const servicioSp = document.createElement("p");
+            servicioSp.textContent = "-";
+            servicioSp.className = "trans mp-0";
+            const servicioValor = document.createTextNode(
+              parseFloat(datosServicio.abono).toFixed(2) + "$"
+            );
+            // si el servicio es aplazable sumo el abono al total a pagar de rp
+            dgTotalPagar += datosServicio.abono;
+            servicioLi.appendChild(servicioP);
+            servicioLi.appendChild(servicioSp);
+            servicioLi.appendChild(servicioValor);
+            serviciosUl.appendChild(servicioLi);
+          } else {
+            const servicioLi = document.createElement("li");
+            servicioLi.className = "titulo-detalles d-flex detalles";
+            const servicioP = document.createElement("p");
+            servicioP.textContent = datosServicio.nombre + ": ";
+            const servicioSp = document.createElement("p");
+            servicioSp.textContent = "-";
+            servicioSp.className = "trans mp-0"; 
+            const servicioValor = document.createTextNode(
+              parseFloat(datosServicio.total).toFixed(2) + "$"
+            );
+            // Si el servicio no es aplazable (fijo u ocacional) sumo el total al total
+            // a pagar de rp
+            dgTotalPagar += datosServicio.total;
+            servicioLi.appendChild(servicioP);
+            servicioLi.appendChild(servicioSp);
+            servicioLi.appendChild(servicioValor);
+            serviciosUl.appendChild(servicioLi);
+          }
+        }
+      }
+      if (!dgValorAguaPotable) {
+        consumoDg.textContent = "NA";
+        tarifaDg.textContent = "NA";
+        valorDg.textContent = "NA";
+      } else {
+        const lectura = await getDatosLecturas(
+          datosPlanilla.contratosId,
+          formatearFecha(datosPlanilla.fechaEmision)
+        );
+        consumoDg.textContent =
+          lectura[0].lecturaActual - lectura[0].lecturaAnterior;
+        tarifaDg.textContent = " " + "(" + lectura[0].tarifaValor + ")";
+        valorDg.textContent = parseFloat(lectura[0].valor).toFixed(2);
+      }
+      totalPagarDg.textContent = parseFloat(dgTotalPagar).toFixed(2);
+    });
+  }
+}
 const getDatosLecturas = async (contratoId, fechaEmision) => {
   // console.log("Parámetros de busqueda: " + contratoId, fechaEmision);
   const lectura = await ipcRenderer.invoke(

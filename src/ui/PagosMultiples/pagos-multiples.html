@@ -1055,6 +1055,114 @@
         </div>
       </section>
     </dialog>
+    <dialog id="formVistaFactura" class="dialog-servicios">
+      <section
+        style="
+          width: 90vh;
+          height: fit-content;
+          overflow-x: hidden;
+          border-bottom-left-radius: 6px;
+          border-bottom-right-radius: 6px;
+        "
+        class="active section-dialog"
+      >
+        <div class="row container-fluid" style="margin: 0; padding: 0">
+          <div
+            class="col-12 card card-planilla"
+            style="padding: 0.3em; margin: 0; background-color: #d6eaf8"
+          >
+            <div class="card-header d-flex" style="background-color: #85c1e9">
+              <div class="d-flex col-6 titulo-detalles header-planilla">
+                <p>Contrato:</p>
+                <p class="mp-0 trans">-</p>
+                <p class="title-contrato" id="contrato-dg">CN203</p>
+              </div>
+              <div
+                class="d-flex col-6 titulo-detalles header-planilla positive justify-content-end"
+              >
+                <p
+                  class="title-contrato"
+                  style="color: white"
+                  id="estado-planilla-dg"
+                >
+                  Cancelado
+                </p>
+              </div>
+            </div>
+            <div class="card-body cuerpo" style="background-color: white">
+              <div class="card-title d-flex mp-0">
+                <p class="mp-0 titulos">Socio:</p>
+                <p class="mp-0 trans">-</p>
+                <p class="mp-0" id="socio-dg">Juan Jose Lopez</p>
+              </div>
+              <div class="d-flex">
+                <p class="titulos mp-0">Rango fechas:</p>
+                <p class="mp-0 trans">-</p>
+                <p class="mp-0" id="emision-dg">06-09-2023</p>
+                <p class="mp-0 trans">-</p>
+                <span
+                  class="mp-0"
+                  id="emision-span-dg"
+                  style="color: red; font-size: 0.9rem"
+                ></span>
+              </div>
+              <div class="row">
+                <p class="text-center titulo-servicios-positive">
+                  Agua Potable
+                </p>
+                <div class="col-4 d-flex titulo-detalles">
+                  <p>Consumo:</p>
+                  <p class="mp-0 trans">-</p>
+                  <p id="consumo-dg"></p>
+                  <p class="mp-0 trans">-</p>
+                  <span
+                    id="consumo-span-dg"
+                    class="mp-0"
+                    style="color: red; font-size: 0.9rem"
+                  ></span>
+                </div>
+                <div class="col-4 d-none titulo-detalles" hidden>
+                  <p>Tarifa:</p>
+                  <p id="tarifa-dg"></p>
+                </div>
+                <div class="col-4 d-flex titulo-detalles">
+                  <p>Valor:</p>
+                  <p class="mp-0 trans">-</p>
+                  <p id="valor-dg"></p>
+                </div>
+              </div>
+
+              <p class="text-center titulo-servicios-positive">Servicios</p>
+              <div
+                class="lista-servicios"
+                id="lista-servicios-dg"
+                style="height: fit-content"
+              >
+                <!-- <ul class="list-group list-group-flush">
+                  <li class="titulo-detalles d-flex detalles">
+                    <p>Alcantarillado:</p>
+                    2.00
+                  </li>
+                </ul> -->
+              </div>
+            </div>
+            <div
+              class="card-footer row d-flex justify-content-end"
+              style="border: none"
+            >
+              <div class="col-4 titulo-detalles d-flex">
+                <p>Total:</p>
+                <p id="total-pagar-dg"></p>
+              </div>
+
+              <button class="btn-planilla-positive col-2" id="close-dg">
+                <i class="fa-solid fa-rectangle-xmark"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </dialog>
   </body>
 
   <script src="../../../node_modules/jquery/dist/jquery.min.js"></script>

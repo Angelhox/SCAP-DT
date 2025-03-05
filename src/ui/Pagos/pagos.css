@@ -140,6 +140,7 @@ th {
 
 .lista-servicios {
     height: 6rem;
+    /* height: fit-content; */
     overflow-y: auto;
 
 }
@@ -153,9 +154,11 @@ th {
     align-items: center;
 
 }
-.service-name{
+
+.service-name {
     font-weight: 600;
 }
+
 .detalles p {
     list-style: none;
     margin: 0;

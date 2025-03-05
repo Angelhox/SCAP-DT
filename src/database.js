@@ -1,42 +1,12 @@
 const mysql = require("promise-mysql");
-// const mysql = require("mysql2/promise");
-
-// const connection = mysql.createPool({
-//   host: "monorail.proxy.rlwy.net",
-//   user: "root",
-//   password: "gd5cEh224gG3d2badb3G5b3-4bHE6-2A",
-//   database: "railway",
-//   port: 50755,
-//   authPlugins: {
-//     mysql_clear_password: () => () =>
-//       Buffer.from("gd5cEh224gG3d2badb3G5b3-4bHE6-2A"),
-//   },
-// });
-
-// // connection. .connect((err) => {
-// //   if (err) {
-// //     console.error("Error al conectar a la base de datos:", err);
-// //   } else {
-// //     console.log("Conexión exitosa");
-// //   }
-// // });
-
 const connection = mysql.createConnection({
   host: "localhost",
-  // host: "viaduct.proxy.rlwy.net",
   user: "root",
-  // user: "root",
   password: "",
-  // password: "cGF5a253311EdBCHG64ChCcFE5CD1h-a",
   database: "bdscap_sd_v3",
-  // database: "railway",
-  // database: "bdscaprevis",
-  // port: 44319,
   port: 3306,
-  // port: 3306,
 });
 function getConnection() {
-  console.log("Conexion: ", connection);
   return connection;
 }
 
@@ -45,10 +15,10 @@ async function closeConnection() {
   conn
     .end()
     .then(() => {
-      console.log("Closed :) ");
+      console.log("Connection closed");
     })
     .catch((error) => {
-      console.log("No closed :(");
+      console.log("Connection cannot be closed");
     });
 }
 
