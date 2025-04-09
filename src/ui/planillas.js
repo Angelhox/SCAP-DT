@@ -105,7 +105,7 @@ let editPlanillaId = "";
 let editDetalleId = "";
 let fechaEmisionEdit = "";
 let editContratoId = "";
-let fechaCreacion = "2025-01-01 00:00:00";
+let fechaCreacion = "2025-02-01 00:00:00";
 planillaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const newPlanilla = {
@@ -609,7 +609,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     totalConsumo += planilla[0].valor;
     console.log("total consumo con valor de ep: ", totalConsumo);
     console.log(planilla[0]);
-    calcularConsumo();
+    calcularConsumo(fechaEmision);
     calcularConsumoBt.disabled = false;
     mostrarLecturas.disabled = false;
     mostrarLecturas.innerHTML = "";
@@ -950,9 +950,16 @@ lecturaActual.addEventListener("input", function () {
 });
 async function getTarifasDisponibles() {
   tarifasDisponibles = await ipcRenderer.invoke("getTarifas");
-  console.log("Tartifas disponibles :", tarifasDisponibles);
+  tarifasDisponibles.forEach((tarifa) => {
+    tarifa.inicioVigencia = formatearFecha(tarifa.inicioVigencia);
+    tarifa.finVigencia = formatearFecha(tarifa.finVigencia);
+  });
+  console.log("Tarifas disponibles :", tarifasDisponibles);
 }
-async function calcularConsumo() {
+async function calcularConsumo(fecha) {
+  let tarifasCalculoConsumo = tarifasDisponibles.filter(
+    (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
+  );
   console.log("Consultando tarifas ...");
   totalConsumo = 0;
   let consumo = Math.round(lecturaActual.value - lecturaAnterior.value);
@@ -960,9 +967,10 @@ async function calcularConsumo() {
   let limitebase = 15.0;
   console.log("Consumo redondeado cC: " + consumo);
   if (tarifaTemporal !== "Sin consumo") {
-    console.log("Tarifas: " + tarifasDisponibles);
-    if (tarifasDisponibles[0] !== undefined) {
-      tarifasDisponibles.forEach((tarifa) => {
+    console.log("Tarifas: " , tarifasDisponibles);
+    console.log("Tarifas rango: " , tarifasCalculoConsumo);
+    if (tarifasCalculoConsumo[0] !== undefined) {
+      tarifasCalculoConsumo.forEach((tarifa) => {
         if (consumo >= tarifa.desde && consumo <= tarifa.hasta) {
           tarifaAplicada = tarifa.tarifa;
           valorTarifa = tarifa.valor;
@@ -1007,7 +1015,7 @@ async function calcularConsumo() {
 }
 async function recalcularConsumo() {
   if (planillaMedidorSn) {
-    await calcularConsumo();
+    await calcularConsumo(fechaEmisionEdit);
     console.log("tf-tc: " + totalFinal, totalConsumo);
     let totalRecalculado = totalFinal;
     console.log("totalRecalculado: " + totalRecalculado);
@@ -1361,14 +1369,11 @@ document.getElementById("btnGenerar").addEventListener("click", function () {
 async function generarCodigoUnico() {
   // Obtener la marca de tiempo actual en milisegundos
   const timestamp = Date.now();
-
   // Puedes agregar un sufijo único, como un número aleatorio, para garantizar la unicidad
   const sufijoUnico = Math.floor(Math.random() * 1000);
-
   // Combinar la marca de tiempo y el sufijo único en un código único
   // const codigoUnico = `${timestamp}-${sufijoUnico}`;
   const codigoUnico = `${timestamp}`;
-
   console.log(codigoUnico);
 }
 mostrarLecturas.onclick = () => {
@@ -1452,7 +1457,7 @@ sinConsumoBt.addEventListener("click", async () => {
               lecturaActual.value = lecturaActualEdit;
               lecturaAnterior.value = lecturaAnteriorEdit;
               valorConsumo.value = valorConsumoEdit;
-              calcularConsumo();
+              calcularConsumo(fechaEmisionEdit);
             }
           });
         }

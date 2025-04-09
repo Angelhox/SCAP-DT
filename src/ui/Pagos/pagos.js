@@ -1254,7 +1254,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     totalConsumo += planilla[0].valor;
     console.log("total consumo con valor de ep: ", totalConsumo);
     console.log(planilla[0]);
-    calcularConsumo();
+    calcularConsumo(fechaEmision);
     calcularConsumoBt.disabled = false;
     mostrarLecturas.disabled = false;
     mostrarLecturas.innerHTML = "";
@@ -1667,9 +1667,16 @@ lecturaActual.addEventListener("input", function () {
 });
 async function getTarifasDisponibles() {
   tarifasDisponibles = await ipcRenderer.invoke("getTarifas");
-  console.log("Tartifas disponibles :", tarifasDisponibles);
+  tarifasDisponibles.forEach((tarifa) => {
+    tarifa.inicioVigencia = formatearFecha(tarifa.inicioVigencia);
+    tarifa.finVigencia = formatearFecha(tarifa.finVigencia);
+  });
+  console.log("Tarifas disponibles :", tarifasDisponibles);
 }
-async function calcularConsumo() {
+async function calcularConsumo(fecha) {
+  let tarifasCalculoConsumo = tarifasDisponibles.filter(
+    (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
+  );
   console.log("Consultando tarifas ...");
   totalConsumo = 0;
   let consumo = Math.round(lecturaActual.value - lecturaAnterior.value);
@@ -1678,8 +1685,9 @@ async function calcularConsumo() {
   console.log("Consumo redondeado cC: " + consumo);
   if (tarifaTemporal !== "Sin consumo") {
     console.log("Tarifas: " + tarifasDisponibles);
-    if (tarifasDisponibles[0] !== undefined) {
-      tarifasDisponibles.forEach((tarifa) => {
+    console.log("Tarifas rango: " , tarifasCalculoConsumo);
+    if (tarifasCalculoConsumo[0] !== undefined) {
+      tarifasCalculoConsumo.forEach((tarifa) => {
         if (consumo >= tarifa.desde && consumo <= tarifa.hasta) {
           tarifaAplicada = tarifa.tarifa;
           valorTarifa = tarifa.valor;
@@ -1837,7 +1845,7 @@ async function vistaFactura(planillaEstado) {
 }
 async function recalcularConsumo() {
   if (planillaMedidorSn) {
-    await calcularConsumo();
+    await calcularConsumo(fechaEmisionEdit);
     console.log("tf-tc: " + totalFinal, totalConsumo);
     let totalRecalculado = totalFinal;
     console.log("totalRecalculado: " + totalRecalculado);
@@ -2229,7 +2237,7 @@ calcularConsumoBt.onclick = () => {
   lecturaActual.value = lecturaActualEdit;
   lecturaAnterior.value = lecturaAnteriorEdit;
   valorConsumo.value = valorConsumoEdit;
-  calcularConsumo();
+  calcularConsumo(fechaEmisionEdit);
 };
 function mostrarFormServicios() {
   console.log("MostrarFormServicios");

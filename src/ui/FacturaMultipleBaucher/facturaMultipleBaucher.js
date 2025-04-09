@@ -307,7 +307,8 @@ ipcRenderer.on(
             const datosConsumo = await calcularConsumos(
               consumos.lecturaActual,
               consumos.lecturaAnterior,
-              consumos.tarifa
+              consumos.tarifa,
+              formatearFecha(consumos.fechaEmision)
             );
             tdConsumo.textContent = datosConsumo.consumo;
             const tdTarifa = document.createElement("td");
@@ -379,11 +380,25 @@ ipcRenderer.on(
 );
 async function getTarifasDisponibles() {
   tarifasDisponibles = await ipcRenderer.invoke("getTarifas");
+  tarifasDisponibles.forEach((tarifa) => {
+    tarifa.inicioVigencia = formatearFecha(tarifa.inicioVigencia);
+    tarifa.finVigencia = formatearFecha(tarifa.finVigencia);
+  });
   console.log("Tartifas disponibles :", tarifasDisponibles);
 }
-async function calcularConsumos(lecturaActual, lecturaAnterior, tarifaActual) {
+async function calcularConsumos(
+  lecturaActual,
+  lecturaAnterior,
+  tarifaActual,
+  fecha = "2025-01-01"
+) {
   await getTarifasDisponibles();
+  let tarifasCalculoConsumo = tarifasDisponibles.filter(
+    (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
+  );
   console.log("Consultando tarifas ...");
+  console.log("Tarifas: ", tarifasDisponibles);
+  console.log("Tarifas rango: ", tarifasCalculoConsumo);
   // totalConsumo = 0;
   let valoresConsumo = 0;
   if (tarifaActual === "Sin consumo") {
@@ -402,10 +417,8 @@ async function calcularConsumos(lecturaActual, lecturaAnterior, tarifaActual) {
   let base = 0.0;
   let limitebase = 15.0;
   console.log("Consumo redondeado cC: ", consumo);
-
-  console.log("Tarifas: " + tarifasDisponibles);
-  if (tarifasDisponibles.length > 0) {
-    tarifasDisponibles.forEach((tarifa) => {
+  if (tarifasCalculoConsumo.length > 0) {
+    tarifasCalculoConsumo.forEach((tarifa) => {
       if (consumo >= tarifa.desde && consumo <= tarifa.hasta) {
         tarifaAplicada = tarifa.tarifa;
         valorTarifa = tarifa.valor;

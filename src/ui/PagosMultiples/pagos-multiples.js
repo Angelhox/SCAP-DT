@@ -1078,6 +1078,10 @@ lecturaActual.addEventListener("input", function () {
 });
 async function getTarifasDisponibles() {
   tarifasDisponibles = await ipcRenderer.invoke("getTarifas");
+  tarifasDisponibles.forEach((tarifa) => {
+    tarifa.inicioVigencia = formatearFecha(tarifa.inicioVigencia);
+    tarifa.finVigencia = formatearFecha(tarifa.finVigencia);
+  });
   console.log("Tartifas disponibles :", tarifasDisponibles);
 }
 async function calcularConsumo() {
@@ -1125,8 +1129,19 @@ async function calcularConsumo() {
 
   console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
 }
-async function calcularConsumos(lecturaActual, lecturaAnterior, tarifaActual) {
+async function calcularConsumos(
+  lecturaActual,
+  lecturaAnterior,
+  tarifaActual,
+  fecha = "2025-01-01"
+) {
+  console.log("fecha recibida: ", fecha);
+  let tarifasCalculoConsumo = tarifasDisponibles.filter(
+    (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
+  );
   console.log("Consultando tarifas ...");
+  console.log("Tarifas: ", tarifasDisponibles);
+  console.log("Tarifas rango: ", tarifasCalculoConsumo);
   // totalConsumo = 0;
   let valoresConsumo = 0;
   if (tarifaActual === "Sin consumo") {
@@ -1145,10 +1160,8 @@ async function calcularConsumos(lecturaActual, lecturaAnterior, tarifaActual) {
   let base = 0.0;
   let limitebase = 15.0;
   console.log("Consumo redondeado cC: ", consumo);
-
-  console.log("Tarifas: " + tarifasDisponibles);
-  if (tarifasDisponibles.length > 0) {
-    tarifasDisponibles.forEach((tarifa) => {
+  if (tarifasCalculoConsumo.length > 0) {
+    tarifasCalculoConsumo.forEach((tarifa) => {
       if (consumo >= tarifa.desde && consumo <= tarifa.hasta) {
         tarifaAplicada = tarifa.tarifa;
         valorTarifa = tarifa.valor;
@@ -1221,7 +1234,8 @@ async function renderConsumos(editablePlanillas) {
       const datosConsumo = await calcularConsumos(
         consumos.lecturaActual,
         consumos.lecturaAnterior,
-        consumos.tarifa
+        consumos.tarifa,
+        formatearFecha(consumos.fechaEmision)
       );
       tdConsumo.textContent = datosConsumo.consumo;
       const tdTarifa = document.createElement("td");
@@ -1292,6 +1306,10 @@ async function quitPlanillas(fecha, planillaId) {
   editablePlanillas.fechasEmision = fechasFiltradas;
   console.log("Planillas filtradas: ", planillasFiltradas);
   editablePlanillas.objetos = planillasFiltradas;
+  editablePlanillas.valor = planillasFiltradas.reduce(
+    (total, planilla) => total + planilla.valor,
+    0
+  );
   console.log("Ids filtrados: ", idsFiltrados);
   editablePlanillas.ids = idsFiltrados;
   console.log("Fechas filtradas: ", fechasFiltradas);
@@ -1308,6 +1326,15 @@ async function quitPlanillas(fecha, planillaId) {
   // Enviar a editar planilla la nueva planilla filtrada
   await editPlanillasAgrupadas(editablePlanillas);
 }
+// const sumaValorPlanillas = (planillas) => {
+//   let total = 0;
+//   planillas.forEach((planilla) => {
+//     total += planilla.valor;
+//   });
+//   return total;
+// };
+const sumaValorPlanillas = (planillas) =>
+  planillas.reduce((total, planilla) => total + planilla.valor, 0);
 async function vistaFactura() {
   let telefono = "0999999999";
   if (editablePlanillas.objetos.length > 0) {

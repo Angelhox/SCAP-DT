@@ -75,7 +75,7 @@ let creacionEdit = "";
 let editServicioId = "";
 let contratandoId = "";
 let ultimaFechaPago = "";
-let fechaCreacion = "2025-01-01 00:00:00";
+let fechaCreacion = "2025-02-01 00:00:00";
 servicioForm.addEventListener("submit", async (e) => {
   let individualSnDf = "Si";
   e.preventDefault();
