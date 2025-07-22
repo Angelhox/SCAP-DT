@@ -73,6 +73,8 @@ let editSocioId = "";
 let saldosFavor = {};
 let tarifaAplicada = "Familiar";
 let valorTarifa = 2.0;
+let allTarifasDisponibles = [];
+let tarifasEspecialesDisponibles = [];
 let tarifasDisponibles = [];
 let planillaCancelar = [];
 let editadosCancelar = [];
@@ -308,12 +310,13 @@ ipcRenderer.on(
               consumos.lecturaActual,
               consumos.lecturaAnterior,
               consumos.tarifa,
-              formatearFecha(consumos.fechaEmision)
+              formatearFecha(consumos.fechaEmision),
+              consumos.tipo
             );
             tdConsumo.textContent = datosConsumo.consumo;
             const tdTarifa = document.createElement("td");
             tdTarifa.textContent =
-              datosConsumo.tarifa.substring(0, 3) +
+              datosConsumo.tarifa.substring(0, 14) +
               "($" +
               datosConsumo.tarifaValor +
               ")";
@@ -379,25 +382,49 @@ ipcRenderer.on(
   }
 );
 async function getTarifasDisponibles() {
-  tarifasDisponibles = await ipcRenderer.invoke("getTarifas");
+  // tarifasDisponibles = await ipcRenderer.invoke("getTarifas");
+  allTarifasDisponibles = await ipcRenderer.invoke("getTarifas");
+  tarifasDisponibles = allTarifasDisponibles.filter(
+    (tarifa) => tarifa.tipo === "comun"
+  );
+  tarifasEspecialesDisponibles = allTarifasDisponibles.filter(
+    (tarifa) => tarifa.tipo === "especial"
+  );
   tarifasDisponibles.forEach((tarifa) => {
     tarifa.inicioVigencia = formatearFecha(tarifa.inicioVigencia);
     tarifa.finVigencia = formatearFecha(tarifa.finVigencia);
   });
+  tarifasEspecialesDisponibles.forEach((tarifa) => {
+    tarifa.inicioVigencia = formatearFecha(tarifa.inicioVigencia);
+    tarifa.finVigencia = formatearFecha(tarifa.finVigencia);
+  });
   console.log("Tartifas disponibles :", tarifasDisponibles);
+  console.log(
+    "Tartifas especiales disponibles :",
+    tarifasEspecialesDisponibles
+  );
 }
 async function calcularConsumos(
   lecturaActual,
   lecturaAnterior,
   tarifaActual,
-  fecha = "2025-01-01"
+  fecha = "2025-01-01",
+  tipo
 ) {
+  console.log("Tipo recibido: ", tipo);
   await getTarifasDisponibles();
-  let tarifasCalculoConsumo = tarifasDisponibles.filter(
-    (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
-  );
-  console.log("Consultando tarifas ...");
+  let tarifasCalculoConsumo = [];
+  if (tipo === "especial") {
+    tarifasCalculoConsumo = tarifasEspecialesDisponibles.filter(
+      (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
+    );
+  } else {
+    tarifasCalculoConsumo = tarifasDisponibles.filter(
+      (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
+    );
+  }
   console.log("Tarifas: ", tarifasDisponibles);
+  console.log("Tarifas especiales: ", tarifasEspecialesDisponibles);
   console.log("Tarifas rango: ", tarifasCalculoConsumo);
   // totalConsumo = 0;
   let valoresConsumo = 0;
@@ -429,7 +456,7 @@ async function calcularConsumos(
           valorTarifa
         );
       }
-      if (tarifa.tarifa == "Familiar") {
+      if (tarifa.tarifa == "Familiar" || tarifa.tarifa == "Familiar especial") {
         base = tarifa.valor;
         limitebase = tarifa.hasta;
         console.log("Bases: ", base + "|" + limitebase);
@@ -437,7 +464,7 @@ async function calcularConsumos(
     });
   }
 
-  if (tarifaAplicada === "Familiar") {
+  if (tarifaAplicada === "Familiar" || tarifaAplicada === "Familiar especial") {
     console.log("Aplicando tarifa familiar: ", valorTarifa.toFixed(2));
     // valorConsumo.value = valorTarifa.toFixed(2);
     // totalConsumo += parseFloat(valorTarifa);

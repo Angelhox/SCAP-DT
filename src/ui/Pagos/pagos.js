@@ -133,7 +133,9 @@ const totalPagarDg = document.getElementById("total-pagar-dg");
 const closeDg = document.getElementById("close-dg");
 // ----------------------------------------------------------------
 // Variables contenedoras
+let allTarifasDisponibles = [];
 let tarifasDisponibles = [];
+let tarifasEspecialesDisponibles = [];
 
 let abonarStatus = false;
 let valorAbonoEdit = 0;
@@ -149,6 +151,7 @@ let planillaMedidorSn = false;
 let editPlanillaId = "";
 let editDetalleId = "";
 let fechaEmisionEdit = "";
+let tipoContratoEdit = "comun";
 let editContratoId = "";
 let planillaEdit = {};
 let planillaAgrupada = {};
@@ -827,7 +830,7 @@ function viewFactura(datosPlanilla, datosServicios) {
             servicioP.textContent = datosServicio.nombre + ": ";
             const servicioSp = document.createElement("p");
             servicioSp.textContent = "-";
-            servicioSp.className = "trans mp-0"; 
+            servicioSp.className = "trans mp-0";
             const servicioValor = document.createTextNode(
               parseFloat(datosServicio.total).toFixed(2) + "$"
             );
@@ -1215,6 +1218,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     fechaEmision
   );
   const planilla = await ipcRenderer.invoke("getPlanillaById", planillaId);
+  tipoContratoEdit = planilla[0].tipo;
   planillaEdit = planilla[0];
   planillaAgrupada = createPlanillaAgrupada(planilla[0]);
   editContratoId = contratoId;
@@ -1254,7 +1258,7 @@ const editPlanilla = async (planillaId, contratoId, fechaEmision) => {
     totalConsumo += planilla[0].valor;
     console.log("total consumo con valor de ep: ", totalConsumo);
     console.log(planilla[0]);
-    calcularConsumo(fechaEmision);
+    calcularConsumo(fechaEmision, tipoContratoEdit);
     calcularConsumoBt.disabled = false;
     mostrarLecturas.disabled = false;
     mostrarLecturas.innerHTML = "";
@@ -1666,26 +1670,45 @@ lecturaActual.addEventListener("input", function () {
   recalcularConsumo();
 });
 async function getTarifasDisponibles() {
-  tarifasDisponibles = await ipcRenderer.invoke("getTarifas");
+  // tarifasDisponibles = await ipcRenderer.invoke("getTarifas");
+  allTarifasDisponibles = await ipcRenderer.invoke("getTarifas");
+  tarifasDisponibles = allTarifasDisponibles.filter(
+    (tarifa) => tarifa.tipo === "comun"
+  );
+  tarifasEspecialesDisponibles = allTarifasDisponibles.filter(
+    (tarifa) => tarifa.tipo === "especial"
+  );
   tarifasDisponibles.forEach((tarifa) => {
     tarifa.inicioVigencia = formatearFecha(tarifa.inicioVigencia);
     tarifa.finVigencia = formatearFecha(tarifa.finVigencia);
   });
+  tarifasEspecialesDisponibles.forEach((tarifa) => {
+    tarifa.inicioVigencia = formatearFecha(tarifa.inicioVigencia);
+    tarifa.finVigencia = formatearFecha(tarifa.finVigencia);
+  });
   console.log("Tarifas disponibles :", tarifasDisponibles);
+  console.log("Tarifas especiales disponibles :", tarifasEspecialesDisponibles);
 }
-async function calcularConsumo(fecha) {
-  let tarifasCalculoConsumo = tarifasDisponibles.filter(
-    (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
-  );
-  console.log("Consultando tarifas ...");
+async function calcularConsumo(fecha, tipo) {
+  let tarifasCalculoConsumo = [];
+  if (tipo === "especial") {
+    tarifasCalculoConsumo = tarifasEspecialesDisponibles.filter(
+      (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
+    );
+  } else {
+    tarifasCalculoConsumo = tarifasDisponibles.filter(
+      (tarifa) => fecha >= tarifa.inicioVigencia && fecha <= tarifa.finVigencia
+    );
+  }
   totalConsumo = 0;
   let consumo = Math.round(lecturaActual.value - lecturaAnterior.value);
   let base = 0.0;
   let limitebase = 15.0;
   console.log("Consumo redondeado cC: " + consumo);
   if (tarifaTemporal !== "Sin consumo") {
-    console.log("Tarifas: " + tarifasDisponibles);
-    console.log("Tarifas rango: " , tarifasCalculoConsumo);
+    console.log("Tarifas comunes: " + tarifasDisponibles);
+    console.log("Tarifas especiales: " + tarifasDisponibles);
+    console.log("Tarifas rango: ", tarifasCalculoConsumo);
     if (tarifasCalculoConsumo[0] !== undefined) {
       tarifasCalculoConsumo.forEach((tarifa) => {
         if (consumo >= tarifa.desde && consumo <= tarifa.hasta) {
@@ -1696,39 +1719,35 @@ async function calcularConsumo(fecha) {
             tarifaAplicada + "|" + valorTarifa
           );
         }
-        if (tarifa.tarifa == "Familiar") {
+        if (
+          tarifa.tarifa == "Familiar" ||
+          tarifa.tarifa == "Familiar especial"
+        ) {
           base = tarifa.valor;
           limitebase = tarifa.hasta;
           console.log("Bases: ", base + "|" + limitebase);
         }
       });
     }
-    if (tarifaAplicada === "Familiar") {
+    if (
+      tarifaAplicada === "Familiar" ||
+      tarifaAplicada === "Familiar especial"
+    ) {
       console.log("Aplicando tarifa familiar: " + valorTarifa.toFixed(2));
       valorConsumo.value = valorTarifa.toFixed(2);
       totalConsumo = parseFloat(valorTarifa).toFixed(2);
     } else {
       totalConsumo = (consumo - limitebase) * valorTarifa;
-      console.log(
-        "Total consumo que excede la base: ",
-        totalConsumo + "|" + base
-      );
-
       valorConsumo.value = (totalConsumo + base).toFixed(2);
       totalConsumo = parseFloat(totalConsumo + base).toFixed(2);
     }
-
     valorConsumo.value = parseFloat(totalConsumo + base).toFixed(2);
-
     tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
-
     console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
   } else {
     tarifaAplicada = "Sin consumo";
     valorConsumo.value = (totalConsumo + base).toFixed(2);
-
     tarifaConsumo.value = "Sin Consumo" + "($" + 0.0 + ")";
-
     console.log("Tarifa: " + "Siin Consumo" + "(" + 0.0 + ")");
   }
 }
@@ -1845,7 +1864,7 @@ async function vistaFactura(planillaEstado) {
 }
 async function recalcularConsumo() {
   if (planillaMedidorSn) {
-    await calcularConsumo(fechaEmisionEdit);
+    await calcularConsumo(fechaEmisionEdit, tipoContratoEdit);
     console.log("tf-tc: " + totalFinal, totalConsumo);
     let totalRecalculado = totalFinal;
     console.log("totalRecalculado: " + totalRecalculado);
@@ -2237,7 +2256,7 @@ calcularConsumoBt.onclick = () => {
   lecturaActual.value = lecturaActualEdit;
   lecturaAnterior.value = lecturaAnteriorEdit;
   valorConsumo.value = valorConsumoEdit;
-  calcularConsumo(fechaEmisionEdit);
+  calcularConsumo(fechaEmisionEdit, tipoContratoEdit);
 };
 function mostrarFormServicios() {
   console.log("MostrarFormServicios");
