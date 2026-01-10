@@ -188,10 +188,36 @@
                 Planillas
                 <i class="fs-1 fa-solid fa-file-invoice mx-2 my-2"></i>
               </p>
-              <button class="btn btn-outline-light" onclick="generarPlanilla()">
-                Actualizar
-                <i class="me-2 ms-1 fs-5 fa-solid fa-arrows-rotate"></i>
-              </button>
+
+              <div class="d-flex">
+                <button
+                  class="btn btn-outline-light"
+                  onclick="generarPlanilla()"
+                >
+                  Actualizar
+                  <i class="me-2 ms-1 fs-5 fa-solid fa-arrows-rotate"></i>
+                </button>
+                <div class="dropdown mx-2">
+                  <button
+                    class="btn btn-outline-light dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    Opciones<i class="px-1 fa-solid fa-list"></i>
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li class="nav-item mx-2">
+                      <a
+                        class="dropdown-item"
+                        type="button"
+                        id="reporte_adeudados_globales"
+                        >Reporte de adeudados globales</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
             <div class="col-12">
               <div class="row">

@@ -20,6 +20,7 @@ let window;
 let windowFactura;
 let windowFacturaCuota;
 let windowFacturaMultiple;
+let windowReporteAdeudadosGlobales;
 let windowReportes;
 let servicioEnviar = [];
 
@@ -452,8 +453,46 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
 // Reportes
 // ----------------------------------------------------------------
 ipcMain.on(
+  "generate-report-adeudados-globales",
+  async (event, adeudadosAgrupados) => {
+    if (!windowReporteAdeudadosGlobales) {
+      windowReporteAdeudadosGlobales = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+        },
+      });
+      await windowReporteAdeudadosGlobales.loadFile(
+        "src/ui/Reportes/Otros/adeudadosGlobales.html"
+      );
+      await windowReporteAdeudadosGlobales.show();
+      await windowReporteAdeudadosGlobales.webContents.send(
+        "generate-report-adeudados-globales",
+        adeudadosAgrupados
+      );
+      windowReporteAdeudadosGlobales.on("closed", () => {
+        windowReporteAdeudadosGlobales = null;
+        window.setEnabled(true);
+        window.focus();
+      });
+      window.setEnabled(false);
+      if (!windowReporteAdeudadosGlobales.isFocused()) {
+        // Reproducir sonido de notificación
+        window.webContents.send("play-notification-sound");
+        // Enfocar la ventana secundaria
+        windowReportes.focus();
+      }
+      window.on("closed", () => {
+        windowReporteAdeudadosGlobales = null;
+      });
+    }
+  }
+);
+ipcMain.on(
   "generate-report-servicios-contratados",
-  async (event, beneficiarios,encabezado) => {
+  async (event, beneficiarios, encabezado) => {
     if (!windowReportes) {
       windowReportes = new BrowserWindow({
         width: 800,
@@ -469,7 +508,8 @@ ipcMain.on(
       await windowReportes.show();
       await windowReportes.webContents.send(
         "generate-report-servicios-contratados",
-     beneficiarios,encabezado
+        beneficiarios,
+        encabezado
       );
       windowReportes.on("closed", () => {
         windowReportes = null;
@@ -2025,6 +2065,9 @@ ipcMain.handle(
   async (event, contratar, socioId, individualSn) => {
     try {
       const conn = await getConnection();
+      await conn.query(
+        "SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
+      );
       console.log("Recibido: ", contratar, " ", individualSn);
 
       if (individualSn == "No") {
@@ -3223,6 +3266,9 @@ ipcMain.handle(
 // ----------------------------------------------------------------
 ipcMain.handle("createPlanilla", async (event, fechaCreacion) => {
   const conn = await getConnection();
+  await conn.query(
+    "SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
+  );
   let numero = 0;
   try {
     // Consultamos cuales son los medidores que se encuentran activos para crear el registro de lecturas
@@ -3387,7 +3433,9 @@ async function createCuentaServicios(datosContrato, fechaCreacion) {
   const contratoId = datosContrato.id;
   console.log("Consultando encabezado para: " + datosContrato.id);
   const conn = await getConnection();
-
+  await conn.query(
+    "SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));"
+  );
   let encabezadoId = null;
   try {
     // Consultamos si existe un encabezado con los detalles de los servicios contratados segun el contrato

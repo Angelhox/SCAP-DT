@@ -10,6 +10,7 @@ const {
   agruparPlanillas,
   agruparEncabezados,
   agruparServicios,
+  agruparPlanillasGlobales,
 } = require("./group-data");
 const { aproximarDosDecimales } = require("../commons/calculate.functions");
 // ----------------------------------------------------------------
@@ -34,6 +35,7 @@ const estadoBuscar = document.getElementById("estado");
 const criterioBuscar = document.getElementById("criterio");
 const criterioContent = document.getElementById("criterioContent");
 const btnBuscar = document.getElementById("btnBuscar");
+const btnReporteGlobal = document.getElementById("reporte_adeudados_globales");
 // ----------------------------------------------------------------
 // Variables del socio
 // ----------------------------------------------------------------
@@ -1359,6 +1361,34 @@ async function quitPlanillas(fecha, planillaId) {
 // };
 const sumaValorPlanillas = (planillas) =>
   planillas.reduce((total, planilla) => total + planilla.valor, 0);
+btnReporteGlobal.addEventListener("click", async () => {
+  await reporteGlobal();
+});
+async function reporteGlobal() {
+  let planillasGlobales = await ipcRenderer.invoke("getAllPlanillas");
+  console.log("Adeudados globales", planillasGlobales);
+
+  // Agrupamos las planillas
+  let planillasGlobalesAgrupadas = await agruparPlanillasGlobales(planillasGlobales);
+  console.log("Agrupadas globales: ", planillasGlobalesAgrupadas);
+
+  for (const planillaGlobal of planillasGlobalesAgrupadas) {
+    await getAllServicios(planillaGlobal);
+    let encabezados = await agruparEncabezados(planillaGlobal.servicios);
+    planillaGlobal.encabezados = encabezados;
+    let srv = await agruparServicios(planillaGlobal.servicios);
+    planillaGlobal.servicios = srv;
+  }
+  console.log(
+    "Adeudados con servicios agrupados: ",
+    planillasGlobalesAgrupadas
+  );
+  await ipcRenderer.send(
+    "generate-report-adeudados-globales",
+    planillasGlobalesAgrupadas
+  );
+}
+
 async function vistaFactura() {
   let telefono = "0999999999";
   if (editablePlanillas.objetos.length > 0) {
@@ -1417,6 +1447,7 @@ async function vistaFactura() {
     //     confirmButtonColor: "green",
     //   });
     // } else {
+
     await ipcRenderer.send(
       // Si descomentas esta linea descomenta encabezado tambien <-----
       // "generateFacturaMultiple",

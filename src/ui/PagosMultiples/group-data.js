@@ -101,4 +101,53 @@ async function agruparServicios(allServicios) {
   }, []);
   return serviciosAgrupados;
 }
-module.exports = { agruparPlanillas, agruparEncabezados, agruparServicios };
+const agruparPlanillasGlobales = async (allPlanillas) => {
+  console.log("Grupos sin suma:", allPlanillas);
+
+  let planillasAgrupadas = await allPlanillas.reduce((acumulador, objeto) => {
+    // Verificar si ya hay un grupo con el mismo nombre
+    let grupoExistente = acumulador.find(
+      (contratosId) => contratosId.contratosId === objeto.contratosId
+    );
+    // Si el grupo existe, agregar el valor al grupo
+
+    if (grupoExistente) {
+      grupoExistente.valor += objeto.valor;
+      grupoExistente.objetos.push(objeto);
+      grupoExistente.ids.push(objeto.planillasId);
+      grupoExistente.fechasEmision.push(
+        formatearFecha(new Date(objeto.fechaEmision))
+      );
+    } else {
+      // Si el grupo no existe, crear uno nuevo con el valor
+      acumulador.push({
+        contratosId: objeto.contratosId,
+        fechasEmision: [formatearFecha(new Date(objeto.fechaEmision))],
+        codigo: objeto.codigo,
+        contratoId: objeto.contratosId,
+        sociosId: objeto.sociosId,
+        nombre: objeto.nombre,
+        primerApellido: objeto.Apellidosnombres,
+        cedula: objeto.cedulaPasaporte,
+        telefono: objeto.telefonoMovil,
+        direccion: objeto.direccion,
+        ubicacion: objeto.ubicacion,
+        estado: objeto.estado,
+        valor: objeto.valor,
+        objetos: [objeto],
+        servicios: [],
+        encabezados: [],
+        ids: [objeto.planillasId],
+      });
+    }
+
+    return acumulador;
+  }, []);
+  return planillasAgrupadas;
+};
+module.exports = {
+  agruparPlanillas,
+  agruparEncabezados,
+  agruparServicios,
+  agruparPlanillasGlobales,
+};

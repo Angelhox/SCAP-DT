@@ -2,10 +2,11 @@ const mysql = require("promise-mysql");
 const connection = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "",
+  password: "MySQL2024!!..",
   database: "bdscap_sd_v3",
-  port: 3308,
+  port: 3309,
 });
+
 function getConnection() {
   return connection;
 }
