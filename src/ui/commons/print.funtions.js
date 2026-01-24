@@ -5,6 +5,7 @@ const puppeteer = require("puppeteer");
 // Función para guardar el archivo PDF en la carpeta seleccionada
 let tempDocPath= "C:/Users/Usuario/Documents/jaaps-temporal-print.pdf";
 // let tempDocPath = "C:/Users/Use/Documents/jaaps-temporal-print.pdf";
+// let tempDocPath= "C:/Usuarios/Usuario/Documents/jaaps-temporal-print.pdf";
 async function guardarEnDirectorioSeleccionado(codigoComprobante) {
   const scale = 0.9;
   const scaleX = 0.9; // Escala en el eje X (80%)

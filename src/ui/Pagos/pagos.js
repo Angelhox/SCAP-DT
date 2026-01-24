@@ -1742,11 +1742,18 @@ async function calcularConsumo(fecha, tipo) {
       totalConsumo = parseFloat(totalConsumo + base).toFixed(2);
     }
     valorConsumo.value = parseFloat(totalConsumo + base).toFixed(2);
-    tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+    if (tarifaAplicada.endsWith("especial")) {
+      let tarifaSinEspecial = tarifaAplicada.replace("especial", "");
+      tarifaConsumo.value = tarifaSinEspecial + "($" + valorTarifa + ")";
+    } else {
+      tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+    }
+    // tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
     console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
   } else {
     tarifaAplicada = "Sin consumo";
     valorConsumo.value = (totalConsumo + base).toFixed(2);
+
     tarifaConsumo.value = "Sin Consumo" + "($" + 0.0 + ")";
     console.log("Tarifa: " + "Siin Consumo" + "(" + 0.0 + ")");
   }

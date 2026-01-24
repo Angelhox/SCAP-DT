@@ -438,6 +438,20 @@ ipcMain.on("abrirInterface", (event, interfaceName, acceso) => {
         break;
       default:
     }
+  } else if (interfaceName == "PagosII") {
+    switch (acceso) {
+      case "Auditor":
+        console.log("Auditor");
+        url = "src/ui/PagosMultiples/pagos-multiples.html";
+        break;
+      case "Cajero":
+        url = "src/ui/PagosMultiples/pagos-multiples.html";
+        break;
+      case "Digitador":
+        url = "src/ui/PagosMultiples/pagos-multiples.html";
+        break;
+      default:
+    }
   }
   try {
     console.log("interface name desde main", interfaceName);

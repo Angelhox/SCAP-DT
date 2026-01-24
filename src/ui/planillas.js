@@ -108,7 +108,7 @@ let editDetalleId = "";
 let fechaEmisionEdit = "";
 let tipoContratoEdit = "comun";
 let editContratoId = "";
-let fechaCreacion = "2025-10-01 00:00:00";
+let fechaCreacion = "2025-12-01 00:00:00";
 planillaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const newPlanilla = {
@@ -1027,7 +1027,12 @@ async function calcularConsumo(fecha, tipo) {
     }
 
     valorConsumo.value = (totalConsumo + base).toFixed(2);
-    tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+    if (tarifaAplicada.endsWith("especial")) {
+      let tarifaSinEspecial = tarifaAplicada.replace("especial", "");
+      tarifaConsumo.value = tarifaSinEspecial + "($" + valorTarifa + ")";
+    } else {
+      tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+    }
     console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
   } else {
     tarifaAplicada = "Sin consumo";

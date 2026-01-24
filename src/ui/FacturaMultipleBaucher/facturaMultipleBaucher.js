@@ -315,11 +315,30 @@ ipcRenderer.on(
             );
             tdConsumo.textContent = datosConsumo.consumo;
             const tdTarifa = document.createElement("td");
-            tdTarifa.textContent =
-              datosConsumo.tarifa.substring(0, 14) +
-              "($" +
-              datosConsumo.tarifaValor +
-              ")";
+            if (datosConsumo.tarifa.includes("especial")) {
+              let tarifaSinEspecial = datosConsumo.tarifa.replace(
+                "especial",
+                ""
+              );
+              tdTarifa.textContent =
+                tarifaSinEspecial.substring(0, 11) +
+                "($" +
+                datosConsumo.tarifaValor +
+                ")";
+            } else {
+              tdTarifa.textContent =
+                datosConsumo.tarifa.substring(0, 14) +
+                "($" +
+                datosConsumo.tarifaValor +
+                ")";
+            }
+            // tdTarifa.textContent =
+            //   datosConsumo.tarifa.substring(0, 14) +
+            //   "($" +
+            //   datosConsumo.tarifaValor +
+            //   ")";
+
+            // --------------------
             tdTarifa.style = consumosStyle;
             const tdValor = document.createElement("td");
             tdValor.textContent = datosConsumo.valor;

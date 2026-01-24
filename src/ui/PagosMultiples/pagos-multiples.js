@@ -1141,7 +1141,13 @@ async function calcularConsumo() {
 
   valorConsumo.value = (totalConsumo + base).toFixed(2);
 
-  tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+  // tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+  if (tarifaAplicada.endsWith("especial")) {
+    let tarifaSinEspecial = tarifaAplicada.replace("especial", "");
+    tarifaConsumo.value = tarifaSinEspecial + "($" + valorTarifa + ")";
+  } else {
+    tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+  }
 
   console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
 }
@@ -1222,7 +1228,13 @@ async function calcularConsumos(
   }
 
   // valorConsumo.value = (totalConsumo + base).toFixed(2);
-  tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+  // tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+  if (tarifaAplicada.endsWith("especial")) {
+    let tarifaSinEspecial = tarifaAplicada.replace("especial", "");
+    tarifaConsumo.value = tarifaSinEspecial + "($" + valorTarifa + ")";
+  } else {
+    tarifaConsumo.value = tarifaAplicada + "($" + valorTarifa + ")";
+  }
   console.log("Tarifa: " + tarifaAplicada + "(" + valorTarifa + ")");
   const datosConsumo = {
     consumo: consumo,
@@ -1265,7 +1277,16 @@ async function renderConsumos(editablePlanillas) {
       );
       tdConsumo.textContent = datosConsumo.consumo;
       const tdTarifa = document.createElement("td");
-      tdTarifa.textContent = datosConsumo.tarifa;
+      // ------------------------
+      if (datosConsumo.tarifa.includes("especial")) {
+        console.log("SI");
+        let tarifaSinEspecial = datosConsumo.tarifa.replace("especial", "");
+        tdTarifa.textContent = tarifaSinEspecial;
+      } else {
+        console.log("NO");
+        tdTarifa.textContent = datosConsumo.tarifa;
+      }
+      // tdTarifa.textContent = datosConsumo.tarifa;
       const tdValor = document.createElement("td");
       tdValor.textContent = datosConsumo.valor;
       trConsumos.append(tdAnterior);
@@ -1369,7 +1390,9 @@ async function reporteGlobal() {
   console.log("Adeudados globales", planillasGlobales);
 
   // Agrupamos las planillas
-  let planillasGlobalesAgrupadas = await agruparPlanillasGlobales(planillasGlobales);
+  let planillasGlobalesAgrupadas = await agruparPlanillasGlobales(
+    planillasGlobales
+  );
   console.log("Agrupadas globales: ", planillasGlobalesAgrupadas);
 
   for (const planillaGlobal of planillasGlobalesAgrupadas) {
