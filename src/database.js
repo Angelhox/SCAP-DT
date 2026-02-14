@@ -2,9 +2,9 @@ const mysql = require("promise-mysql");
 const connection = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "Gz9yCDNmtj/Z!Qri",
+  password: "",
   database: "bdscap_sd_v3",
-  port: 3308,
+  port: 3306,
 });
 
 function getConnection() {
